@@ -38,13 +38,14 @@ internal discussions more efficiently.
 ## Install devtools first if required
 # install.packages(devtools)
 
-devtools::install_github("Boehringer-Ingelheim/MVPapp")
+devtools::install_github("Boehringer-Ingelheim/MVPapp", build_vignettes = TRUE)
 ```
 
 Once installed, launch MVP using the following commands:
 
 ``` r
 library(MVPapp)
+
 run_mvp()
 
 ## Alternatively, launch the app without watermarks
@@ -314,5 +315,6 @@ Thresholds</figcaption>
 
 ## Extended Features
 
-Please see the article on “Supplying Passworded Models” for instructions
-on how to provide external models on App start-up.
+Please see the vignette on “Supplying Passworded Models”
+(`vignette("supply-passwords", package = "MVPapp"`) for instructions on
+how to provide external models on App start-up.
