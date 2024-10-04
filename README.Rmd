@@ -158,4 +158,4 @@ Once ready, click the "Update Model" button to generate new simulations.
 
 ## Extended Features
 
-Please see the vignette on "Supplying Passworded Models" (`vignette("supply-passwords", package = "MVPapp"`) for instructions on how to provide external models on App start-up.  
+Please see the vignette on "Supplying Passworded Models" (`vignette("supply-passwords", package = "MVPapp"`) for instructions on how to provide external models on App start-up.   
