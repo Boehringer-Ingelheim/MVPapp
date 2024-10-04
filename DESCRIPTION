@@ -1,0 +1,61 @@
+Package: MVPapp
+Title: Model Visualization Platform
+Version: 0.2.7
+Authors@R: c(
+    person("Steve", "Choy", email = "steve.choy@outlook.com", role = c("aut", "cre")),
+    person("Jin Gyu", "Kim", role = "aut"))
+Description: Model Visualization Platform (MVP) is an intuitive and interactive pharmacometrics environment requiring minimal setup from the users.
+    It is a flexible tool that allows users to explore model structures, parameters, dosing regimens, and compare with observations.
+    The goal of MVP is to support initial model development and facilitate internal discussions more efficiently.
+    Additional features include parameter sensitivity analysis, displaying NCA metrics using a time range defined by users, basic data exploration, variability assessment, and more.
+License: GPL (>= 3)
+URL: https://github.com/Boehringer-Ingelheim/MVP
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: bslib (>= 0.5.1), 
+         cowplot, 
+         data.table (>= 1.14.2),
+         dplyr,
+         DT,
+         flextable (>= 0.6.10),
+         forcats,
+         GGally,
+         ggplot2 (>= 3.4.4),
+         grid,
+         gridExtra,
+         htmltools (>= 0.5.5),
+         magrittr,
+         mrgsolve (>= 1.0.0),
+         ncar,
+         NonCompart (>= 0.7.0),
+         plotly (>= 4.10.1),
+         purrr,
+         rhandsontable (>= 0.3.8),
+         shiny (>= 1.7.4.1),
+         shinyAce,
+         shinyalert,
+         shinyBS (>= 0.61.1),
+         shinycssloaders,
+         shinydashboard (>= 0.7.2),
+         shinyjs (>= 1.0),
+         shinythemes,
+         shinyWidgets (>= 0.8.0),
+         stringr,
+         tidyr
+Suggests: readr,
+          foreign,
+          mrgsolve (>= 1.5.1),
+          knitr,
+          rmarkdown
+Depends: R (>= 3.5.0)
+LazyData: true
+Collate: "utils-pipe.R"
+         "ui_settings_v_0_2_7_exp.R"
+         "code_templates_v_0_2_4_exp.R"
+         "functions_v_0_2_7.R"
+         "config.R"
+         "run_mvp.R"
+         "data.R"
+VignetteBuilder: knitr
+
