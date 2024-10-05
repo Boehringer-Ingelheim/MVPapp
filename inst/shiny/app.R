@@ -1189,7 +1189,7 @@ ui <- shiny::navbarPage(
                                                                              shinyBS::bsPopover('seed_number_model_1',  'Seed', content = bspop_seed, placement = 'right', trigger = 'focus')
                                                                       ),
                                                                       column(width = 12,
-                                                                             sliderInput('age_db_model_1', label = age_range_label, min = 0, max = 100, value = c(0,100), step = 1)
+                                                                             sliderInput('age_db_model_1', label = age_range_label, min = 0, max = 100, value = c(18,65), step = 1)
                                                                       ),
                                                                       column(width = 6,
                                                                              sliderInput('wt_db_model_1', label = weight_range_label, min = 0, max = 150, value = c(0,150), step = 1)
