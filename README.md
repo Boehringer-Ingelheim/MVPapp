@@ -68,7 +68,7 @@ the **homepage** as other pages of the app inherit settings from this
 page (e.g. dosing and axis choices).
 
 <figure>
-<img src="inst/shiny/www/simtab1.png" alt="Simulation tab" />
+<img src="www/simtab1.png" alt="Simulation tab" />
 <figcaption aria-hidden="true">Simulation tab</figcaption>
 </figure>
 
@@ -118,7 +118,7 @@ page (e.g. dosing and axis choices).
       it.
 
 <figure>
-<img src="inst/shiny/www/2models1.png"
+<img src="www/2models1.png"
 alt="Two independent models with their own unique dosing" />
 <figcaption aria-hidden="true">Two independent models with their own
 unique dosing</figcaption>
@@ -131,7 +131,7 @@ unique dosing</figcaption>
     of the page.
 
 <figure>
-<img src="inst/shiny/www/plotlytoolbar.png"
+<img src="www/plotlytoolbar.png"
 alt="Camera icon from the plotly toolbar" />
 <figcaption aria-hidden="true">Camera icon from the plotly
 toolbar</figcaption>
@@ -161,8 +161,7 @@ rename these columns using the code editor.
     the bottom of the page.
 
 <figure>
-<img src="inst/shiny/www/ncaexample.png"
-alt="Descriptive Statistics (NCA)" />
+<img src="www/ncaexample.png" alt="Descriptive Statistics (NCA)" />
 <figcaption aria-hidden="true">Descriptive Statistics (NCA)</figcaption>
 </figure>
 
@@ -174,7 +173,7 @@ pages by checking the “Overlay Dataset” checkbox in the “Plotting
 Options” in each respective page!**
 
 <figure>
-<img src="inst/shiny/www/overlayexp.png"
+<img src="www/overlayexp.png"
 alt="Simulation page plot with data overlaid" />
 <figcaption aria-hidden="true">Simulation page plot with data
 overlaid</figcaption>
@@ -211,8 +210,7 @@ previously defined model settings and making them available (i.e. in
     metrics can be downloaded in the Table page.
 
 <figure>
-<img src="inst/shiny/www/psaexample.png"
-alt="Parameter Sensitivity Analysis" />
+<img src="www/psaexample.png" alt="Parameter Sensitivity Analysis" />
 <figcaption aria-hidden="true">Parameter Sensitivity
 Analysis</figcaption>
 </figure>
@@ -254,8 +252,7 @@ live)!
     - Histogram of weight and age can be viewed in the “Plots” sub-tab.
 
 <figure>
-<img src="inst/shiny/www/demog1.png"
-alt="Sampling from External Databases" />
+<img src="www/demog1.png" alt="Sampling from External Databases" />
 <figcaption aria-hidden="true">Sampling from External
 Databases</figcaption>
 </figure>
@@ -269,7 +266,7 @@ Databases</figcaption>
       Statistics” sub tab and able to be downloaded.
 
 <figure>
-<img src="inst/shiny/www/egfrexample.png"
+<img src="www/egfrexample.png"
 alt="User-defined Custom Covariate(s) Distributions" />
 <figcaption aria-hidden="true">User-defined Custom Covariate(s)
 Distributions</figcaption>
@@ -297,7 +294,7 @@ matrices has reverted to its last known state.
       using the “At Time (Original Scale)” option.
 
 <figure>
-<img src="inst/shiny/www/varplot.png"
+<img src="www/varplot.png"
 alt="Comparing Percentages Above Thresholds" />
 <figcaption aria-hidden="true">Comparing Percentages Above
 Thresholds</figcaption>
