@@ -17,6 +17,7 @@ code_postamble <- "\n## IMPORTANT: Model 1 and Model 2 must have different model
 
 #' @export
 model_examples_list <- c('1 Compartment PK',
+                         '1 Compartment PK with Lag time',
                          '1 Compartment PK with Absorption Compartment',
                          '1 Compartment PK (Transit Absorption)',
                          '2 Compartment PK', 
@@ -57,6 +58,7 @@ model_switch_conditions <- function(input_model_select, mcode_model_choice) {
     'Test Passworded Model'                               = paste0(one_cmt_abs, mcode_model_choice),
     ###### Password gated models above #######################################
     '1 Compartment PK'                                    = paste0(one_cmt, mcode_model_choice),
+    '1 Compartment PK with Lag time'                      = paste0(one_cmt_lag, mcode_model_choice),
     '1 Compartment PK with Absorption Compartment'        = paste0(one_cmt_abs, mcode_model_choice),
     '1 Compartment PK (Transit Absorption)'               = paste0(one_cmt_transit, mcode_model_choice),
     '2 Compartment PK'                                    = paste0(two_cmt, mcode_model_choice),
@@ -199,6 +201,70 @@ $CAPTURE
 DV
 "
 ', code_postamble)
+
+#' @export
+one_cmt_lag <- paste0(code_preamble, '
+
+"
+$Global
+
+$Prob
+- 1 Compartment model + Absorption CMT w/ Weight effect on PK parameters (Lag time)
+
+$CMT  @annotated
+GUT  : Absorption compartment
+CENT : Central compartment (mg)
+
+$PARAM @annotated
+TVKA   :  1   : Absorption rate constant (1/time)
+TVCL   :  2   : Clearance (volume/time)
+TVV    : 20   : Central volume (volume)
+WT     : 70   : Weight (kg)
+WTCL   : 0.75 : Exponent of weight effect on CL
+WTV    : 1.0  : Exponent of weight effect on V
+F1     : 1.0  : Bioavailability (fraction)
+ALAG   : 1.5  : Lag time (hours)
+
+$MAIN
+double KA = TVKA * exp(EKA);
+double V  = TVV * pow(WT/70, WTV) * exp(EV);
+double CL = TVCL * pow(WT/70, WTCL)* exp(ECL);
+double K20 = CL/V;
+
+F_GUT    = F1;
+ALAG_GUT = ALAG * exp(ELAG);
+
+$ODE
+dxdt_GUT  = -KA*GUT;
+dxdt_CENT = KA*GUT -K20*CENT;
+
+$OMEGA @annotated @block
+EKA : 0.09 : ETA on Absorption rate
+ECL : 0.01 0.09 : ETA on CL
+EV  : 0.01 0.02 0.09 : ETA on V
+
+$OMEGA @annotated
+ELAG : 0.09 : ETA on lag time
+
+$SIGMA @annotated
+PROP: 0.1 : Proportional residual error
+
+$TABLE
+double DV = (CENT/V)*(1+PROP);
+
+//prevent simulation of negative concentrations
+int i = 0;
+while(DV <0 && i < 100){
+    simeps();
+    DV = (CENT/V)*(1+PROP);
+    ++i;
+}
+
+$CAPTURE
+DV
+"
+', code_postamble)
+
 
 #' @export
 one_cmt_abs <- paste0(code_preamble, '
@@ -1002,7 +1068,11 @@ modlib_examples <-
 # model_object <- mread("tmdd",    modlib()) # target-mediated drug disp.
 # model_object <- mread("viral1",  modlib()) 
 # model_object <- mread("viral2",  modlib()) 
+# model_object <- mread("pred1",   modlib()) # $PRED syntax
 # model_object <- mread("pbpk",    modlib())
+# model_object <- mread("1005",    modlib()) # embedded NONMEM result
+# model_object <- mread("nm-like", modlib()) # model with nonmem-like syntax
+
 
 ### IMPORTANT: Do not have same model for both Model 1 / Model 2 as internal model names cannot be identical!                    
 '

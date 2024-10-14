@@ -1,43 +1,43 @@
 #-------------------------------------------------------------------------------
-#' Passworded models and functions required for the app to update the list of 
+#' Passworded models and functions required for the app to update the list of
 #' model choices by password input
-#' 
+#'
 #' Usage:
-#' 
+#'
 #' 1. Add in the new model's display name inside the 'model_switch_conditions'
 #'    function. Note that the model's internal R name should match with the
 #'    eventual model code. (see Step 3)
-#'    
-#' 2. Add in a conditional statement with the desired password inside the 
+#'
+#' 2. Add in a conditional statement with the desired password inside the
 #'    'update_model_choices' function. See other examples for an idea of how
 #'    to update default values in the App.
-#'    
+#'
 #'    Note: Add in your details to the create_alert() to have the Disclaimer warning
 #'    shown every time.
-#'    
+#'
 #'    Remember to also include your new password to the 'list_of_valid_passwords'
 #'    inside the function.
-#'    
+#'
 #' 3. Define the model code at the bottom of the script. Check earlier examples
 #'    regarding formatting, including of the 'code_preamble' boilerplate text.
 #'    Note: some minor adjustments in the code may be required to remove R code
 #'    calls in quotation marks (e.g. calling Sys.date() etc)
-#'  
+#'
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-#' @name model_switch_conditions 
+#' @name model_switch_conditions
 #' @title shorthand function to switch model code based on
 #'                           choice of model input, and append model name
-#'                           
-#' @param input_model_select       From the UI (input$model_select, input$model_select2)  
-#' @param mcode_model_choice       What to append at the end of the model code                         
-#'                           
+#'
+#' @param input_model_select       From the UI (input$model_select, input$model_select2)
+#' @param mcode_model_choice       What to append at the end of the model code
+#'
 #' @returns a switch for 'model_input' / 'model_input2'
-#' 
+#'
 #' @note
-#' This function is re-defined here to include all the hidden models                                                   
-#' 
+#' This function is re-defined here to include all the hidden models
+#'
 #-------------------------------------------------------------------------------
 
 model_switch_conditions <- function(input_model_select, mcode_model_choice) {
@@ -46,6 +46,7 @@ model_switch_conditions <- function(input_model_select, mcode_model_choice) {
     'Test Passworded Model'                               = paste0(one_cmt_abs, mcode_model_choice),
     ###### Password gated models above #######################################
     '1 Compartment PK'                                    = paste0(one_cmt, mcode_model_choice),
+    '1 Compartment PK with Lag time'                      = paste0(one_cmt_lag, mcode_model_choice),
     '1 Compartment PK with Absorption Compartment'        = paste0(one_cmt_abs, mcode_model_choice),
     '1 Compartment PK (Transit Absorption)'               = paste0(one_cmt_transit, mcode_model_choice),
     '2 Compartment PK'                                    = paste0(two_cmt, mcode_model_choice),
@@ -62,35 +63,35 @@ model_switch_conditions <- function(input_model_select, mcode_model_choice) {
     'PK with Adaptive Dosing Interval'                    = paste0(pk_adaptive_dosing_int, mcode_model_choice),
     'PK with Sequential Zero and First-order Absorption'  = paste0(pk_seq_first_order, mcode_model_choice),
     #'------------------------------------------'
-    'Mrgsolve internal model library (modlib())'          = modlib_examples,    
+    'Mrgsolve internal model library (modlib())'          = modlib_examples,
     'Blank Template'                                      = paste0(blank_template, mcode_model_choice),
     'Upload .cpp File'                                    = paste0(blank_template, mcode_model_choice)
   ))
 }
 
 #-------------------------------------------------------------------------------
-#' @name update_model_choices 
-#' 
+#' @name update_model_choices
+#'
 #' @title Shorthand function to update list of models and
 #'                        default values by input password
-#'                           
-#' @param input_password        From the UI (input$password)  
+#'
+#' @param input_password        From the UI (input$password)
 #' @param session               Shiny session (don't change this)
-#' @param model_list            List of models (don't change this)                         
-#'                           
+#' @param model_list            List of models (don't change this)
+#'
 #' input$model_select & input$model_select2 are updated as a side effect
-#' 
+#'
 #' @returns a logical TRUE/FALSE if password is valid
-#' 
+#'
 #' @note
 #' This function is re-defined here to include all the model defaults
 #-------------------------------------------------------------------------------
 
 update_model_choices <- function(input_password, session, model_list = model_examples_list) {
-  
+
   new_choices <- model_list
   list_of_valid_passwords <- c("test")
-  
+
   ### Example model
   if (input_password == "test") {
     create_alert("FirstName LastName", "first.last@xxx.com")
@@ -113,23 +114,23 @@ update_model_choices <- function(input_password, session, model_list = model_exa
     updateNumericInput(session, "delay_time2", value = 1176)
     updateTextInput(session, "y_axis_label", value = "Concentration (nM)")
     updateSelectizeInput(session, "time_unit", selected = '168', options = list(create = TRUE))
-  } 
-  
+  }
+
   if(input_password %in% list_of_valid_passwords) {
     password_is_valid <- TRUE
   } else {
     password_is_valid <- FALSE
   }
-  
+
   # Update the selectInput with the new choices
   if(password_is_valid) {
     updateSelectInput(session, "model_select",  choices = new_choices)
     updateSelectInput(session, "model_select2", choices = new_choices)
   } else {
     updateSelectInput(session, "model_select",  choices = model_list)
-    updateSelectInput(session, "model_select2", choices = model_list)    
+    updateSelectInput(session, "model_select2", choices = model_list)
   }
-  
+
   return(password_is_valid)
 }
 

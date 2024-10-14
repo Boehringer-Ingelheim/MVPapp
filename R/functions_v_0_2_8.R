@@ -132,6 +132,7 @@ draw_correlation_plot <- function(input_df,
 #' @title Executes a mrgsim call based on user input
 #' 
 #' @param input_model_object    mrgmod object
+#' @param pred_model            Default FALSE. set to TRUE to set ev_df CMT to 0
 #' @param ev_df                 ev() dataframe containing dosing info
 #' @param model_dur             Default FALSE, set to TRUE to model duration inside the code
 #' @param model_rate            Default FALSE, set to TRUE to model rate inside the code
@@ -154,6 +155,7 @@ draw_correlation_plot <- function(input_df,
 
 
 run_single_sim <- function(input_model_object,
+                           pred_model         = FALSE,
                            ev_df, 
                            model_dur          = FALSE,
                            model_rate         = FALSE,
@@ -198,7 +200,22 @@ run_single_sim <- function(input_model_object,
       if (debug) {
         message('post_model_rate')
       }
-    } 
+    }
+    
+    if(pred_model) { # set all CMTs to zero as that is required for PRED models
+      ev_df <- ev_df %>%
+        mutate(cmt  = 0)
+      
+      if("tinf" %in% names(ev_df)) {
+        ev_df <- ev_df %>%
+          select(-tinf)
+      }
+      
+      if("rate" %in% names(ev_df)) {
+        ev_df <- ev_df %>%
+          select(-rate)
+      }
+    }
     
     ### If reading in Databases:
     if(nsubj > 1 & !is.null(ext_db)) { # Note that ext_db is not NULL even for "None" option
@@ -375,7 +392,6 @@ sample_age_wt <- function(df_name     = "None",
 #' @importFrom dplyr mutate mutate_all distinct select sym summarise across
 #' @importFrom tidyr everything pivot_longer pivot_wider
 #' @importFrom purrr modify_if
-#' @importFrom data.table rbindlist setDT
 #' @export 
 #=============================================================================
 
@@ -435,7 +451,7 @@ calc_summary_stats <- function(orig_data,
     # Using data.table which is much quicker
     # Convert the data to a data.table
     data <- data.table::setDT(data)
-
+    
     # Define list of metrics to summarise over
     stats_list <- list(
       "Min"       = function(x) min(x, na.rm = TRUE),
@@ -1128,7 +1144,7 @@ quantile_output <- function(iiv_sim_input,
                             yvar = 'DV',
                             lower_quartile = 0.025,
                             upper_quartile = 0.975,
-                            dp   = 3
+                            dp   = 5
 ) {
   iiv_sim_input <- iiv_sim_input %>% 
     dplyr::group_by(TIME) %>%
@@ -2840,3 +2856,122 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
   
 }
 
+#-------------------------------------------------------------------------------
+#' @name generate_dosing_regimens
+#' @title Generate Dosing Regimens
+#' 
+#' @param amt1 Dose Amount Regimen 1
+#' @param delay_time1 Delay Time Regimen 1
+#' @param cmt1 Input CMT Regimen 1
+#' @param tinf1 Infusion Time Regimen 1
+#' @param total1 Total Doses Regimen 1
+#' @param ii1 Interdose Interval Regimen 1
+#' @param amt2 Dose Amount Regimen 2
+#' @param delay_time2 Delay Time Regimen 2
+#' @param cmt2 Input CMT Regimen 2
+#' @param tinf2 Infusion Time Regimen 2
+#' @param total2 Total Doses Regimen 2
+#' @param ii2 Interdose Interval Regimen 2
+#' @param amt3 Dose Amount Regimen 3
+#' @param delay_time3 Delay Time Regimen 3
+#' @param cmt3 Input CMT Regimen 3
+#' @param tinf3 Infusion Time Regimen 3
+#' @param total3 Total Doses Regimen 3
+#' @param ii3 Interdose Interval Regimen 3
+#' @param amt4 Dose Amount Regimen 4
+#' @param delay_time4 Delay Time Regimen 4
+#' @param cmt4 Input CMT Regimen 4
+#' @param tinf4 Infusion Time Regimen 4
+#' @param total4 Total Doses Regimen 4
+#' @param ii4 Interdose Interval Regimen 4
+#' @param amt5 Dose Amount Regimen 5
+#' @param delay_time5 Delay Time Regimen 5
+#' @param cmt5 Input CMT Regimen 5
+#' @param tinf5 Infusion Time Regimen 5
+#' @param total5 Total Doses Regimen 5
+#' @param ii5 Interdose Interval Regimen 5
+#' @param mw_conversion MW conversion
+#' @param wt_multiplication_value Weight multiplication value
+#' @param create_dummy_ev Default TRUE, to create dummy ev if there are no valid
+#' dose amounts, set to FALSE to not create one
+#' @param debug set to TRUE to show debug messages
+#' 
+#' @importFrom mrgsolve ev as.ev 
+#' @importFrom dplyr arrange filter
+#' @returns A mrgsolve::ev event object
+
+#' @export 
+#-------------------------------------------------------------------------------
+
+generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1,
+                                     amt2, delay_time2, cmt2, tinf2, total2, ii2,
+                                     amt3, delay_time3, cmt3, tinf3, total3, ii3,
+                                     amt4, delay_time4, cmt4, tinf4, total4, ii4,
+                                     amt5, delay_time5, cmt5, tinf5, total5, ii5,
+                                     mw_conversion = FALSE,
+                                     wt_multiplication_value = 1,
+                                     create_dummy_ev = TRUE,
+                                     debug = FALSE
+                                     ) {
+  
+  dosing_scheme_1 <- mrgsolve::ev(amt     =  sanitize_numeric_input(amt1) * mw_conversion * wt_multiplication_value, 
+                                  time    =  sanitize_numeric_input(delay_time1),
+                                  cmt     =  cmt1, 
+                                  tinf    =  sanitize_numeric_input(tinf1),  
+                                  total   =  sanitize_numeric_input(total1, allow_zero = FALSE, as_integer = TRUE),
+                                  ii      =  sanitize_numeric_input(ii1, allow_zero = FALSE)
+  )
+  dosing_scheme_2 <- mrgsolve::ev(amt     =  sanitize_numeric_input(amt2) * mw_conversion * wt_multiplication_value, 
+                                  time    =  sanitize_numeric_input(delay_time2),
+                                  cmt     =  cmt2, 
+                                  tinf    =  sanitize_numeric_input(tinf2),  
+                                  total   =  sanitize_numeric_input(total2, allow_zero = FALSE, as_integer = TRUE),
+                                  ii      =  sanitize_numeric_input(ii2, allow_zero = FALSE)
+  )
+  dosing_scheme_3 <- mrgsolve::ev(amt     =  sanitize_numeric_input(amt3) * mw_conversion * wt_multiplication_value,
+                                  time    =  sanitize_numeric_input(delay_time3),
+                                  cmt     =  cmt3, 
+                                  tinf    =  sanitize_numeric_input(tinf3),  
+                                  total   =  sanitize_numeric_input(total3, allow_zero = FALSE, as_integer = TRUE),
+                                  ii      =  sanitize_numeric_input(ii3, allow_zero = FALSE)
+  )
+  dosing_scheme_4 <- mrgsolve::ev(amt     =  sanitize_numeric_input(amt4) * mw_conversion * wt_multiplication_value,
+                                  time    =  sanitize_numeric_input(delay_time4),
+                                  cmt     =  cmt4, 
+                                  tinf    =  sanitize_numeric_input(tinf4),  
+                                  total   =  sanitize_numeric_input(total4, allow_zero = FALSE, as_integer = TRUE),
+                                  ii      =  sanitize_numeric_input(ii4, allow_zero = FALSE)
+  )
+  dosing_scheme_5 <- mrgsolve::ev(amt     =  sanitize_numeric_input(amt5) * mw_conversion * wt_multiplication_value,
+                                  time    =  sanitize_numeric_input(delay_time5),
+                                  cmt     =  cmt5, 
+                                  tinf    =  sanitize_numeric_input(tinf5),  
+                                  total   =  sanitize_numeric_input(total5, allow_zero = FALSE, as_integer = TRUE),
+                                  ii      =  sanitize_numeric_input(ii5, allow_zero = FALSE)
+  )  
+  
+  total_doses <- c(dosing_scheme_1, dosing_scheme_2, dosing_scheme_3,
+                   dosing_scheme_4, dosing_scheme_5) %>%
+    as.data.frame() %>%
+    dplyr::arrange(time) %>%
+    dplyr::filter(amt > 0) %>%
+    mrgsolve::as.ev()
+  
+  if(create_dummy_ev) {
+    if(nrow(total_doses) == 0) {
+      total_doses <- mrgsolve::ev(amt   = 0,
+                                  time  = 0,
+                                  cmt   = cmt1,
+                                  tinf  = 0,
+                                  total = 1,
+                                  ii    = 0)
+      
+    }
+  }
+  
+  if(debug) {
+    message("Dosing regimen generated")
+  }
+  
+  return(total_doses)
+}
