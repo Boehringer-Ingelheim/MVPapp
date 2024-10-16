@@ -83,7 +83,8 @@ page (e.g. dosing and axis choices).
     - Note that the **entire model code is a string** that is assigned
       to the `model_code` object, and initialized as `model_object`.
       Therefore, if the model code contains quotation marks, the user
-      may have to remove those manually to avoid compilation errors.  
+      will have to remove those manually (or escape them using the
+      forward slash, `\`) to avoid compilation errors.  
 2.  Click on the `Generate Model 1` button. If the model compiles, the
     “Parameter Values” box will be populated, and a plot will show up on
     the right hand side.
@@ -156,7 +157,7 @@ rename these columns using the code editor.
     NCA” button, from the “Descriptive Statistics” tab. Note that **this
     feature is experimental and assumes a single dose per subject only
     for a single compartment. The user may need to filter their dataset
-    accordingly.**. The displayed table can be transposed if required.
+    accordingly.** The displayed table can be transposed if required.
     Results and plots per subject can be downloaded by the buttons at
     the bottom of the page.
 
@@ -206,7 +207,7 @@ previously defined model settings and making them available (i.e. in
       from the Simulation page).  
 5.  Plotting and Download Options are similar to those in the Simulation
     page.  
-6.  Simulation of the middle parameter, in addition to its derived
+6.  Simulations of the middle profile, in addition to its derived
     metrics can be downloaded in the Table page.
 
 <figure>

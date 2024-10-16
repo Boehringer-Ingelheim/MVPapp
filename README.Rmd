@@ -68,7 +68,7 @@ This is the default landing page when the App is launched. It looks a bit empty 
 1. Navigate to the "Select Model 1" box on the left hand side and choose a template model from the drop-down list, or upload your own .cpp file.  
     - Once a model is selected or uploaded, you can make further changes in the Code Editor below.  
     - You may also copy across your own model code by selecting the "Blank Template" model. Note that when you switch models, all changes are lost.
-    - Note that the **entire model code is a string** that is assigned to the `model_code` object, and initialized as `model_object`. Therefore, if the model code contains quotation marks, the user may have to remove those manually to avoid compilation errors.  
+    - Note that the **entire model code is a string** that is assigned to the `model_code` object, and initialized as `model_object`. Therefore, if the model code contains quotation marks, the user will have to remove those manually (or escape them using the forward slash, `\`) to avoid compilation errors.  
 2. Click on the `Generate Model 1` button. If the model compiles, the "Parameter Values" box will be populated, and a plot will show up on the right hand side.  
     - If the model fails to compile, check the "Model Info (Console)" box for the error message.  
     - Note that **all sources of variability are ignored on this page** (`zero_re()` from `mrgsolve` is applied). Navigate to the Variability Page if you want to assess variability in populations (see section below).
@@ -92,7 +92,7 @@ Uploading NONMEM-formatted datasets is supported in the "Data Input" page. Some 
 
 1. The filtered dataset (i.e. after passing through the code editor) is shown on the right hand side table.  
 2. Summary statistics of the data per ID is shown on the second sub tab on the top right hand side.  
-3. Descriptive statistics (NCA) can be derived (supporting non-NONMEM datasets) by defining the options and then clicking the "Calculate NCA" button, from the "Descriptive Statistics" tab. Note that **this feature is experimental and assumes a single dose per subject only for a single compartment. The user may need to filter their dataset accordingly.**. The displayed table can be transposed if required. Results and plots per subject can be downloaded by the buttons at the bottom of the page.  
+3. Descriptive statistics (NCA) can be derived (supporting non-NONMEM datasets) by defining the options and then clicking the "Calculate NCA" button, from the "Descriptive Statistics" tab. Note that **this feature is experimental and assumes a single dose per subject only for a single compartment. The user may need to filter their dataset accordingly.** The displayed table can be transposed if required. Results and plots per subject can be downloaded by the buttons at the bottom of the page.  
 
 ![Descriptive Statistics (NCA)](www/ncaexample.png)  
 
@@ -118,7 +118,7 @@ MVP makes this transition seamless by carrying across previously defined model s
 4. The time interval to derive metrics can be adjusted in the "Select Time Interval for Deriving Metrics" box, below the plot.  
     - Note that **the original time scale is always used** (if the user has changed scaling by using the "Scale X-axis (Divide by)" option from the Simulation page).  
 5. Plotting and Download Options are similar to those in the Simulation page.  
-6. Simulation of the middle parameter, in addition to its derived metrics can be downloaded in the Table page.
+6. Simulations of the middle profile, in addition to its derived metrics can be downloaded in the Table page.
 
 ![Parameter Sensitivity Analysis](www/psaexample.png)  
 
