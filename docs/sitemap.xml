@@ -6,6 +6,7 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/authors.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/index.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/news/index.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/add_linear_regression_formula.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/add_watermark.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/binary_cat_dist.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/calc_summary_stats.html</loc></url>
@@ -20,6 +21,7 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/convert_to_plotly_watermark.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/create_alert.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/create_value_box.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/do_data_page_plot.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/drawDetails.watermark.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/draw_correlation_plot.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/eval_parse.html</loc></url>
@@ -31,6 +33,8 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/gm_mean.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/gm_mean_cv.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/index.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/lm_eqn.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/lm_eqn_old.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/lowerFn.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/ls_all.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/model_examples_list.html</loc></url>
