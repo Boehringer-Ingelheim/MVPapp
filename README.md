@@ -120,9 +120,9 @@ page (e.g. dosing and axis choices).
 
 <figure>
 <img src="www/2models1.png"
-alt="Two independent models with their own unique dosing" />
+alt="Two independent models with their own unique model structure and dosing" />
 <figcaption aria-hidden="true">Two independent models with their own
-unique dosing</figcaption>
+unique model structure and dosing</figcaption>
 </figure>
 
 7.  In general, most plots are interactive (using the `plotly` package),
@@ -166,8 +166,19 @@ rename these columns using the code editor.
 <figcaption aria-hidden="true">Descriptive Statistics (NCA)</figcaption>
 </figure>
 
-4.  Quick data exploration are provided by the “Plot Output” and
-    “Correlation Plot” tabs.
+4.  Quick data exploration are provided by the “Plot Output” (tip:
+    clicking on the legend can toggle each subgroup on/off) and
+    “Correlation Plot” tabs:
+
+<figure>
+<img src="www/facet_plot.png" alt="Example Plot Output by Facet" />
+<figcaption aria-hidden="true">Example Plot Output by Facet</figcaption>
+</figure>
+
+<figure>
+<img src="www/corr_plot.png" alt="Example Correlation Plot" />
+<figcaption aria-hidden="true">Example Correlation Plot</figcaption>
+</figure>
 
 **Note: once a dataset is uploaded, its display can be toggled on other
 pages by checking the “Overlay Dataset” checkbox in the “Plotting

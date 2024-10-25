@@ -12,6 +12,149 @@ today_numeric  <- function() {
   format(Sys.Date(), "%Y%m%d") %>% as.numeric()
 }
 
+#---------------------------------------------------------------------------
+#' @name lm_eqn_old
+#' @title Linear regression text (not used)
+#' 
+#' @param df A dataframe
+#' @param x column name (string) of x-variable
+#' @param y column name (string) of y-variable
+#' 
+#' @returns A character string containing the expression of the R2 coefficient
+#' for use in ggplot labels or title
+#---------------------------------------------------------------------------
+
+lm_eqn_old <- function(df, x, y){
+  
+  # Special handling of whether df is an object or a character string
+  if(is.data.frame(df)) {
+    df_plot <- df
+    df_name <- deparse(substitute(df)) # Stores name of dataframe as string
+  } else {
+    df_plot <- get(df) # I.e. removes the quotation marks of the string to get the object
+    df_name <- df      
+  }
+  
+  string.name <- paste0(y, "~", x)
+  m <- lm(as.formula(string.name), df_plot)
+  
+  if(is.na(coef(m)[2])) {
+    eq <- "" # no slope available
+  } else {
+    if(coef(m)[2] < 0) {
+      # eq <- substitute(italic(y) == a - b %.% italic(x)*","~~italic(r)^2~"="~r2,
+      #                  list(a = format(unname(coef(m)[1]), digits = 2),
+      #                       b = format(unname(abs(coef(m)[2])), digits = 2),
+      #                       r2 = format(summary(m)$r.squared, digits = 3)))
+      
+      a <- format(unname(coef(m)[1]), digits = 2)
+      b <- format(unname(abs(coef(m)[2])), digits = 2)
+      r2 <- format(summary(m)$r.squared, digits = 3)
+      
+      eq <- paste0("y = ", a, " - ", b, "\u00B7x, r\u00B2 = ", r2) # plotly unicode hack
+      
+    } else {
+      # eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2,
+      #                  list(a = format(unname(coef(m)[1]), digits = 2),
+      #                       b = format(unname(coef(m)[2]), digits = 2),
+      #                       r2 = format(summary(m)$r.squared, digits = 3)))
+      
+      a <- format(unname(coef(m)[1]), digits = 2)
+      b <- format(unname(coef(m)[2]), digits = 2)
+      r2 <- format(summary(m)$r.squared, digits = 3)
+      
+      eq <- paste0("y = ", a, " + ", b, "\u00B7x, r\u00B2 = ", r2) # plotly unicode hack
+    }
+    #eq <- as.character(as.expression(eq)) # uncomment for normal ggplot
+  }
+  
+  return(eq)
+}
+
+#---------------------------------------------------------------------------
+#' @name lm_eqn
+#' @title Linear regression text (for plotly)
+#' 
+#' @param df A dataframe
+#' @param facet_name Optional column name (string) to facet by
+#' @param x column name (string) of x-variable
+#' @param y column name (string) of y-variable
+#' 
+#' @returns A dataframe containing the column "label" containing the string 
+#' formula of R2 coefficient for use in ggplot labels or title
+#' @importFrom dplyr group_by summarise if_else sym
+#' @export
+#---------------------------------------------------------------------------
+
+lm_eqn <- function(df, facet_name, x, y) {
+  if(facet_name != "") {
+    df_stats <- df %>%
+      dplyr::group_by(!!dplyr::sym(facet_name))
+  } else {
+    df_stats <- df
+  }
+  
+  string_name <- paste0(y, "~", x)
+  
+  if(x == y) { # workaround for when same variable is used for both y and x,
+    # which returns an NA slope. It seems summarise can't handle this well
+    df_stats <- df_stats %>%
+      dplyr::summarise(rsq = 1,
+                       slope = 1,
+                       intercept = 0)
+  } else {
+    
+    df_stats <- df_stats %>%
+      dplyr::summarise(rsq = summary(lm(as.formula(string_name)))$r.squared,
+                       slope = coef(lm(as.formula(string_name)))[2],
+                       intercept = coef(lm(as.formula(string_name)))[1])
+    #label_x = median(!!dplyr::sym(x)), # not necessary unless it is free_scale
+    #label_y = max(!!dplyr::sym(y), na.rm = TRUE))
+  }
+  
+  df_stats <- df_stats %>%
+    dplyr::mutate(slope_direction = dplyr::if_else(slope >= 0, " + ", " - "),
+                  label = case_when(!is.na(slope) ~ 
+                                      paste0("y = ",
+                                             format(unname(intercept), digits = 2),
+                                             slope_direction,
+                                             format(unname(abs(slope)), digits = 2),
+                                             "\u00B7x, R\u00B2 = ",
+                                             format(unname(rsq), digits = 3)),
+                                    is.na(slope) ~ # if there's no slope, display only the intercept
+                                      paste0("y = ", format(unname(intercept), digits = 2), "(mean)")
+                  )
+    )
+  
+  return(df_stats)
+}
+
+#-------------------------------------------------------------------------------
+#' @name add_linear_regression_formula
+#' @title Add Linear Regression Formula (not currently used)
+#' @description
+#' A function that adds linear regression formula and place it as a text annotation
+#' on the top of a plot. Requires ggplot object as input.
+#' @param p ggplot object
+#' 
+#' @returns A ggplot object with the formula placed on the top
+#' @importFrom ggplot2 ggplot_build annotate
+#' @export
+#-------------------------------------------------------------------------------
+add_linear_regression_formula <- function(p) {
+  data <- ggplot2::ggplot_build(p)$data[[1]]
+  med_x <- median(data$x, na.rm = TRUE)
+  max_y <- max(data$y, na.rm = TRUE)
+  
+  p + ggplot2::annotate("text",
+               x = med_x,
+               y = max_y,
+               label = lm_eqn_old(data, "x", "y"),
+               parse = FALSE, # TRUE for ggplots, FALSE for plotly
+               hjust = 0,
+               vjust = 1)
+}
+
 #-------------------------------------------------------------------------------
 #' @name generate_log_breaks
 #' @title Generating log breaks and axis labels, mainly for plotly
@@ -53,6 +196,142 @@ log10_axis_label <- rep("", length(logbreaks_y_minor))
 #' @export
 log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks_y_minor)[seq(1, length(logbreaks_y_minor), 9)] # every 9th tick is labelled  
 
+
+#-------------------------------------------------------------------------------
+#' @name do_data_page_plot
+#' @title Quick Plot for Data Exploration
+#' 
+#' @param nmd The NONMEM dataset for plotting (requires ID, TIME, DV at minimum)
+#' @param filter_cmt Filter by this CMT
+#' @param x_axis X-axis for plot
+#' @param y_axis Y-axis for plot
+#' @param color_by Color by this column
+#' @param med_line When TRUE, will draw median line by equidistant X-axis bins
+#' @param med_line_by Column name to draw median line by
+#' @param dolm Insert linear regression with formula on top of plot
+#' @param smooth Insert smoother
+#' @param logy Log Y-axis
+#' @param lby  Log breaks for Y-axis
+#' @param logx Log X-axis
+#' @param lbx  Log breaks for X-axis
+#' @param plot_title Optional plot title
+#' @param debug show debugging messages
+#' 
+#' @returns a ggplot object
+#' @importFrom ggplot2 ggplot aes geom_point gemo_line xlab ylab theme_bw labs 
+#' @importFrom ggplot2 stat_summary stat_smooth scale_y_log10 scale_x_log10 
+#' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap 
+#' @export
+#-------------------------------------------------------------------------------
+
+do_data_page_plot <- function(nmd,
+                           filter_cmt,
+                           x_axis,
+                           y_axis,
+                           color_by,
+                           med_line,
+                           med_line_by,
+                           dolm,
+                           smoother,
+                           facet_name,
+                           logy,
+                           lby = logbreaks_y,
+                           lbx = logbreaks_x,
+                           logx,
+                           plot_title,
+                           debug = FALSE) {
+  if(debug) {
+    message(paste0("Creating data_page_plot"))
+  }
+  
+  if(filter_cmt != 'NULL') {
+    nmd <- nmd %>% dplyr::filter(CMT %in% filter_cmt)
+  }
+  
+  if(color_by != "") {
+    nmd[[color_by]] <- as.factor(nmd[[color_by]])
+    a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID, color = !!dplyr::sym(color_by)))
+  } else {
+    
+    a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID))
+  }
+  
+  a <- a +
+    ggplot2::geom_point(alpha = 0.2) +
+    ggplot2::geom_line(alpha = 0.2) +
+    ggplot2::xlab(x_axis) +
+    ggplot2::ylab(y_axis) +
+    ggplot2::theme_bw() +
+    ggplot2::labs(color = color_by)
+  
+  if(med_line) { 
+    
+    d_bin_number    <- 20 # Sets the number of bins to be used for the median lines.
+    d_max_data_x    <- max(as.numeric(nmd[[x_axis]]), na.rm = TRUE)
+    d_min_data_x    <- min(as.numeric(nmd[[x_axis]]), na.rm = TRUE)
+    d_bin_increment <- (d_max_data_x - d_min_data_x) / d_bin_number
+    d_bin_times     <- seq(d_min_data_x, d_max_data_x, by = d_bin_increment)
+
+    nmd <- nmd %>%
+      dplyr::mutate(
+        binned_xvar = quantize(nmd[[x_axis]], levels = d_bin_times)
+      )
+    
+    if(med_line_by == "") {
+      a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL), fun = median, geom="line", colour = "black", alpha = 0.8)
+    } else { # end of stat_summary_data_by NULL check
+      a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL, color = as.factor(.data[[med_line_by]])),
+                                     fun = median, geom="line", alpha = 0.8)
+    }
+    
+  } # end of stat_summary_data_option
+  
+  if(smoother) {
+    a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), se = FALSE, linetype = "dashed") 
+  }
+  
+  if(dolm) {
+    # Calculate linear regression and R-squared value for each facet
+    df_stats <- lm_eqn(df = nmd, facet_name = facet_name, x = x_axis, y = y_axis)
+    
+    data <- ggplot2::ggplot_build(a)$data[[1]]
+    med_x <- (min(data$x, na.rm = TRUE) + max(data$x, na.rm = TRUE))/2 # median works better for plotly, while min is better for ggplot
+    max_y <- max(data$y, na.rm = TRUE)
+    
+    a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), method = "lm", formula = y ~ x, se = FALSE, colour = "grey", show.legend = FALSE)
+    a <- a + ggplot2::geom_text(data = df_stats, aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
+                                hjust = 0, vjust = 1, show.legend = FALSE, size = 3)
+  }
+  
+  if (facet_name != "") {
+    if(length(unique(nmd[[facet_name]])) > 25 ) {
+      shiny::showNotification("ERROR: Too many facets (>25) found. Please filter further or choose another variable.", type = "error", duration = 10)
+    } else {
+      facet_formula <- as.formula(paste0("~", facet_name))
+      a <- a + ggplot2::facet_wrap(facet_formula, labeller = label_both)
+    }
+  }
+  
+  if (logy) {
+    a <- a +
+      ggplot2::scale_y_log10(breaks = logbreaks_y, labels = logbreaks_y) +
+      ggplot2::annotation_logticks(sides = "bl")
+  }
+  
+  if (logx) {
+    a <- a +
+      ggplot2::scale_x_log10(breaks = logbreaks_x, labels = logbreaks_x) +
+      ggplot2::annotation_logticks(sides = "bl")
+  }
+  
+  if (!is.null(plot_title)) {
+    a <- a +
+      ggplot2::ggtitle(plot_title)
+  }
+  
+ return(a) 
+}
+
 #-------------------------------------------------------------------------------
 #' @name lowerFn
 #' 
@@ -85,9 +364,10 @@ lowerFn <- function(data, mapping, method = "lm", ...) { ## Plots linear regress
 #' @param catcov_threshold assumes a covariate is categorical if the unique values
 #'                         in the covariate are less than this threshold (default 10),
 #'                         should be less than nsubj that is available from the dataset
+#' @param debug show debugging messages
 #'                         
 #' @returns a ggplot object
-#' @importFrom dplyr distinct
+#' @importFrom dplyr distinct select all_of
 #' @importFrom GGally ggpairs wrap
 #' @export                       
 #-------------------------------------------------------------------------------
@@ -95,7 +375,11 @@ lowerFn <- function(data, mapping, method = "lm", ...) { ## Plots linear regress
 draw_correlation_plot <- function(input_df,
                                   corr_variables,
                                   color_sep = "",
-                                  catcov_threshold = 10) {
+                                  catcov_threshold = 10,
+                                  debug = FALSE) {
+  if(debug) {
+    message("Creating correlation plot")
+  }
   corr_data_id <- input_df %>% dplyr::distinct(ID, .keep_all = TRUE)
   
   if(color_sep %in% names(corr_data_id)) {
@@ -104,7 +388,8 @@ draw_correlation_plot <- function(input_df,
     cov_columnsf <- c(corr_variables)
   }
   
-  corr_data_id_trimmed <- corr_data_id[, cov_columnsf] %>% as.data.frame()
+  #corr_data_id_trimmed <- corr_data_id[, cov_columnsf] %>% as.data.frame() # strange error
+  corr_data_id_trimmed <- corr_data_id %>% dplyr::select(dplyr::all_of(cov_columnsf)) %>% as.data.frame()
   
   ##### If a column has less than the number of unique values as specified in catcov_threshold, it will automatically be turned into a factor
   for(i in 1:length(corr_data_id_trimmed)) { 
@@ -1585,11 +1870,10 @@ plot_data_with_nm <- function(
     
     if(stat_summary_data_option) { 
       
-      
       bin_number    <- 20 # Sets the number of bins to be used for the median lines.
       max_data_x    <- max(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
       min_data_x    <- min(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
-      bin_increment <- max_data_x / bin_number
+      bin_increment <- (max_data_x - min_data_x) / bin_number
       bin_times     <- seq(min_data_x, max_data_x, by = bin_increment)
       
       nonmem_dataset <- nonmem_dataset %>%
@@ -1778,7 +2062,7 @@ plot_three_data_with_nm <- function(
       max_data_x    <- max(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
       max_x_value   <- max(max_x_value, max_data_x) # Take the larger of the two when a dataset is present
       min_data_x    <- min(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
-      bin_increment <- max_data_x / bin_number
+      bin_increment <- (max_data_x - min_data_x) / bin_number
       bin_times     <- seq(min_data_x, max_data_x, by = bin_increment)
       
       nonmem_dataset <- nonmem_dataset %>%
@@ -1958,7 +2242,7 @@ plot_iiv_data_with_nm <- function(
       bin_number    <- 20 # Sets the number of bins to be used for the median lines.
       max_data_x    <- max(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
       min_data_x    <- min(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
-      bin_increment <- max_data_x / bin_number
+      bin_increment <- (max_data_x - min_data_x) / bin_number
       bin_times     <- seq(min_data_x, max_data_x, by = bin_increment)
       
       nonmem_dataset <- nonmem_dataset %>%

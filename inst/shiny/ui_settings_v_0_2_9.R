@@ -74,6 +74,12 @@ log_y_axis_label      <- 'Log Y-axis'
 #' @export
 plot_title_label      <- 'Plot Title'
 #' @export
+insert_lm_eqn_label   <- 'Linear Regression'
+#' @export
+insert_smoother_label <- 'Smoother'
+#' @export
+facet_by_label        <- 'Facet by:'
+#' @export
 plot_title_placeholder<- "Insert optional plot title"
 
 #' @export
@@ -112,7 +118,9 @@ placeholder_password  <- 'Optional password to unlock more model choices and cha
 #' @export
 bspop_password        <- 'Please contact the App maintainer if you would like your current project to be included as a passworded-model.<br><br>Note: This feature is intended for Project Pharmacometricians to facilitate internal discussions only.'
 #' @export
-bspop_generate_model  <- "Please wait a few seconds after selecting models before clicking the Generate Model button."
+bspop_password_github <- 'Please visit the <a href="https://github.com/Boehringer-Ingelheim/MVPapp" target="_blank">MVPapp GitHub</a> page to install MVP as a R package to use this feature locally.'
+#' @export
+bspop_generate_model  <- "Please wait a few seconds after selecting models or editing code before clicking the Generate Model button."
 #' @export
 label_dose            <- 'Dose Amount'
 #' @export
@@ -179,7 +187,7 @@ bspop_wt_based_dosing_name     <- "Name provided here must match what is defined
 #' @export
 model_dur_checkbox    <- 'Model Duration (Auto)'
 #' @export
-label_filter_cmt      <- 'Select CMT for Dataset'
+label_filter_cmt      <- 'Filter CMT:'
 #' @export
 bspop_custom_sampling_text <- "The Custom Sampling Times checkbox needs to be set for this to take effect. Only accepts numeric vectors. <br><br>Will override the Max Sampling Time and Sampling Frequency."
 #' @export
