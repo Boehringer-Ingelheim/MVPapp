@@ -1,18 +1,18 @@
 #-------------------------------------------------------------------------------
 #' Code editor preamble and postambles
-#'
+#' 
 #-------------------------------------------------------------------------------
 
 #' @export
-code_preamble  <- "## Notes: mrgsolve [v1.5.1] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n\nmodel_code <- "
+code_preamble  <- "## Notes: mrgsolve [v1.5.2] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n\nmodel_code <- "
 #' @export
-cpp_preamble   <- "## Notes: mrgsolve [v1.5.1] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n##      :\n##      : MAKE SURE THAT NO SINGLE / DOUBLE QUOTATION MARKS EXIST IN .CPP FILE!!\n\nmodel_code <- "
+cpp_preamble   <- "## Notes: mrgsolve [v1.5.2] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n##      :\n##      : MAKE SURE THAT NO SINGLE / DOUBLE QUOTATION MARKS EXIST IN .CPP FILE!!\n\nmodel_code <- "
 #' @export
 code_postamble <- "\n## IMPORTANT: Model 1 and Model 2 must have different model object names!\n"
 
 #-------------------------------------------------------------------------------
 #' List of template models available for all users
-#'
+#' 
 #-------------------------------------------------------------------------------
 
 #' @export
@@ -20,7 +20,7 @@ model_examples_list <- c('1 Compartment PK',
                          '1 Compartment PK with Lag time',
                          '1 Compartment PK with Absorption Compartment',
                          '1 Compartment PK (Transit Absorption)',
-                         '2 Compartment PK',
+                         '2 Compartment PK', 
                          '2 Compartment PK with Absorption Compartment',
                          '2 Compartment PK (Michaelis-Menten)',
                          '2 Compartment PK (Target Mediated Drug Disposition)',
@@ -39,18 +39,18 @@ model_examples_list <- c('1 Compartment PK',
                          'Upload .cpp File')
 
 #-------------------------------------------------------------------------------
-#' @name model_switch_conditions
+#' @name model_switch_conditions 
 #' @title shorthand function to switch model code based on
 #'                           choice of model input, and append model name
-#'
-#' @param input_model_select       From the UI (input$model_select, input$model_select2)
-#' @param mcode_model_choice       What to append at the end of the model code
-#'
+#'                           
+#' @param input_model_select       From the UI (input$model_select, input$model_select2)  
+#' @param mcode_model_choice       What to append at the end of the model code                         
+#'                           
 #' @returns a switch for 'model_input' / 'model_input2'
-#'
+#' 
 #' @note
-#' This function will be re-defined if "passworded_models" is sourced.
-#'        An example "Test Passworded Model" is included for example.
+#' This function will be re-defined if "passworded_models" is sourced.                                                   
+#'        An example "Test Passworded Model" is included for example.                                                  
 #' @export
 model_switch_conditions <- function(input_model_select, mcode_model_choice) {
   return(switch(
@@ -74,34 +74,34 @@ model_switch_conditions <- function(input_model_select, mcode_model_choice) {
     'PKPD with Adaptive Dosing Regimen'                   = paste0(pkpd_adaptive_dosing, mcode_model_choice),
     'PK with Adaptive Dosing Interval'                    = paste0(pk_adaptive_dosing_int, mcode_model_choice),
     'PK with Sequential Zero and First-order Absorption'  = paste0(pk_seq_first_order, mcode_model_choice),
-    #--------------------------------------------',
-    'Mrgsolve internal model library (modlib())'          = modlib_examples,
+    #####--------------------------------------------',
+    'Mrgsolve internal model library (modlib())'          = modlib_examples,    
     'Blank Template'                                      = paste0(blank_template, mcode_model_choice),
     'Upload .cpp File'                                    = paste0(blank_template, mcode_model_choice)
   ))
 }
 
 #-------------------------------------------------------------------------------
-#' @name update_model_choices
-#'
+#' @name update_model_choices 
+#' 
 #' @title Shorthand function to update list of models and
 #'                        default values by input password
-#'
-#' @param input_password        From the UI (input$password)
+#'                           
+#' @param input_password        From the UI (input$password)  
 #' @param session               Shiny session (don't change this)
-#' @param model_list            List of models (don't change this)
-#'
+#' @param model_list            List of models (don't change this)                         
+#'                           
 #' input$model_select & input$model_select2 are updated as a side effect
-#'
+#' 
 #' @returns a logical TRUE/FALSE if password is valid
-#'
-#' *Note* this function will be re-defined if "passworded_models" is sourced.
+#' 
+#' *Note* this function will be re-defined if "passworded_models" is sourced. 
 #' @export
 update_model_choices <- function(input_password, session, model_list = model_examples_list) {
-
+  
   new_choices <- model_list
   list_of_valid_passwords <- c("test")
-
+  
   ### Example model
   if (input_password == "test") {
     create_alert("FirstName LastName", "first.last@xxx.com")
@@ -124,29 +124,29 @@ update_model_choices <- function(input_password, session, model_list = model_exa
     updateNumericInput(session, "delay_time2", value = 1176)
     updateTextInput(session, "y_axis_label", value = "Concentration (nM)")
     updateSelectizeInput(session, "time_unit", selected = '168', options = list(create = TRUE))
-  }
-
+  } 
+  
   if(input_password %in% list_of_valid_passwords) {
     password_is_valid <- TRUE
   } else {
     password_is_valid <- FALSE
   }
-
+  
   # Update the selectInput with the new choices
   if(password_is_valid) {
     updateSelectInput(session, "model_select",  choices = new_choices)
     updateSelectInput(session, "model_select2", choices = new_choices)
   } else {
     updateSelectInput(session, "model_select",  choices = model_list)
-    updateSelectInput(session, "model_select2", choices = model_list)
+    updateSelectInput(session, "model_select2", choices = model_list)    
   }
-
+  
   return(password_is_valid)
 }
 
 #-------------------------------------------------------------------------------
-# Code Templates
-#'
+# Code Templates 
+#' 
 #-------------------------------------------------------------------------------
 
 #' @export
@@ -354,7 +354,7 @@ double VPCOV = (VP * exp(EVP))*pow(WT/70, WTV);
 double K20   = CLCOV/VCCOV;
 double K23   = QCOV/VCCOV;
 double K32   = QCOV/VPCOV;
-
+ 
 $ODE
 dxdt_CENT = - K20*CENT - K23*CENT + K32*PERI;
 dxdt_PERI = K23*CENT - K32*PERI;
@@ -421,7 +421,7 @@ double VPCOV = (VP * exp(EVP))*pow(WT/70, WTV);
 double K20   = CLCOV/VCCOV;
 double K23   = QCOV/VCCOV;
 double K32   = QCOV/VPCOV;
-
+ 
 $ODE
 dxdt_ABS  = -KAVAR*ABS;
 dxdt_CENT = KAVAR*ABS*F - K20*CENT - K23*CENT + K32*PERI;
@@ -475,7 +475,7 @@ VC   :  2 : Central volume (volume)
 VP   : 20 : Peripheral volume (volume)
 Q    :  2 : Intercompartmental clearance (volume/time)
 KA1  :  1 : Absorption rate constant (1/time)
-Km   :  1 : Michaelis constant (mass/volume)
+Km   :  1 : Michaelis constant (mass/volume) 
 Vmax :  1 : Maximum rate of reaction (mass/time)
 
 $MAIN
@@ -488,13 +488,13 @@ double K23     = QVAR/VCVAR;
 double K32     = QVAR/VPVAR;
 double VmaxVAR = Vmax * exp(EVmax) ;
 double MM      = Vmax/(KmVAR + CENT/VC);
-
+ 
 $ODE
 dxdt_EV = -KAVAR*EV;
 dxdt_CENT = KAVAR*EV + K32*PERI - MM*CENT*VCVAR - K23*CENT;
 dxdt_PERI = K23*CENT - K32*PERI;
 
-$OMEGA @annotated
+$OMEGA @annotated 
 EKA1 :  0.09  : ETA on KA1
 EVC  :  0.09  : ETA on VC
 EVP  :  0     : ETA on VP
@@ -532,7 +532,7 @@ $Global
 $Prob
 - 2 Compartment model with Target Mediated Drug Disposition
 
-$CMT
+$CMT 
 A1
 A2
 A3
@@ -541,22 +541,22 @@ A5
 
 $PARAM @annotated
 // PK parameters;
-TVV    :   3      :  Central Volume (L)
+TVV    :   3      :  Central Volume (L)  
 TVV2   :   10     :  Peripheral Volume (L) Not used
-TVKA   :   0.02   :  Absorption rate constant (1/h)
+TVKA   :   0.02   :  Absorption rate constant (1/h) 
 TVF    :   0.7    :  Fraction Bioavailability
-TVK20  :   0.01   :  Elimination rate constant (1/h)
-TVK23  :   0.01   :  Central-peripheral rate constant (1/h)
+TVK20  :   0.01   :  Elimination rate constant (1/h) 
+TVK23  :   0.01   :  Central-peripheral rate constant (1/h) 
 TVK32  :   0.02   :  Peripheral-central rate constant (1/h)
 
 // Receptor parameters;
 TVBASE :   1      :  Free Receptor at Baseline (nM)
-TVKDEG :   2.5    :  Degradation rate constant of Receptor (1/h)
+TVKDEG :   2.5    :  Degradation rate constant of Receptor (1/h) 
 
 // Drug-Receptor Complex parameters;
-TVKON  :   1      :  Kon Drug-Receptor Complex (1/nM*h) exp observed
+TVKON  :   1      :  Kon Drug-Receptor Complex (1/nM*h) exp observed 
 TVKOFF :   0.1    :  Koff Drug-Receptor Complex (1/h)  exp observed
-TVKINT :   0.02   :  Integration rate constant (1/h)
+TVKINT :   0.02   :  Integration rate constant (1/h) 
 
 $MAIN
 double V     =  TVV * exp(EV);
@@ -572,7 +572,7 @@ double KSYN  =  KDEG * BASE;
 double KON   =  TVKON;
 double KOFF  =  TVKOFF;
 double KINT  =  TVKINT;
-A4_0         =  TVBASE;
+A4_0         =  TVBASE; 
 
 $ODE
 double C2  = A2/V ; // Plasma Drug Conc (nM)
@@ -598,7 +598,7 @@ ADD  : 0   : Add RUV
 $TABLE
 double PK        = C2 * (1 + PROP) + ADD;
 double FreeR     = C4; // (nM)
-double Complex   = C5;
+double Complex   = C5; 
 
 //prevent simulation of negative concentrations
 int i = 0;
@@ -665,12 +665,12 @@ DV
 pk_tgi <- paste0(code_preamble, '
 
 "
-$PROB
-PK Tumor Growth Inhibition Model
+$PROB 
+PK Tumor Growth Inhibition Model 
 
-$CMT @annotated
+$CMT @annotated 
 
-SLD   : When Emax ER, Tumor measurement (Sum of longest diameter of target lesions, mm)
+SLD   : When Emax ER, Tumor measurement (Sum of longest diameter of target lesions, mm) 
 
 $PARAM @annotated
 pBSmm    : 50        :  Tumor volume at baseline (mm)
@@ -695,7 +695,7 @@ SLD_0 = BSmm;
 
 $ODE
 
-dxdt_SLD   = KGhr*SLD - KDhr*SLD*exp(- RHOhr*SOLVERTIME)*log(1 + NDRUG);
+dxdt_SLD   = KGhr*SLD - KDhr*SLD*exp(- RHOhr*SOLVERTIME)*log(1 + NDRUG); 
 
 double T_SLD = SLD;
 
@@ -711,16 +711,16 @@ capture Ind_SLD = Pop_SLD;
 pk_tte_gompertz <- paste0(code_preamble, '
 
 "
-$PROB
+$PROB 
 - Time To Event model (Gompertz)
 - Dose amounts should be 0.
 
-$CMT @annotated
+$CMT @annotated 
 HZ   : Hazard
 
 $PARAM @annotated
 pHZ0     : 0.0002       :  Base hazard
-pHZ1     : -0.001       :  Base hazard 2
+pHZ1     : -0.001       :  Base hazard 2 
 pPKXX    : 0            :  Used PK metric
 pBETA1   : 1.5      	  :  Covariate coefficient 1
 
@@ -729,11 +729,11 @@ double HZ0     = pHZ0;
 double HZ1     = pHZ1;
 double PKXX    = pPKXX;
 double Norm_PK = PKXX/25000;
-double BETA1   = pBETA1;
+double BETA1   = pBETA1; 
 
 $ODE
 double cov1  = exp(BETA1*log(1 + Norm_PK));
-dxdt_HZ      = HZ0*exp(HZ1*SOLVERTIME)*cov1;
+dxdt_HZ      = HZ0*exp(HZ1*SOLVERTIME)*cov1; 
 double CUMHZ = HZ;
 double SURV  = exp(-CUMHZ);
 
@@ -747,18 +747,18 @@ capture Pred_surv = SURV;
 #' @export
 pk_tte_weibull <- paste0(code_preamble, '
 
-"
-$PROB
+"  
+$PROB 
 - Time To Event model (Weibull)
 - Dose amounts should be 0.
 
-$CMT @annotated
+$CMT @annotated 
 
 HZ   : Hazard
 
 $PARAM @annotated
 pHZ0     : 0.001 :  Base hazard (only positive)
-pHZ1     : 0.01  :  Base hazard 2 (negative or positive)
+pHZ1     : 0.01  :  Base hazard 2 (negative or positive) 
 pPKXX    : 1     :  Drug exposure / PK metric
 pBETA1   : 0.02  :  Covariate coefficient 1
 
@@ -768,20 +768,20 @@ double HZ0     = pHZ0;
 double HZ1     = pHZ1;
 double PKXX    = pPKXX*exp(ePKXX);
 double Norm_PK = PKXX/45000;
-double BETA1   = pBETA1;
+double BETA1   = pBETA1; 
 
 
 $ODE
 double del    = 0.000001;
 double cov1   = exp(BETA1*log(1 + Norm_PK));
-dxdt_HZ       = HZ0*exp(HZ1*log(del+SOLVERTIME))*cov1;
+dxdt_HZ       = HZ0*exp(HZ1*log(del+SOLVERTIME))*cov1; 
 double CUMHZ  = HZ;
 double SURV   = exp(-CUMHZ);
 
-$OMEGA @annotated
+$OMEGA @annotated 
 ePKXX    : 0    : ETA on PK metric
 
-$SIGMA @annotated
+$SIGMA @annotated  
 EPS1   : 0     : add. error
 
 $TABLE
@@ -804,11 +804,11 @@ while(HZ <0 && i < 200){
 pk_tte_loglogistic <- paste(code_preamble, '
 
 "
-$PROB
+$PROB 
 - Time To Event model (Log-logistic)
 - Dose amounts should be 0.
 
-$CMT @annotated
+$CMT @annotated 
 
 HZ   : Hazard
 
@@ -820,12 +820,12 @@ pBETA1   : 0.01  :  Covariate coefficient 1
 
 $MAIN
 
-double del     = 0.0000001;
+double del     = 0.0000001; 
 double HZ0     = pHZ0;
 double HZ1     = pHZ1;
 double PKXX    = pPKXX*exp(ePKXX);
 double Norm_PK = PKXX/45000;
-double BETA1   = pBETA1;
+double BETA1   = pBETA1; 
 
 
 $ODE
@@ -836,10 +836,10 @@ dxdt_HZ   = pow(HZ0*HZ1*(HZ0*(SOLVERTIME + del)),(HZ1 - 1))/pow(1 + (HZ0*(SOLVER
 double CUMHZ = HZ;
 double SURV = exp(-CUMHZ);
 
-$OMEGA @annotated
-ePKXX    : 0    : ETA on PK metric
+$OMEGA @annotated 
+ePKXX    : 0    : ETA on PK metric 
 
-$SIGMA @annotated
+$SIGMA @annotated  
 EPS1   : 0     : add. error
 
 $TABLE
@@ -866,7 +866,7 @@ $PROB
 # Model: `XXXXXX Preclinical PK/TE model`
   - Two-compartment linear PK model, allometric scaling
   - Indirect effect PD model (inhibit XXX KIN)
-
+  
 $PARAM @ annotated
 TVF1       : 0.5       : Bioavailability (-)
 TVKA       : 0.6       : Absorption rate constant (1/h)
@@ -888,7 +888,7 @@ PERI   : Peripheral
 AUC    : Plasma AUC
 PD     : XXX Gene Score
 PDAUC  : AUC of PD
-
+  
 $SET
 delta = 0.1
 
@@ -898,7 +898,7 @@ double F1   = TVF1;
 F_GUT       = F1;
 
 double KA   = TVKA                             * exp(ETA(1));
-double CL   = TVCL * WTB * pow((WTB/70), 0.75) * exp(ETA(2));
+double CL   = TVCL * WTB * pow((WTB/70), 0.75) * exp(ETA(2)); 
 double VC   = TVVC * WTB * pow((WTB/70), 1)    * exp(ETA(3));
 double Q    = TVQ  * WTB * pow((WTB/70), 0.75) * exp(ETA(4));
 double VP   = TVVP * WTB * pow((WTB/70), 1)    * exp(ETA(5));
@@ -908,7 +908,7 @@ double KOUT = TVKOUT                           * exp(ETA(7));
 double KIN     = KIN_KO * KO_FLAG + KIN_WT * (1 - KO_FLAG);
 double BASE_WT = KIN_WT/KOUT;
 double BASE_KO = KIN_KO/KOUT;
-double IMAX    = (1 - (BASE_WT/BASE_KO));
+double IMAX    = (1 - (BASE_WT/BASE_KO)); 
 
 PD_0 = KIN/KOUT;
 
@@ -939,7 +939,7 @@ dxdt_AUC     = CP;
 dxdt_PD      = KIN * (1 - IMAX * CP/(IC50 + CP)) - KOUT * PD;
 dxdt_PDAUC   = PD;
 
-$TABLE
+$TABLE 
 double IPRED_PK = CP;
 double IPRED_PD = REDUC;
 
@@ -970,7 +970,7 @@ DV_PK DV_PD
 one_cmt_transit <- paste0(code_preamble, '
 
 "
-$PROB
+$PROB 
  - 1 Compartment model with Transit Absorption
 
 $PARAM @ annotated
@@ -984,28 +984,28 @@ $CMT @ annotated
 DEPOT : Depot
 CENT  : Central
 
-$GLOBAL
+$GLOBAL 
 
 int NDOSE = 0;
 double dosetime[300];
 double dose[300];
 
-$MAIN
+$MAIN 
 
-if(NEWIND < 2) NDOSE = 0;
+if(NEWIND < 2) NDOSE = 0; 
 
 if(self.amt > 0 && self.cmt==1) {
- NDOSE = NDOSE + 1;
+ NDOSE = NDOSE + 1; 
  dosetime[NDOSE] = self.time;
  dose[NDOSE] = self.amt;
 }
 
-F_DEPOT = 0;
+F_DEPOT = 0; 
 double VVAR = V * exp(EV);
 double CLVAR= CL * exp(ECL);
-double KTR  = ((NN * exp(ENN))+1) / (MTT * exp(EMTT));
+double KTR  = ((NN * exp(ENN))+1) / (MTT * exp(EMTT)); 
 double NFAC = exp(lgamma(NN+1));
-double KINPT = BIO * pow(KTR,(NN+1)) / NFAC;
+double KINPT = BIO * pow(KTR,(NN+1)) / NFAC; 
 
 $ODE
 
@@ -1015,7 +1015,7 @@ while(i <= NDOSE) {
   double IPT = 0;
   if(SOLVERTIME >= dosetime[i]) {
     double delta = SOLVERTIME - dosetime[i];
-    IPT = dose[i] * pow(delta, NN) * exp(-KTR * delta);
+    IPT = dose[i] * pow(delta, NN) * exp(-KTR * delta);  
   }
   INPT = INPT + IPT;
   ++i;
@@ -1041,7 +1041,7 @@ capture DV = (CENT/VVAR)*(1+PROP) + ADD;
 ', code_postamble)
 
 #' @export
-modlib_examples <-
+modlib_examples <- 
 '
 ## Notes: The models below are from the mrgsolve internal library:
 ##      : (https://mrgsolve.org/docs/reference/modlib.html)
@@ -1052,10 +1052,10 @@ modlib_examples <-
 ##      : All parameters inside $PARAM will be dynamically generated.
 ##      : Changes to values above will not be reflected back in the code editor.
 ##      : All sources of variability will be ignored (see Variability tab).
-
+                          
 # model_object <- mread("pk1cmt",  modlib())
-# model_object <- mread("pk2cmt",  modlib())
-# model_object <- mread("pk3cmt",  modlib())
+# model_object <- mread("pk2cmt",  modlib()) 
+# model_object <- mread("pk3cmt",  modlib()) 
 # model_object <- mread("pk1",     modlib()) # one compartment pk model in closed-form
 # model_object <- mread("pk2",     modlib()) # two compartment pk model in closed-form
 # model_object <- mread("popex",   modlib()) # a simple population pk model
@@ -1066,32 +1066,32 @@ modlib_examples <-
 # model_object <- mread("emax",    modlib()) # sigmoid emax model
 # model_object <- mread("effect",  modlib()) # effect compartment model
 # model_object <- mread("tmdd",    modlib()) # target-mediated drug disp.
-# model_object <- mread("viral1",  modlib())
-# model_object <- mread("viral2",  modlib())
+# model_object <- mread("viral1",  modlib()) 
+# model_object <- mread("viral2",  modlib()) 
 # model_object <- mread("pred1",   modlib()) # $PRED syntax
 # model_object <- mread("pbpk",    modlib())
 # model_object <- mread("1005",    modlib()) # embedded NONMEM result
 # model_object <- mread("nm-like", modlib()) # model with nonmem-like syntax
 
 
-### IMPORTANT: Do not have same model for both Model 1 / Model 2 as internal model names cannot be identical!
+### IMPORTANT: Do not have same model for both Model 1 / Model 2 as internal model names cannot be identical!                    
 '
 
 ## model_object <- mread("pred1",   modlib()) # closed-form example [not supported in MVP]
 ## model_object <- mread("1005",    modlib()) # embedded NONMEM result [not supported in MVP]
-## model_object <- mread("nm-like", modlib()) # model with nonmem-like syntax [not supported in MVP]
+## model_object <- mread("nm-like", modlib()) # model with nonmem-like syntax [not supported in MVP]                         
 
 #-------------------------------------------------------------------------------
 #' PD model of gemcitabine, with gompertz and effect compartment
 #' Tham LS, Holford NH, Wang L, Soo RA, Lee SC, Lee HS, et al. A pharmacodynamic model for the time course of tumor shrinkage by gemcitabine + carboplatin in non-small cell lung cancer patients. Clin Cancer Res. 2008;14(13):4213-8.
-#'
+#' 
 #-------------------------------------------------------------------------------
 
 #' @export
 pd_gompertz_effect <- paste0(code_preamble, '
 
 "
-$PROB
+$PROB 
  - KPD tumor growth inhibition model w/ gompertz and effect cmt.
  - Adapted from Tham LS et al., Clin Cancer Res. 2008;14(13):4213-8.
 
@@ -1151,18 +1151,18 @@ TSIZE
 #-------------------------------------------------------------------------------
 #' Adaptive dosing regimen example from mrgsolve v1.4.1
 #' https://mrgsolve.org/blog/posts/2024-new-1-4-0-evtools.html#update-the-dose-regimen
-#'
+#' 
 #-------------------------------------------------------------------------------
 
 #' @export
 pkpd_adaptive_dosing <- paste0(code_preamble, '
 
 "
-$PROB
+$PROB 
  - Adaptive dosing example using evtools plugin (mrgsolve v1.4.1 example, evtools-4.mod)
  - Adapted from https://mrgsolve.org/blog/posts/2024-new-1-4-0-evtools.html#update-the-dose-regimen
  - Note: dosing settings are handled as a parameter. All dosing regimens in the UI should be set to 0.
-
+ 
 $CMT  @annotated
 GUT     : Depot
 CENT    : Central
@@ -1236,14 +1236,14 @@ $CAPTURE ec50
 #-------------------------------------------------------------------------------
 #' Adaptive dosing interval example from mrgsolve v1.4.1
 #' https://mrgsolve.org/blog/posts/2024-new-1-4-0-evtools.html#update-the-dose-regimen
-#'
+#' 
 #-------------------------------------------------------------------------------
 
 #' @export
 pk_adaptive_dosing_int <- paste0(code_preamble, '
 
 "
-$PROB
+$PROB 
  - Adaptive dosing example using evtools plugin (mrgsolve v1.4.1 example, evtools-5.mod)
  - Adapted from https://mrgsolve.org/blog/posts/2024-new-1-4-0-evtools.html#dynamic-change-in-dosing-interval
  - Note: dosing settings are handled as a parameter. All dosing regimens in the UI should be set to 0.
@@ -1310,7 +1310,7 @@ capture CP = CENT/V;
 
 #-------------------------------------------------------------------------------
 #' Sequential zero and first order absorption model (by Jinju Guk)
-#'
+#' 
 #-------------------------------------------------------------------------------
 
 #' @export
@@ -1318,11 +1318,11 @@ pk_seq_first_order <- paste0(code_preamble, '
 
 "
 $GLOBAL
-
-$PROB
+  
+$PROB 
 - Sequential zero and first-order absorption 2-cmt PK model
 
-$CMT
+$CMT 
 GUT
 CENT
 PERI
@@ -1347,7 +1347,7 @@ double Q  = TVQ   ;
 double K20 = CL/VC;
 double K23 = Q/VC ;
 double K32 = Q/VP ;
-double DUR = TVDUR*exp(EDUR);
+double DUR = TVDUR*exp(EDUR); 
 
 D_GUT = DUR;
 
@@ -1360,10 +1360,10 @@ dxdt_AUCx    = (CENT/VC);
 double CP=CENT/VC;
 
 $OMEGA @labels EKA EDUR
-0.09
+0.09 
 0.09
 
-$SIGMA @labels  EPSP   EPSA
+$SIGMA @labels  EPSP   EPSA     
 0.01
 0
 

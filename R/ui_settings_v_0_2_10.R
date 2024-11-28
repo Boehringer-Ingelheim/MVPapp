@@ -20,7 +20,7 @@ bi_green              <- "#00E47C" # BI accent green
 #' @export
 bi_warmgray           <- "#E5E3DE"
 #' @export
-bi_lightgray          <- "F6F5F3"
+bi_lightgray          <- "#F6F5F3"
 #' @export
 slider_color          <- "#FFB600" # yellow
 #' @export
@@ -81,11 +81,22 @@ insert_smoother_label <- 'Smoother'
 facet_by_label        <- 'Facet by:'
 #' @export
 plot_title_placeholder<- "Insert optional plot title"
+#' @export
+select_label_size_label<- "Text Label Size"
+#' @export
+bspop_select_label_size<- "Label sizes are only applicable for linear regression formulae or boxplot counts (N=x)."
 
 #' @export
 add_data_stat_sum     <- 'Median line [dataset]'
 #' @export
 bspop_data_stat_sum   <- 'Insert a line connecting median values for grouped observations in equidistant time bins'
+#' @export
+boxplot_label         <- 'Boxplot'
+#' @export
+bspop_do_boxplot      <- 'Boxplot figure assumes the X-axis variable is categorical, the Y-axis variable is continuous, and counts (N) represents the number of unique IDs i.e. usually the baseline value.<br><br>Turning off interactive plots may achieve better visual results for Boxplots (Color variable is dodged and boxplot widths are proportional to the square-roots of the number of observations in the groups).'
+#' @export
+bspop_do_data_plotly  <- 'Interactive plots using the "plotly" package could take a longer time for big datasets. Turning it off may achieve better visual results for Boxplots. <br><br>Note - "Download Options" do not apply when plots are not interactive.'
+
 
 #' @export
 plotly_filename_label <- "Plot name"
@@ -235,6 +246,9 @@ label_main_sim_plot   <- 'Simulated Model Plot'
 show_model_1_label    <- "Show Model 1 (red)"
 #' @export
 show_model_2_label    <- "Show Model 2 (blue)"
+#' @export
+bspop_do_sim_plotly   <- 'Interactive plots using the "plotly" package could take a long time for simulations with lots of data (e.g. from overlaying datasets).<br><br>Note - "Download Options" do not apply when plots are not interactive.'
+
 
 #' @export
 label_combine_nm_data <- 'Overlay Dataset'
@@ -337,24 +351,24 @@ font_size             <- 'font-size: 23px;'
 ## css formatting
 #' @export
 bi_logo <- htmltools::img(src = "BI_Logo_Green.png",
-               style = "float:left; margin-top: -5px; padding-right:20px",
-               width = 120
+                          style = "float:left; margin-top: -5px; padding-right:20px",
+                          width = 120
 )
 
 #' @export
 navbar_bg_color <-   htmltools::tags$head(
   htmltools::tags$style(
     htmltools::HTML('.navbar-static-top {background-color: #08312A;}',
-         '.navbar-default .navbar-nav>.active>a {background-color: #08312A;}',
-         '.navbar-default .navbar-nav>li>a:hover {background-color: transparent;}',
-         # '#param_output_model_1 {font-size: 10px; }', 
-         # '#param_output_model_1 {font-size: 12px; }', 
-         '#console_output_model_1 { font-size: 10px; }',
-         '#console_output_model_2 { font-size: 10px; }',
-         '#console_output_iiv_model_1 { font-size: 10px; }',
-         '#console_output_iiv_model_2 { font-size: 10px; }',
-         '#console_data_1 { font-size: 10px; }',
-         '.popover {
+                    '.navbar-default .navbar-nav>.active>a {background-color: #08312A;}',
+                    '.navbar-default .navbar-nav>li>a:hover {background-color: transparent;}',
+                    # '#param_output_model_1 {font-size: 10px; }', 
+                    # '#param_output_model_1 {font-size: 12px; }',
+                    '#console_output_model_1 { font-size: 10px; }',
+                    '#console_output_model_2 { font-size: 10px; }',
+                    '#console_output_iiv_model_1 { font-size: 10px; }',
+                    '#console_output_iiv_model_2 { font-size: 10px; }',
+                    '#console_data_1 { font-size: 10px; }',
+                    '.popover {
              max-width: 500px;
              height: auto;
              overflow-y: auto !important; /* Add a scrollbar if the content exceeds the max-height */

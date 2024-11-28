@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,7 +33,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Quick Plot for Data Exploration</h1>
-      <small class="dont-index">Source: <a href="https://github.com/Boehringer-Ingelheim/MVP/blob/HEAD/R/functions_v_0_2_9.R" class="external-link"><code>R/functions_v_0_2_9.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/Boehringer-Ingelheim/MVP/blob/HEAD/R/functions_v_0_2_10.R" class="external-link"><code>R/functions_v_0_2_10.R</code></a></small>
       <div class="d-none name"><code>do_data_page_plot.Rd</code></div>
     </div>
 
@@ -51,6 +51,7 @@
 <span>  <span class="va">color_by</span>,</span>
 <span>  <span class="va">med_line</span>,</span>
 <span>  <span class="va">med_line_by</span>,</span>
+<span>  <span class="va">boxplot</span>,</span>
 <span>  <span class="va">dolm</span>,</span>
 <span>  <span class="va">smoother</span>,</span>
 <span>  <span class="va">facet_name</span>,</span>
@@ -59,6 +60,7 @@
 <span>  lbx <span class="op">=</span> <span class="va">logbreaks_x</span>,</span>
 <span>  <span class="va">logx</span>,</span>
 <span>  <span class="va">plot_title</span>,</span>
+<span>  label_size <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  debug <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -95,6 +97,10 @@
 <dd><p>Column name to draw median line by</p></dd>
 
 
+<dt id="arg-boxplot">boxplot<a class="anchor" aria-label="anchor" href="#arg-boxplot"></a></dt>
+<dd><p>Draws a geom_boxplot instead of geom_point and geom_line</p></dd>
+
+
 <dt id="arg-dolm">dolm<a class="anchor" aria-label="anchor" href="#arg-dolm"></a></dt>
 <dd><p>Insert linear regression with formula on top of plot</p></dd>
 
@@ -125,6 +131,10 @@
 
 <dt id="arg-plot-title">plot_title<a class="anchor" aria-label="anchor" href="#arg-plot-title"></a></dt>
 <dd><p>Optional plot title</p></dd>
+
+
+<dt id="arg-label-size">label_size<a class="anchor" aria-label="anchor" href="#arg-label-size"></a></dt>
+<dd><p>font size for geom_text labels (N=x for boxplots or linear regressions)</p></dd>
 
 
 <dt id="arg-debug">debug<a class="anchor" aria-label="anchor" href="#arg-debug"></a></dt>

@@ -34,7 +34,7 @@ password-lock the entire app.
 generation of NCA reports when hosted on AWS with different access rights.
 \item \code{use_bi_styling} Logical. Default \code{FALSE}. Set to TRUE to insert BI logo.
 \item \code{pw_models_path} Default \code{NULL}. provide a path to source in password-gated
-models (see the \code{inst/shiny/passworded_models_example.R} for ideas, and the
+models (see the \code{shiny/passworded_models_example.R} for ideas, and the
 vignette: \href{../doc/supply-passwords.html}{supply passworded models})
 }
 

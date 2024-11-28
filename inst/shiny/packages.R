@@ -25,7 +25,7 @@ library(shinyBS) # 0.61.1 # this needs to be reloaded to make popovers work
 # library(data.table) # 1.14.8
 # library(tidyr) # 1.3.0
 library(dplyr) # 1.1.3 # required for data code editor
-library(mrgsolve) # 1.5.1 # required for sim code editor
+library(mrgsolve) # 1.5.2 # required for sim code editor
 # library(future) # 1.33.0
 # library(mrgsim.parallel) # 0.2.1
 # library(stringr) # 1.5.0

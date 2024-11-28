@@ -122,7 +122,7 @@ lm_eqn <- function(df, facet_name, x, y) {
                                              "\u00B7x, R\u00B2 = ",
                                              format(unname(rsq), digits = 3)),
                                     is.na(slope) ~ # if there's no slope, display only the intercept
-                                      paste0("y = ", format(unname(intercept), digits = 2), "(mean)")
+                                      paste0("y = ", format(unname(intercept), digits = 2), " [mean]")
                   )
     )
 
@@ -208,6 +208,7 @@ log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks
 #' @param color_by Color by this column
 #' @param med_line When TRUE, will draw median line by equidistant X-axis bins
 #' @param med_line_by Column name to draw median line by
+#' @param boxplot Draws a geom_boxplot instead of geom_point and geom_line
 #' @param dolm Insert linear regression with formula on top of plot
 #' @param smoother Insert smoother
 #' @param facet_name variable to facet by
@@ -216,12 +217,15 @@ log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks
 #' @param logx Log X-axis
 #' @param lbx  Log breaks for X-axis
 #' @param plot_title Optional plot title
+#' @param label_size font size for geom_text labels (N=x for boxplots or linear regressions)
 #' @param debug show debugging messages
 #'
 #' @returns a ggplot object
 #' @importFrom ggplot2 ggplot aes geom_point geom_line xlab ylab theme_bw labs
-#' @importFrom ggplot2 stat_summary stat_smooth scale_y_log10 scale_x_log10
-#' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap
+#' @importFrom ggplot2 stat_summary stat_smooth scale_y_log10 scale_x_log10 
+#' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap geom_boxplot
+#' @importFrom dplyr filter distinct sym group_by summarise across all_of
+#' @importFrom tibble glimpse
 #' @export
 #-------------------------------------------------------------------------------
 
@@ -232,6 +236,7 @@ do_data_page_plot <- function(nmd,
                            color_by,
                            med_line,
                            med_line_by,
+                           boxplot,
                            dolm,
                            smoother,
                            facet_name,
@@ -240,6 +245,7 @@ do_data_page_plot <- function(nmd,
                            lbx = logbreaks_x,
                            logx,
                            plot_title,
+                           label_size = 3,
                            debug = FALSE) {
   if(debug) {
     message(paste0("Creating data_page_plot"))
@@ -248,24 +254,62 @@ do_data_page_plot <- function(nmd,
   if(filter_cmt != 'NULL') {
     nmd <- nmd %>% dplyr::filter(CMT %in% filter_cmt)
   }
-
+  
   if(color_by != "") {
     nmd[[color_by]] <- as.factor(nmd[[color_by]])
+  }
+  
+  if(color_by != "" & !boxplot) {
     a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID, color = !!dplyr::sym(color_by)))
   } else {
-
     a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID))
   }
-
-  a <- a +
-    ggplot2::geom_point(alpha = 0.2) +
-    ggplot2::geom_line(alpha = 0.2) +
-    ggplot2::xlab(x_axis) +
+  
+  if(boxplot) {
+    nmd[[x_axis]] <- as.factor(nmd[[x_axis]])
+    nmd[[y_axis]] <- as.numeric(nmd[[y_axis]])
+    
+    if(color_by != "" ) {
+      a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], color = !!dplyr::sym(color_by)))
+    } else {
+      a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]]))
+    }
+    
+    # Calculate the number of observations for each category
+    df_count <- nmd %>%
+      dplyr::distinct(ID, .keep_all = TRUE)
+    
+    if(facet_name != "") {
+      if(facet_name != x_axis) {
+        df_count <- df_count %>%
+          dplyr::group_by(!!dplyr::sym(x_axis), !!dplyr::sym(facet_name)) %>%
+          dplyr::summarise(n = n())
+      } else {
+        shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
+        df_count <- df_count %>%
+          dplyr::group_by(!!dplyr::sym(x_axis)) %>%
+          dplyr::summarise(n = n())
+      }
+    } else {
+      df_count <- df_count %>%
+        dplyr::group_by(!!dplyr::sym(x_axis)) %>%
+        dplyr::summarise(n = n())
+    }
+    
+    a <- a + 
+      ggplot2::geom_boxplot(varwidth = TRUE) +
+      ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]]) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+  } else { # end of boxplot check
+    a <- a + ggplot2::geom_point(alpha = 0.2) +
+      ggplot2::geom_line(alpha = 0.2)
+  }
+  
+  a <- a + ggplot2::xlab(x_axis) +
     ggplot2::ylab(y_axis) +
     ggplot2::theme_bw() +
     ggplot2::labs(color = color_by)
 
-  if(med_line) {
+  if(med_line & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) { # can only do median line when both x & y are numeric
 
     d_bin_number    <- 20 # Sets the number of bins to be used for the median lines.
     d_max_data_x    <- max(as.numeric(nmd[[x_axis]]), na.rm = TRUE)
@@ -287,11 +331,11 @@ do_data_page_plot <- function(nmd,
 
   } # end of stat_summary_data_option
 
-  if(smoother) {
+  if(smoother & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) {
     a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), se = FALSE, linetype = "dashed")
   }
 
-  if(dolm) {
+  if(dolm & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) {
     # Calculate linear regression and R-squared value for each facet
     df_stats <- lm_eqn(df = nmd, facet_name = facet_name, x = x_axis, y = y_axis)
 
@@ -301,25 +345,29 @@ do_data_page_plot <- function(nmd,
 
     a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), method = "lm", formula = y ~ x, se = FALSE, colour = "grey", show.legend = FALSE)
     a <- a + ggplot2::geom_text(data = df_stats, aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
-                                hjust = 0, vjust = 1, show.legend = FALSE, size = 3)
+                                hjust = 0, vjust = 1, show.legend = FALSE, size = label_size)
   }
 
   if (facet_name != "") {
     if(length(unique(nmd[[facet_name]])) > 25 ) {
       shiny::showNotification("ERROR: Too many facets (>25) found. Please filter further or choose another variable.", type = "error", duration = 10)
     } else {
-      facet_formula <- as.formula(paste0("~", facet_name))
-      a <- a + ggplot2::facet_wrap(facet_formula, labeller = label_both)
+      if(facet_name != x_axis) {
+        facet_formula <- as.formula(paste0("~", facet_name))
+        a <- a + ggplot2::facet_wrap(facet_formula, labeller = label_both)
+      } else {
+        shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
+      }
     }
   }
 
-  if (logy) {
+  if (logy & is.numeric(nmd[[y_axis]])) {
     a <- a +
       ggplot2::scale_y_log10(breaks = logbreaks_y, labels = logbreaks_y) +
       ggplot2::annotation_logticks(sides = "bl")
   }
 
-  if (logx) {
+  if (logx & is.numeric(nmd[[x_axis]]) & !boxplot) {
     a <- a +
       ggplot2::scale_x_log10(breaks = logbreaks_x, labels = logbreaks_x) +
       ggplot2::annotation_logticks(sides = "bl")

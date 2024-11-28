@@ -1,6 +1,6 @@
 Package: MVPapp
 Title: Model Visualization Platform
-Version: 0.2.9
+Version: 0.2.10
 Authors@R: c(
     person("Steve", "Choy", email = "steve.choy@outlook.com", role = c("aut", "cre")),
     person("Jin Gyu", "Kim", role = "aut"))
@@ -45,15 +45,15 @@ Imports: bslib (>= 0.5.1),
          tidyr
 Suggests: readr,
           foreign,
-          mrgsolve (>= 1.5.1),
+          mrgsolve (>= 1.5.2),
           knitr,
           rmarkdown
 Depends: R (>= 3.5.0)
 LazyData: true
 Collate: "utils-pipe.R"
-         "ui_settings_v_0_2_9.R"
-         "code_templates_v_0_2_8_exp.R"
-         "functions_v_0_2_9.R"
+         "ui_settings_v_0_2_10.R"
+         "code_templates_v_0_2_10.R"
+         "functions_v_0_2_10.R"
          "config.R"
          "run_mvp.R"
          "data.R"
