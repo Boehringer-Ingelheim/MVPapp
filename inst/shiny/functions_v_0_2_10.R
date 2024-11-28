@@ -223,7 +223,7 @@ log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks
 #' @returns a ggplot object
 #' @importFrom ggplot2 ggplot aes geom_point geom_line xlab ylab theme_bw labs
 #' @importFrom ggplot2 stat_summary stat_smooth scale_y_log10 scale_x_log10 
-#' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap geom_boxplot
+#' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap geom_boxplot label_both
 #' @importFrom dplyr filter distinct sym group_by summarise across all_of
 #' @importFrom tibble glimpse
 #' @export
@@ -354,7 +354,7 @@ do_data_page_plot <- function(nmd,
     } else {
       if(facet_name != x_axis) {
         facet_formula <- as.formula(paste0("~", facet_name))
-        a <- a + ggplot2::facet_wrap(facet_formula, labeller = label_both)
+        a <- a + ggplot2::facet_wrap(facet_formula, labeller = ggplot2::label_both)
       } else {
         shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
       }
