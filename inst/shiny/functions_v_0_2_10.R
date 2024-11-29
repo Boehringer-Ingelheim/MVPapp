@@ -364,13 +364,13 @@ do_data_page_plot <- function(nmd,
   if (logy & is.numeric(nmd[[y_axis]])) {
     a <- a +
       ggplot2::scale_y_log10(breaks = logbreaks_y, labels = logbreaks_y) +
-      ggplot2::annotation_logticks(sides = "bl")
+      ggplot2::annotation_logticks(sides = "l")
   }
 
   if (logx & is.numeric(nmd[[x_axis]]) & !boxplot) {
     a <- a +
       ggplot2::scale_x_log10(breaks = logbreaks_x, labels = logbreaks_x) +
-      ggplot2::annotation_logticks(sides = "bl")
+      ggplot2::annotation_logticks(sides = "b")
   }
 
   if (!is.null(plot_title)) {
@@ -1978,15 +1978,15 @@ plot_data_with_nm <- function(
 
   ## Apply log axis if required
   if(log_x_axis) {
-    p1<- p1 +
-      ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) #+
-    #annotation_logticks(sides = "bl")
+    p1 <- p1 +
+      ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) +
+      ggplot2::annotation_logticks(sides = "b")
   }
 
   if(log_y_axis) {
-    p1<- p1 +
-      ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) #+
-    #annotation_logticks(sides = "bl")
+    p1 <- p1 +
+      ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
+      ggplot2::annotation_logticks(sides = "l")
   }
 
   if(!is.null(nonmem_dataset) & !is.null(color_data_by) & color_data_by %in% names(nonmem_dataset)) {
@@ -2355,15 +2355,15 @@ plot_iiv_data_with_nm <- function(
 
   ### Apply log axis if required
   if(log_x_axis) {
-    p1<- p1 +
-      ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) #+
-    #annotation_logticks(sides = "bl")
+    p1 <- p1 +
+      ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) +
+      ggplot2::annotation_logticks(sides = "b")
   }
 
   if(log_y_axis) {
-    p1<- p1 +
-      ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) #+
-    #annotation_logticks(sides = "bl")
+    p1 <- p1 +
+      ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
+      ggplot2::annotation_logticks(sides = "l")
   }
 
   return(p1)
