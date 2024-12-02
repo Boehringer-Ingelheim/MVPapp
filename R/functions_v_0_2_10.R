@@ -273,7 +273,7 @@ do_data_page_plot <- function(nmd,
     if(is.character(nmd[[y_axis]]) || length(unique(nmd[[y_axis]])) <= discrete_threshold ) { # ... or if there are <= discrete_threshold unique values of y-axis
       shiny::showNotification(paste0("Treating Y-axis as discrete as it is a character type, or there are <=", discrete_threshold ," unique Y values."), type = "warning", duration = 10)
       treat_y_axis_as_discrete <- TRUE 
-      nmd[[y_axis]] <- as.factor(as.character(nmd[[y_axis]]))
+      nmd[[y_axis]] <- as.factor(nmd[[y_axis]])
     } else {
       treat_y_axis_as_discrete <- FALSE
       nmd[[y_axis]] <- as.numeric(nmd[[y_axis]])
@@ -321,7 +321,7 @@ do_data_page_plot <- function(nmd,
     
     if(treat_y_axis_as_discrete) {
       a <- a + 
-        ggplot2::geom_count() + ggplot2::scale_size_area(max_size = 14) +
+        ggplot2::geom_count() + ggplot2::scale_size_area(max_size = 12) +
         ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 2, size = label_size) 
     } else {
       a <- a + 
