@@ -22,6 +22,7 @@ do_data_page_plot(
   logx,
   plot_title,
   label_size = 3,
+  discrete_threshold = 5,
   debug = FALSE
 )
 }
@@ -59,6 +60,8 @@ do_data_page_plot(
 \item{plot_title}{Optional plot title}
 
 \item{label_size}{font size for geom_text labels (N=x for boxplots or linear regressions)}
+
+\item{discrete_threshold}{Draws geom_count if there are <= this number of unique Y-values}
 
 \item{debug}{show debugging messages}
 }

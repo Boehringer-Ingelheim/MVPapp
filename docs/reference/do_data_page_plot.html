@@ -61,6 +61,7 @@
 <span>  <span class="va">logx</span>,</span>
 <span>  <span class="va">plot_title</span>,</span>
 <span>  label_size <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  discrete_threshold <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  debug <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -135,6 +136,10 @@
 
 <dt id="arg-label-size">label_size<a class="anchor" aria-label="anchor" href="#arg-label-size"></a></dt>
 <dd><p>font size for geom_text labels (N=x for boxplots or linear regressions)</p></dd>
+
+
+<dt id="arg-discrete-threshold">discrete_threshold<a class="anchor" aria-label="anchor" href="#arg-discrete-threshold"></a></dt>
+<dd><p>Draws geom_count if there are &lt;= this number of unique Y-values</p></dd>
 
 
 <dt id="arg-debug">debug<a class="anchor" aria-label="anchor" href="#arg-debug"></a></dt>

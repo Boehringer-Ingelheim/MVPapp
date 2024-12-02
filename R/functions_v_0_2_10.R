@@ -218,13 +218,14 @@ log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks
 #' @param lbx  Log breaks for X-axis
 #' @param plot_title Optional plot title
 #' @param label_size font size for geom_text labels (N=x for boxplots or linear regressions)
+#' @param discrete_threshold Draws geom_count if there are <= this number of unique Y-values
 #' @param debug show debugging messages
 #'
 #' @returns a ggplot object
-#' @importFrom ggplot2 ggplot aes geom_point geom_line xlab ylab theme_bw labs
-#' @importFrom ggplot2 stat_summary stat_smooth scale_y_log10 scale_x_log10 
+#' @importFrom ggplot2 ggplot aes geom_point geom_line xlab ylab theme_bw labs scale_size_area
+#' @importFrom ggplot2 stat_summary stat_smooth scale_y_log10 scale_x_log10 after_stat geom_count
 #' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap geom_boxplot label_both
-#' @importFrom dplyr filter distinct sym group_by summarise across all_of
+#' @importFrom dplyr filter distinct sym group_by summarise across all_of count
 #' @importFrom tibble glimpse
 #' @export
 #-------------------------------------------------------------------------------
@@ -246,6 +247,7 @@ do_data_page_plot <- function(nmd,
                            logx,
                            plot_title,
                            label_size = 3,
+                           discrete_threshold = 5,
                            debug = FALSE) {
   if(debug) {
     message(paste0("Creating data_page_plot"))
@@ -267,7 +269,15 @@ do_data_page_plot <- function(nmd,
   
   if(boxplot) {
     nmd[[x_axis]] <- as.factor(nmd[[x_axis]])
-    nmd[[y_axis]] <- as.numeric(nmd[[y_axis]])
+    
+    if(is.character(nmd[[y_axis]]) || length(unique(nmd[[y_axis]])) <= discrete_threshold ) { # ... or if there are <= discrete_threshold unique values of y-axis
+      shiny::showNotification(paste0("Treating Y-axis as discrete as it is a character type, or there are <=", discrete_threshold ," unique Y values."), type = "warning", duration = 10)
+      treat_y_axis_as_discrete <- TRUE 
+      nmd[[y_axis]] <- as.factor(as.character(nmd[[y_axis]]))
+    } else {
+      treat_y_axis_as_discrete <- FALSE
+      nmd[[y_axis]] <- as.numeric(nmd[[y_axis]])
+    }
     
     if(color_by != "" ) {
       a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], color = !!dplyr::sym(color_by)))
@@ -281,24 +291,44 @@ do_data_page_plot <- function(nmd,
     
     if(facet_name != "") {
       if(facet_name != x_axis) {
-        df_count <- df_count %>%
-          dplyr::group_by(!!dplyr::sym(x_axis), !!dplyr::sym(facet_name)) %>%
-          dplyr::summarise(n = n())
+        if(treat_y_axis_as_discrete) {
+          df_count <- df_count %>%
+            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis), !!dplyr::sym(facet_name))      
+        } else {
+          df_count <- df_count %>%
+            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(facet_name))
+        }
       } else {
         shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
-        df_count <- df_count %>%
-          dplyr::group_by(!!dplyr::sym(x_axis)) %>%
-          dplyr::summarise(n = n())
+        if(treat_y_axis_as_discrete) {
+          df_count <- df_count %>%
+            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))          
+        } else {
+          df_count <- df_count %>%
+            dplyr::count(!!dplyr::sym(x_axis))
+        }
       }
-    } else {
-      df_count <- df_count %>%
-        dplyr::group_by(!!dplyr::sym(x_axis)) %>%
-        dplyr::summarise(n = n())
+    } else { ## end of valid facet_name
+      
+      if(treat_y_axis_as_discrete) {
+        df_count <- df_count %>%
+          dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))        
+      } else {
+        df_count <- df_count %>%
+          dplyr::count(!!dplyr::sym(x_axis)) 
+      }
     }
     
-    a <- a + 
-      ggplot2::geom_boxplot(varwidth = TRUE) +
-      ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]]) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+    if(treat_y_axis_as_discrete) {
+      a <- a + 
+        ggplot2::geom_count() + ggplot2::scale_size_area(max_size = 14) +
+        ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 2, size = label_size) 
+    } else {
+      a <- a + 
+        ggplot2::geom_boxplot(varwidth = TRUE) +
+        ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]]) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+    }
+    
   } else { # end of boxplot check
     a <- a + ggplot2::geom_point(alpha = 0.2) +
       ggplot2::geom_line(alpha = 0.2)
@@ -1979,12 +2009,14 @@ plot_data_with_nm <- function(
   ## Apply log axis if required
   if(log_x_axis) {
     p1 <- p1 +
+      #ggplot2::scale_x_log10(guide = "axis_logticks")#, labels=log_x_labels) # Doesn't display as nice
       ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) +
       ggplot2::annotation_logticks(sides = "b")
   }
 
   if(log_y_axis) {
     p1 <- p1 +
+      #ggplot2::scale_y_log10(guide = "axis_logticks")#, labels=log_y_labels) # Doesn't display as nice
       ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
       ggplot2::annotation_logticks(sides = "l")
   }
