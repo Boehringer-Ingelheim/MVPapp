@@ -1,3 +1,16 @@
+# MVPapp 0.2.11 (2024-12-04)
+
+## Features
+
+* Support for uploading tab-delimited .txt files on Data Upload, with the option to automatically create ID column. (#9)  
+* Uses dose column instead of manually entering dose amount for NCA.  
+* Download Options now support non-interactive plots, with a dedicated "Download Non-Interactive Plot" button. (#11)  
+
+## Bugfixes
+
+* NCA Clearance unit corrected to be based on the supplied time unit.  
+* Linear regression is center aligned for ggplots (#10)  
+
 # MVPapp 0.2.10 (2024-11-28)
 
 ## Features

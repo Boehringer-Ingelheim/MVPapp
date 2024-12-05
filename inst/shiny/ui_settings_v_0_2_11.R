@@ -54,7 +54,7 @@ bspop_calc_nca        <- 'Whenever the above settings are adjusted, a new NCA sh
 #' @export
 bspop_dose_value      <- '(Optional) Provide a dose amount to derive metrics normalized by dose.'
 #' @export
-bspop_mw_value        <- '(Optional) Provide a molecular weight to derive metrics related to Clearance and Volume.'
+bspop_mw_value        <- '(Optional) Provide a molecular weight to derive metrics related to Clearance and Volume (assumed to be in L).'
 
 ## Plotting options
 #' @export
@@ -84,24 +84,26 @@ plot_title_placeholder<- "Insert optional plot title"
 #' @export
 select_label_size_label<- "Text Label Size"
 #' @export
-bspop_select_label_size<- "Label sizes are only applicable for linear regression formulae or boxplot counts (N=x)."
+bspop_select_label_size<- "Label sizes are only applicable for linear regression formulae or counts (N=x)."
 
 #' @export
 add_data_stat_sum     <- 'Median line [dataset]'
 #' @export
-bspop_data_stat_sum   <- 'Insert a line connecting median values for grouped observations in equidistant time bins'
+bspop_data_stat_sum   <- 'Insert a line connecting median values for grouped observations in equidistant time bins for non-boxplots.'
 #' @export
 boxplot_label         <- 'Boxplot'
 #' @export
 bspop_do_boxplot      <- 'Boxplot figure assumes the X-axis variable is categorical, the Y-axis variable is continuous, and counts (N) represents the number of unique IDs i.e. usually the baseline value.<br><br>Turning off interactive plots may achieve better visual results for Boxplots (Color variable is dodged and boxplot widths are proportional to the square-roots of the number of observations in the groups).'
 #' @export
-bspop_do_data_plotly  <- 'Interactive plots using the "plotly" package could take a longer time for big datasets. Turning it off may achieve better visual results for Boxplots. <br><br>Note - "Download Options" do not apply when plots are not interactive.'
+bspop_do_data_plotly  <- 'Interactive plots using the "plotly" package could take a longer time for big datasets. Turning it off may achieve better visual results for Boxplots.'# <br><br>Note - "Download Options" do not apply when plots are not interactive.'
 
 
+#' @export
+bspop_download_plot   <- 'Adjust output settings in the "Download Options" box below.'
 #' @export
 plotly_filename_label <- "Plot name"
 #' @export
-bspop_plotly_file_name_label <- 'The plot can be downloaded by hovering over the plot and clicking on the Camera icon.'
+bspop_plotly_file_name_label <- 'The plot can be downloaded by hovering over the plot and clicking on the Camera icon (for interactive plots), or by clicking the Download Plot button (for non-interactive plots).'
 #' @export
 plotly_format_label   <- "File format"
 #' @export
@@ -110,6 +112,8 @@ plotly_width_label    <- "Width (px)"
 plotly_height_label   <- "Height (px)"
 #' @export
 bspop_plotly_width_height <- 'Leave empty to use current dimensions.'
+#' @export
+bspop_plotly_width_height_corr <- 'Leave empty to use current dimensions.<br><br>Tip: a larger size (e.g. >5000) is recommended if there are more than a few variables.'
 
 ## shinyAce placeholder
 #' @export
@@ -247,7 +251,7 @@ show_model_1_label    <- "Show Model 1 (red)"
 #' @export
 show_model_2_label    <- "Show Model 2 (blue)"
 #' @export
-bspop_do_sim_plotly   <- 'Interactive plots using the "plotly" package could take a long time for simulations with lots of data (e.g. from overlaying datasets).<br><br>Note - "Download Options" do not apply when plots are not interactive.'
+bspop_do_sim_plotly   <- 'Interactive plots using the "plotly" package could take a long time for simulations with lots of data (e.g. from overlaying datasets).' #<br><br>Note - "Download Options" do not apply when plots are not interactive.'
 
 
 #' @export

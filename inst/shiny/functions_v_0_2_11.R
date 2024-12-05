@@ -219,6 +219,8 @@ log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks
 #' @param plot_title Optional plot title
 #' @param label_size font size for geom_text labels (N=x for boxplots or linear regressions)
 #' @param discrete_threshold Draws geom_count if there are <= this number of unique Y-values
+#' @param boxplot_x_threshold Throws an error when the unique values of x-axis exceeds this number
+#' @param error_text_color error text color for element text
 #' @param debug show debugging messages
 #'
 #' @returns a ggplot object
@@ -248,6 +250,8 @@ do_data_page_plot <- function(nmd,
                            plot_title,
                            label_size = 3,
                            discrete_threshold = 5,
+                           boxplot_x_threshold = 20,
+                           error_text_color = "#F8766D",
                            debug = FALSE) {
   if(debug) {
     message(paste0("Creating data_page_plot"))
@@ -268,6 +272,13 @@ do_data_page_plot <- function(nmd,
   }
   
   if(boxplot) {
+    if(length(unique(nmd[[x_axis]])) > boxplot_x_threshold) {
+      a <- ggplot2::ggplot() +
+        ggplot2::labs(title = paste0('ERROR: There are too many X-axis categories (>', boxplot_x_threshold, ') for boxplots.')) +
+        ggplot2::theme(panel.background = ggplot2::element_blank(),
+                       plot.title = ggplot2::element_text(color = error_text_color))
+      return(a)
+    }
     nmd[[x_axis]] <- as.factor(nmd[[x_axis]])
     
     if(is.character(nmd[[y_axis]]) || length(unique(nmd[[y_axis]])) <= discrete_threshold ) { # ... or if there are <= discrete_threshold unique values of y-axis
@@ -321,12 +332,20 @@ do_data_page_plot <- function(nmd,
     
     if(treat_y_axis_as_discrete) {
       a <- a + 
-        ggplot2::geom_count() + ggplot2::scale_size_area(max_size = 12) +
-        ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 2, size = label_size) 
+        ggplot2::geom_count() + ggplot2::scale_size_area(max_size = 12)
+      
+      if(label_size > 0) {
+        a <- a +
+          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 2, size = label_size) 
+      }
+      
     } else {
       a <- a + 
-        ggplot2::geom_boxplot(varwidth = TRUE) +
-        ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]]) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+        ggplot2::geom_boxplot(varwidth = TRUE)
+      if(label_size > 0) {
+        a <- a +
+          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]]) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+      }
     }
     
   } else { # end of boxplot check
@@ -374,8 +393,10 @@ do_data_page_plot <- function(nmd,
     max_y <- max(data$y, na.rm = TRUE)
 
     a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), method = "lm", formula = y ~ x, se = FALSE, colour = "grey", show.legend = FALSE)
-    a <- a + ggplot2::geom_text(data = df_stats, aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
-                                hjust = 0, vjust = 1, show.legend = FALSE, size = label_size)
+    if(label_size > 0) {
+      a <- a + ggplot2::geom_text(data = df_stats, aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
+                                  hjust = 0.5, vjust = 1, show.legend = FALSE, size = label_size)      
+    }
   }
 
   if (facet_name != "") {
@@ -448,6 +469,7 @@ lowerFn <- function(data, mapping, method = "lm", ...) { ## Plots linear regress
 #' @returns a ggplot object
 #' @importFrom dplyr distinct select all_of
 #' @importFrom GGally ggpairs wrap
+#' @importFrom ggplot2 theme_bw
 #' @export
 #-------------------------------------------------------------------------------
 
@@ -485,7 +507,8 @@ draw_correlation_plot <- function(input_df,
 
   corr_plot <- GGally::ggpairs(corr_data_id_trimmed, cardinality_threshold = 30,
                                mapping = mapping,
-                               lower = list(continuous = GGally::wrap(lowerFn, method = "lm")))
+                               lower = list(continuous = GGally::wrap(lowerFn, method = "lm"))) +
+    ggplot2::theme_bw()
 
   return(corr_plot)
 }

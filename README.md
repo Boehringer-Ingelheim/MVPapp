@@ -138,14 +138,16 @@ alt="Camera icon from the plotly toolbar" />
 toolbar</figcaption>
 </figure>
 
-### Uploading NONMEM Datasets and Data Exploration
+### Uploading Datasets and Data Exploration
 
-Uploading NONMEM-formatted datasets is supported in the “Data Input”
-page. Some default cleaning options are applied automatically from the
-“Built-in Dataset Cleaning Options” box. Further filtering and cleaning
-may be applied in the code editor on the left hand side. At minimum, the
-dataset should have the “ID”, “TIME”, and “DV” columns to be fully
-supported by the rest of the app. If missing, the user may create /
+Uploading NONMEM-formatted datasets (.csv) and tab-delimited text files
+(.txt) is supported in the “Data Input” page. Some default cleaning
+options are applied automatically from the “Built-in Dataset Cleaning
+Options” box. Further filtering and cleaning may be applied in the code
+editor on the left hand side. The dataset should have the “ID”, “TIME”,
+and “DV” columns to be fully supported by the rest of the app (e.g. data
+overlay). At minimum, only the “ID” column is required to support Data
+Exploration in the Data Input page. If missing, the user may create /
 rename these columns using the code editor.
 
 1.  The filtered dataset (i.e. after passing through the code editor) is
