@@ -318,7 +318,9 @@ Thresholds</figcaption>
 
 ### Providing external models and changing default settings
 
-Please see the vignette on “Supplying Passworded Models”
+Please see the article on [Supplying Passworded
+Models](https://boehringer-ingelheim.github.io/MVPapp/articles/supply-passwords.html),
+or access the vignette on this topic in R
 (`vignette("supply-passwords", package = "MVPapp"`) for instructions on
 how to provide external models on App start-up.
 
