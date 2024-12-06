@@ -25,7 +25,7 @@ today_numeric  <- function() {
 #---------------------------------------------------------------------------
 
 lm_eqn_old <- function(df, x, y){
-
+  
   # Special handling of whether df is an object or a character string
   if(is.data.frame(df)) {
     df_plot <- df
@@ -34,10 +34,10 @@ lm_eqn_old <- function(df, x, y){
     df_plot <- get(df) # I.e. removes the quotation marks of the string to get the object
     df_name <- df
   }
-
+  
   string.name <- paste0(y, "~", x)
   m <- lm(as.formula(string.name), df_plot)
-
+  
   if(is.na(coef(m)[2])) {
     eq <- "" # no slope available
   } else {
@@ -46,28 +46,28 @@ lm_eqn_old <- function(df, x, y){
       #                  list(a = format(unname(coef(m)[1]), digits = 2),
       #                       b = format(unname(abs(coef(m)[2])), digits = 2),
       #                       r2 = format(summary(m)$r.squared, digits = 3)))
-
+      
       a <- format(unname(coef(m)[1]), digits = 2)
       b <- format(unname(abs(coef(m)[2])), digits = 2)
       r2 <- format(summary(m)$r.squared, digits = 3)
-
+      
       eq <- paste0("y = ", a, " - ", b, "\u00B7x, r\u00B2 = ", r2) # plotly unicode hack
-
+      
     } else {
       # eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2,
       #                  list(a = format(unname(coef(m)[1]), digits = 2),
       #                       b = format(unname(coef(m)[2]), digits = 2),
       #                       r2 = format(summary(m)$r.squared, digits = 3)))
-
+      
       a <- format(unname(coef(m)[1]), digits = 2)
       b <- format(unname(coef(m)[2]), digits = 2)
       r2 <- format(summary(m)$r.squared, digits = 3)
-
+      
       eq <- paste0("y = ", a, " + ", b, "\u00B7x, r\u00B2 = ", r2) # plotly unicode hack
     }
     #eq <- as.character(as.expression(eq)) # uncomment for normal ggplot
   }
-
+  
   return(eq)
 }
 
@@ -93,9 +93,9 @@ lm_eqn <- function(df, facet_name, x, y) {
   } else {
     df_stats <- df
   }
-
+  
   string_name <- paste0(y, "~", x)
-
+  
   if(x == y) { # workaround for when same variable is used for both y and x,
     # which returns an NA slope. It seems summarise can't handle this well
     df_stats <- df_stats %>%
@@ -103,7 +103,7 @@ lm_eqn <- function(df, facet_name, x, y) {
                        slope = 1,
                        intercept = 0)
   } else {
-
+    
     df_stats <- df_stats %>%
       dplyr::summarise(rsq = summary(lm(as.formula(string_name)))$r.squared,
                        slope = coef(lm(as.formula(string_name)))[2],
@@ -111,7 +111,7 @@ lm_eqn <- function(df, facet_name, x, y) {
     #label_x = median(!!dplyr::sym(x)), # not necessary unless it is free_scale
     #label_y = max(!!dplyr::sym(y), na.rm = TRUE))
   }
-
+  
   df_stats <- df_stats %>%
     dplyr::mutate(slope_direction = dplyr::if_else(slope >= 0, " + ", " - "),
                   label = case_when(!is.na(slope) ~
@@ -125,7 +125,7 @@ lm_eqn <- function(df, facet_name, x, y) {
                                       paste0("y = ", format(unname(intercept), digits = 2), " [mean]")
                   )
     )
-
+  
   return(df_stats)
 }
 
@@ -145,14 +145,14 @@ add_linear_regression_formula <- function(p) {
   data <- ggplot2::ggplot_build(p)$data[[1]]
   med_x <- median(data$x, na.rm = TRUE)
   max_y <- max(data$y, na.rm = TRUE)
-
+  
   p + ggplot2::annotate("text",
-               x = med_x,
-               y = max_y,
-               label = lm_eqn_old(data, "x", "y"),
-               parse = FALSE, # TRUE for ggplots, FALSE for plotly
-               hjust = 0,
-               vjust = 1)
+                        x = med_x,
+                        y = max_y,
+                        label = lm_eqn_old(data, "x", "y"),
+                        parse = FALSE, # TRUE for ggplots, FALSE for plotly
+                        hjust = 0,
+                        vjust = 1)
 }
 
 #-------------------------------------------------------------------------------
@@ -170,11 +170,11 @@ add_linear_regression_formula <- function(p) {
 generate_log_breaks <- function(base_values, start, end) {
   powers      <- seq(from = start, to = end)
   breaks      <- rep(0, length(base_values) * length(powers))
-
+  
   for (i in seq_along(powers)) {
     breaks[((i - 1) * length(base_values) + 1):(i * length(base_values))] <- base_values * 10^powers[i]
   }
-
+  
   return(breaks)
 }
 
@@ -227,41 +227,69 @@ log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks
 #' @importFrom ggplot2 ggplot aes geom_point geom_line xlab ylab theme_bw labs scale_size_area
 #' @importFrom ggplot2 stat_summary stat_smooth scale_y_log10 scale_x_log10 after_stat geom_count
 #' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap geom_boxplot label_both
-#' @importFrom dplyr filter distinct sym group_by summarise across all_of count
+#' @importFrom dplyr filter distinct sym group_by summarise across all_of count ungroup mutate
 #' @importFrom tibble glimpse
 #' @export
 #-------------------------------------------------------------------------------
 
 do_data_page_plot <- function(nmd,
-                           filter_cmt,
-                           x_axis,
-                           y_axis,
-                           color_by,
-                           med_line,
-                           med_line_by,
-                           boxplot,
-                           dolm,
-                           smoother,
-                           facet_name,
-                           logy,
-                           lby = logbreaks_y,
-                           lbx = logbreaks_x,
-                           logx,
-                           plot_title,
-                           label_size = 3,
-                           discrete_threshold = 5,
-                           boxplot_x_threshold = 20,
-                           error_text_color = "#F8766D",
-                           debug = FALSE) {
+                              filter_cmt,
+                              x_axis,
+                              y_axis,
+                              color_by,
+                              med_line,
+                              med_line_by,
+                              boxplot,
+                              dolm,
+                              smoother,
+                              facet_name,
+                              logy,
+                              lby = logbreaks_y,
+                              lbx = logbreaks_x,
+                              logx,
+                              plot_title,
+                              label_size = 3,
+                              discrete_threshold = 7,
+                              boxplot_x_threshold = 20,
+                              error_text_color = "#F8766D",
+                              debug = FALSE) {
   if(debug) {
     message(paste0("Creating data_page_plot"))
   }
-
+  
+  nmd <- nmd %>% dplyr::ungroup() # Safeguard to always ungroup() the data
+  
   if(filter_cmt != 'NULL') {
     nmd <- nmd %>% dplyr::filter(CMT %in% filter_cmt)
   }
   
+  # Safeguard for blanks ("") since plotly has bugs with handling it
+  #
+  if(is.character(nmd[[y_axis]]) && any(nmd[[y_axis]] == "")) {
+    shiny::showNotification(paste0("WARNING: Some ", y_axis, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
+    nmd <- nmd %>% dplyr::mutate(!!y_axis := ifelse(!!dplyr::sym(y_axis) == "", ".(blank)", !!dplyr::sym(y_axis)))
+  }
+  
+  if(is.character(nmd[[x_axis]]) && any(nmd[[x_axis]] == "")) {
+    shiny::showNotification(paste0("WARNING: Some ", x_axis, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
+    nmd <- nmd %>% dplyr::mutate(!!x_axis := ifelse(!!dplyr::sym(x_axis) == "", ".(blank)", !!dplyr::sym(x_axis)))
+  }
+
+  if(is.character(nmd[[facet_name]]) && facet_name != "" & facet_name != x_axis) {
+    if(any(nmd[[facet_name]] == "")) {
+      shiny::showNotification(paste0("WARNING: Some ", facet_name, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
+      nmd <- nmd %>% dplyr::mutate(!!facet_name := ifelse(!!dplyr::sym(facet_name) == "", ".(blank)", !!dplyr::sym(facet_name)))
+    }
+  }
+  
   if(color_by != "") {
+    # Safeguard for blanks ("") since plotly has bugs with handling it
+    # Only applicable if the column is character type as int columns with NAs will fail
+    if(is.character(nmd[[color_by]]) && any(nmd[[color_by]] == "")) {
+      shiny::showNotification(paste0("WARNING: Some ", color_by, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
+    nmd <- nmd %>%
+      dplyr::mutate(!!color_by := ifelse(!!dplyr::sym(color_by) == "", ".(blank)", !!dplyr::sym(color_by)))
+    }
     nmd[[color_by]] <- as.factor(nmd[[color_by]])
   }
   
@@ -282,7 +310,7 @@ do_data_page_plot <- function(nmd,
     nmd[[x_axis]] <- as.factor(nmd[[x_axis]])
     
     if(is.character(nmd[[y_axis]]) || length(unique(nmd[[y_axis]])) <= discrete_threshold ) { # ... or if there are <= discrete_threshold unique values of y-axis
-      shiny::showNotification(paste0("Treating Y-axis as discrete as it is a character type, or there are <=", discrete_threshold ," unique Y values."), type = "warning", duration = 10)
+      shiny::showNotification(paste0("WARNING: Treating Y-axis as discrete as it is a character type, or there are <=", discrete_threshold ," unique Y values."), type = "warning", duration = 10)
       treat_y_axis_as_discrete <- TRUE 
       nmd[[y_axis]] <- as.factor(nmd[[y_axis]])
     } else {
@@ -357,48 +385,48 @@ do_data_page_plot <- function(nmd,
     ggplot2::ylab(y_axis) +
     ggplot2::theme_bw() +
     ggplot2::labs(color = color_by)
-
+  
   if(med_line & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) { # can only do median line when both x & y are numeric
-
+    
     d_bin_number    <- 20 # Sets the number of bins to be used for the median lines.
     d_max_data_x    <- max(as.numeric(nmd[[x_axis]]), na.rm = TRUE)
     d_min_data_x    <- min(as.numeric(nmd[[x_axis]]), na.rm = TRUE)
     d_bin_increment <- (d_max_data_x - d_min_data_x) / d_bin_number
     d_bin_times     <- seq(d_min_data_x, d_max_data_x, by = d_bin_increment)
-
+    
     nmd <- nmd %>%
       dplyr::mutate(
         binned_xvar = quantize(nmd[[x_axis]], levels = d_bin_times)
       )
-
+    
     if(med_line_by == "") {
       a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL), fun = median, geom="line", colour = "black", alpha = 0.8)
     } else { # end of stat_summary_data_by NULL check
       a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL, color = as.factor(.data[[med_line_by]])),
                                      fun = median, geom="line", alpha = 0.8)
     }
-
+    
   } # end of stat_summary_data_option
-
+  
   if(smoother & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) {
     a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), se = FALSE, linetype = "dashed")
   }
-
+  
   if(dolm & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) {
     # Calculate linear regression and R-squared value for each facet
     df_stats <- lm_eqn(df = nmd, facet_name = facet_name, x = x_axis, y = y_axis)
-
+    
     data <- ggplot2::ggplot_build(a)$data[[1]]
     med_x <- (min(data$x, na.rm = TRUE) + max(data$x, na.rm = TRUE))/2 # median works better for plotly, while min is better for ggplot
     max_y <- max(data$y, na.rm = TRUE)
-
+    
     a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), method = "lm", formula = y ~ x, se = FALSE, colour = "grey", show.legend = FALSE)
     if(label_size > 0) {
       a <- a + ggplot2::geom_text(data = df_stats, aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
                                   hjust = 0.5, vjust = 1, show.legend = FALSE, size = label_size)      
     }
   }
-
+  
   if (facet_name != "") {
     if(length(unique(nmd[[facet_name]])) > 25 ) {
       shiny::showNotification("ERROR: Too many facets (>25) found. Please filter further or choose another variable.", type = "error", duration = 10)
@@ -411,25 +439,25 @@ do_data_page_plot <- function(nmd,
       }
     }
   }
-
+  
   if (logy & is.numeric(nmd[[y_axis]])) {
     a <- a +
       ggplot2::scale_y_log10(breaks = logbreaks_y, labels = logbreaks_y) +
       ggplot2::annotation_logticks(sides = "l")
   }
-
+  
   if (logx & is.numeric(nmd[[x_axis]]) & !boxplot) {
     a <- a +
       ggplot2::scale_x_log10(breaks = logbreaks_x, labels = logbreaks_x) +
       ggplot2::annotation_logticks(sides = "b")
   }
-
+  
   if (!is.null(plot_title)) {
     a <- a +
       ggplot2::ggtitle(plot_title)
   }
-
- return(a)
+  
+  return(a)
 }
 
 #-------------------------------------------------------------------------------
@@ -482,34 +510,34 @@ draw_correlation_plot <- function(input_df,
     message("Creating correlation plot")
   }
   corr_data_id <- input_df %>% dplyr::distinct(ID, .keep_all = TRUE)
-
+  
   if(color_sep %in% names(corr_data_id)) {
     cov_columnsf <- unique(c(corr_variables, color_sep)) # add the colour separator
   } else {
     cov_columnsf <- c(corr_variables)
   }
-
+  
   #corr_data_id_trimmed <- corr_data_id[, cov_columnsf] %>% as.data.frame() # strange error
   corr_data_id_trimmed <- corr_data_id %>% dplyr::select(dplyr::all_of(cov_columnsf)) %>% as.data.frame()
-
+  
   ##### If a column has less than the number of unique values as specified in catcov_threshold, it will automatically be turned into a factor
   for(i in 1:length(corr_data_id_trimmed)) {
     if(length(unique(corr_data_id_trimmed[[i]])) < catcov_threshold) {
       corr_data_id_trimmed[i] <- as.factor(unlist(corr_data_id_trimmed[i]))
     }
   }
-
+  
   mapping <- if(color_sep %in% names(corr_data_id)) {
     ggplot2::aes(color = as.factor(.data[[color_sep]]), alpha = 0.5)
   } else {
     ggplot2::aes(alpha = 0.5)
   }
-
+  
   corr_plot <- GGally::ggpairs(corr_data_id_trimmed, cardinality_threshold = 30,
                                mapping = mapping,
                                lower = list(continuous = GGally::wrap(lowerFn, method = "lm"))) +
     ggplot2::theme_bw()
-
+  
   return(corr_plot)
 }
 
@@ -556,7 +584,7 @@ run_single_sim <- function(input_model_object,
                            parallel_sim       = FALSE,
                            parallel_n         = 200#,
                            #number_of_cores    = 8L # uses future_mrgsim_d as mc_mrgsim_d doesn't work in Shiny
-                           ) {
+) {
   if(!is.null(input_model_object)) {
     ## modeling duration, it cannot coexist with tinf
     if(model_dur) {
@@ -568,57 +596,57 @@ run_single_sim <- function(input_model_object,
         dplyr::mutate(rate = -2) %>%
         dplyr::select(-tinf) %>%
         mrgsolve::as.ev()
-
+      
       if (debug) {
         message('post_model_dur')
       }
     }
-
+    
     if(model_rate) {
       if (debug) {
         message('pre_model_rate')
       }
       ev_df <- ev_df
-        as.data.frame() %>%
+      as.data.frame() %>%
         dplyr::mutate(rate = -1) %>%
         dplyr::select(-tinf) %>%
         mrgsolve::as.ev()
-
+      
       if (debug) {
         message('post_model_rate')
       }
     }
-
+    
     if(pred_model) { # set all CMTs to zero as that is required for PRED models
       ev_df <- ev_df %>%
         mutate(cmt  = 0)
-
+      
       if("tinf" %in% names(ev_df)) {
         ev_df <- ev_df %>%
           select(-tinf)
       }
-
+      
       if("rate" %in% names(ev_df)) {
         ev_df <- ev_df %>%
           select(-rate)
       }
     }
-
+    
     ### If reading in Databases:
     if(nsubj > 1 & !is.null(ext_db)) { # Note that ext_db is not NULL even for "None" option
-
+      
       # Extract list of columns in ext_db to be carried out
       carry_out_cols <- names(ext_db)
       carry_out_cols <- carry_out_cols[carry_out_cols != "ID"]
-
+      
       # Joining ext_db with ev_df
       ev_df2 <- ev_df %>%
         mrgsolve::ev_rep((1:nrow(ext_db)))
-
+      
       ext_db_ev <- data.table::merge.data.table(ev_df2, ext_db, by = "ID", all.x = TRUE)
-
+      
       set.seed(seed) # Setting seed outside mrgsim to ensure reproducibility
-
+      
       # if(parallel_sim & nsubj >= parallel_n) {
       #   shiny::showNotification(paste0("Performing simulations in parallel (N >= ", parallel_n, ")..."), type = "message", duration = 10)
       #   options(mc.cores = number_of_cores)
@@ -635,52 +663,52 @@ run_single_sim <- function(input_model_object,
       #     #.parallel = FALSE
       #   )
       #
-        # solved_output <- mrgsim.parallel::future_mrgsim_d(  # mc_mrgsim_d doesn't work in Shiny, and future_mrgsim_d is not reliable
-        #   mod       = input_model_object,
-        #   data      = ext_db_ev,
-        #   nchunk    = number_of_cores,
-        #   carry_out = carry_out_cols,
-        #   obsonly   = TRUE,
-        #   tgrid     = sampling_times,
-        #   tad       = TRUE
-        # ) #%T>%
-        #system.time()
+      # solved_output <- mrgsim.parallel::future_mrgsim_d(  # mc_mrgsim_d doesn't work in Shiny, and future_mrgsim_d is not reliable
+      #   mod       = input_model_object,
+      #   data      = ext_db_ev,
+      #   nchunk    = number_of_cores,
+      #   carry_out = carry_out_cols,
+      #   obsonly   = TRUE,
+      #   tgrid     = sampling_times,
+      #   tad       = TRUE
+      # ) #%T>%
+      #system.time()
       #
       #} else {
-
-        input_model_object@digits <- 5 # how many sigdigs to output
-
-        sim_output <- mrgsolve::qsim(input_model_object,
-                           data = ext_db_ev,
-                           obsonly = TRUE,
-                           tgrid = sampling_times,
-                           tad = TRUE,
-                           output = "df")
-
-        # mrgsim_q / qsim does not support carry_out cols, so merging back in here
-        solved_output <- data.table::merge.data.table(sim_output, ext_db, by = "ID", all.x = TRUE) #%>%
+      
+      input_model_object@digits <- 5 # how many sigdigs to output
+      
+      sim_output <- mrgsolve::qsim(input_model_object,
+                                   data = ext_db_ev,
+                                   obsonly = TRUE,
+                                   tgrid = sampling_times,
+                                   tad = TRUE,
+                                   output = "df")
+      
+      # mrgsim_q / qsim does not support carry_out cols, so merging back in here
+      solved_output <- data.table::merge.data.table(sim_output, ext_db, by = "ID", all.x = TRUE) #%>%
       #} # not using parallel
     } # end of multiple nsubj sims
-
+    
     ### If single subject (or bad number of subjects input)
     if(nsubj <= 1) {
       solved_output <- input_model_object %>%
         mrgsolve::obsonly() %>%
         mrgsolve::zero_re() %>%
         mrgsolve::mrgsim_df(events = ev_df,
-                  tgrid  = sampling_times,
-                  tad    = TRUE)
+                            tgrid  = sampling_times,
+                            tad    = TRUE)
     }
-
+    
     solved_output <- solved_output %>%
       dplyr::rename(TIME    = time) %>%
       dplyr::mutate(TIMEADJ = TIME / divide_by,
-             ID      = as.factor(paste0(append_id_text, ID))
+                    ID      = as.factor(paste0(append_id_text, ID))
       )
-
+    
     return(solved_output)
   } else {
-
+    
     if (debug) {
       message("input_model_object is NULL")
     }
@@ -714,49 +742,49 @@ sample_age_wt <- function(df_name     = "None",
                           upper.wt    = 100,
                           prop.male   = 0.5,
                           seed.number = 1234) {
-
+  
   set.seed(seed.number)
-
+  
   if(df_name == "None") {
     df.combined <- dplyr::tibble(ID = 1:nsubj)
     return(df.combined)
   }
-
+  
   df <- switch(df_name,
                "CDC" = cdc.expand,
                "WHO" = who.expand,
                "NHANES" = nhanes.filtered
   )
-
+  
   if(upper.agemo > max(df$AGEMO)) {
     stop("Requested upper bound of age exceeds what's available in the database.")
   }
-
+  
   if(lower.agemo < min(df$AGEMO)) {
     stop("Requested lower bound of age exceeds what's available in the database.")
   }
-
+  
   df.sexes <- df %>%
     dplyr::filter(AGEMO >= lower.agemo,
-           AGEMO <  upper.agemo,
-           WT    >= lower.wt,
-           WT    <  upper.wt)
-
+                  AGEMO <  upper.agemo,
+                  WT    >= lower.wt,
+                  WT    <  upper.wt)
+  
   df.boys <- df.sexes %>%
     dplyr::filter(SEX == 0) %>%
     dplyr::slice_sample(n = ceiling(nsubj * prop.male), replace = FALSE)
-
+  
   df.girls <- df.sexes %>%
     dplyr::filter(SEX == 1) %>%
     dplyr::slice_sample(n = ceiling(nsubj * (1 - prop.male)), replace = FALSE)
-
+  
   df.combined <- rbind(df.boys, df.girls) %>%
     dplyr::slice_sample(n = nsubj, replace = FALSE) %>%
     dplyr::arrange(AGEMO) %>%
     dplyr::rename(AGE = AGEYR) %>%
     dplyr::mutate(BMI = round(WT / (HT/100)^2,2)) %>% # Check for non-sensible values
     dplyr::mutate(BSA = round(0.20247 * WT^0.425 * (HT/100)^0.725,2)) # Du Bois formula for BSA, height in m
-
+  
   return(cbind(dplyr::tibble(ID = 1:nsubj), df.combined))
 }
 
@@ -790,27 +818,27 @@ calc_summary_stats <- function(orig_data,
                                check_empty_rows = TRUE,
                                id_colname = "ID",
                                comma_format = TRUE) {
-
+  
   data <- orig_data
-
+  
   if(convert_to_numeric) {
     # Convert all columns to numeric, replacing non-numeric characters with NA
     data <- orig_data %>%
       dplyr::mutate_all(function(x) as.numeric(as.character(x)))
-
+    
     # Replace non-numeric values with NA
     data[orig_data != data] <- NA
   }
-
+  
   if(id_colname %in% names(data)) {
     data <- data %>% dplyr::distinct(!!dplyr::sym(id_colname), .keep_all = TRUE)
     data <- data %>% dplyr::select(-!!dplyr::sym(id_colname))
   }
-
+  
   if(check_empty_rows & nrow(data) == 0) {
     tmp <- data
   } else {
-
+    
     # # Define list of metrics to summarise over
     # stats_list <- list(
     #   "Min"       = ~ min(., na.rm = TRUE),
@@ -834,11 +862,11 @@ calc_summary_stats <- function(orig_data,
     # }) %>%
     #   dplyr::bind_rows() %>%
     #   dplyr::select(Statistic, tidyr::everything())
-
+    
     # Using data.table which is much quicker
     # Convert the data to a data.table
     data <- data.table::setDT(data)
-
+    
     # Define list of metrics to summarise over
     stats_list <- list(
       "Min"       = function(x) min(x, na.rm = TRUE),
@@ -853,35 +881,35 @@ calc_summary_stats <- function(orig_data,
       "gMean"     = function(x) gm_mean(x),
       "gMean CV%" = function(x) gm_mean_cv(x)
     )
-
+    
     # Apply each operation to each column
     tmp <- data.table::rbindlist(lapply(names(stats_list), function(name) {
       data[, lapply(.SD, stats_list[[name]]), .SDcols = names(data)][, Statistic := name]
     })) %>%
       as.data.frame() %>%
       dplyr::select(Statistic, dplyr::everything())
-
+    
     # Apply rounding or sigdigs to the entire df
     if(sigdig) {
       tmp <- tmp %>% purrr::modify_if(is.numeric, ~signif(., dp))
     } else {
       tmp <- tmp %>% purrr::modify_if(is.numeric, ~round(., dp))
     }
-
+    
   }
-
+  
   if("AGEMO" %in% names(tmp)) {
     tmp <- tmp %>% dplyr::select(-AGEMO)
   }
-
+  
   if("SEX" %in% names(tmp)) {
     tmp <- tmp %>% dplyr::select(-SEX)
   }
-
+  
   if(comma_format) {
     # Define a formatter function
     comma_formatter <- function(x) format(x, big.mark = ",")
-
+    
     # Apply the formatter to all numeric columns
     for(col in names(tmp)) {
       if(is.numeric(tmp[[col]])) {
@@ -889,17 +917,17 @@ calc_summary_stats <- function(orig_data,
       }
     }
   }
-
+  
   # Convert all columns to character for easier display
   tmp <- tmp %>% dplyr::mutate_all(as.character)
-
+  
   # Convert such that each variable (column) is a row instead
   if(transpose) {
     tmp <- tmp %>%
       tidyr::pivot_longer(cols = -Statistic, names_to = "ColumnName", values_to = "value") %>%
       tidyr::pivot_wider(names_from = "Statistic", values_from = "value")
   }
-
+  
   return(tmp)
 }
 
@@ -934,13 +962,13 @@ calc_summary_stats_as_list <- function(nca_df, group_by_name,
                                        convert_to_numeric = FALSE,
                                        transpose = TRUE,
                                        id_colname = "ID") {
-
+  
   list_of_descriptive_stats_by_keys <- list() # initialize a list to store each df
-
+  
   if(group_by_name %in% names(nca_df)) {
     for(i in 1:length(unique(nca_df[[group_by_name]]))) {
       if(transpose) {
-
+        
         list_of_descriptive_stats_by_keys[[i]] <- calc_summary_stats(nca_df %>%
                                                                        dplyr::filter(!!dplyr::sym(group_by_name) == unique(nca_df[[group_by_name]])[i]) %>%
                                                                        dplyr::select(-!!dplyr::sym(group_by_name)),
@@ -953,7 +981,7 @@ calc_summary_stats_as_list <- function(nca_df, group_by_name,
           dplyr::select(ColumnName, `Min`, `Mean`, `Median`, `Max`, `CV%`, `gMean`, `gMean CV%`) %>%
           dplyr::filter(ColumnName %in% list_of_nca_metrics) %>%
           dplyr::mutate(N = nrow(nca_df %>%
-                            dplyr::filter(!!dplyr::sym(group_by_name) == unique(nca_df[[group_by_name]])[i]))) %>%
+                                   dplyr::filter(!!dplyr::sym(group_by_name) == unique(nca_df[[group_by_name]])[i]))) %>%
           dplyr::select(ColumnName, N, tidyr::everything()) %>%
           dplyr::rename(Metric = ColumnName)
       } else {
@@ -967,10 +995,10 @@ calc_summary_stats_as_list <- function(nca_df, group_by_name,
                                                                      id_colname = id_colname) %>%
           dplyr::select(dplyr::one_of(c("Statistic", list_of_nca_metrics))) %>%
           dplyr::mutate(N = nrow(nca_df %>%
-                            dplyr::filter(!!dplyr::sym(group_by_name) == unique(nca_df[[group_by_name]])[i]))) %>%
+                                   dplyr::filter(!!dplyr::sym(group_by_name) == unique(nca_df[[group_by_name]])[i]))) %>%
           dplyr::filter(Statistic %in% c("Min", "Mean", "Median", "Max", "CV%", "gMean", "gMean CV%")) %>%
           dplyr::select(Statistic, N, tidyr::everything())
-
+        
       }
     }
   } else { # if can't find the group_by_name
@@ -999,7 +1027,7 @@ calc_summary_stats_as_list <- function(nca_df, group_by_name,
         dplyr::select(Statistic, N, tidyr::everything())
     }
   }
-
+  
   return(list_of_descriptive_stats_by_keys)
 }
 
@@ -1061,15 +1089,15 @@ gm_mean_cv = function(x, na.rm = TRUE) {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 print_demog_plots <- function(data) {
-
+  
   data <- data %>% dplyr::mutate(SEX = dplyr::case_when(SEX == 0 ~ "Male",
-                                   SEX == 1 ~ "Female"))
-
+                                                        SEX == 1 ~ "Female"))
+  
   p.age <- ggplot2::ggplot(data, ggplot2::aes(x = AGE, fill = SEX)) +
     ggplot2::scale_fill_manual(values = c("Male" = "lightblue", "Female" = "pink")) +
     ggplot2::theme_bw(base_size = 14) +
     ggplot2::labs(x = 'Age (years)', y = 'Count')
-
+  
   if(max(data$AGE) < 18) {
     p.age <- p.age +
       ggplot2::geom_histogram(colour= "white", binwidth = 1) + ggplot2::facet_grid(. ~ SEX)
@@ -1077,16 +1105,16 @@ print_demog_plots <- function(data) {
     p.age <- p.age +
       ggplot2::geom_histogram(colour= "white", binwidth = 5) + ggplot2::facet_grid(. ~ SEX)
   }
-
+  
   p.age <- p.age +
     ggplot2::theme(legend.position = "none") +  # Remove the legend
     ggplot2::theme(axis.title.y = ggplot2::element_blank())  # Remove the y-axis label
-
+  
   p.wt <- ggplot2::ggplot(data, ggplot2::aes(x = WT, fill = SEX)) +
     ggplot2::scale_fill_manual(values = c("Male" = "lightblue", "Female" = "pink")) +
     ggplot2::theme_bw(base_size = 14) +
     ggplot2::labs(x = 'Weight (kg)', y = '')
-
+  
   if(max(data$WT) < 75) {
     p.wt <- p.wt +
       ggplot2::geom_histogram(colour= "white", binwidth = 1) + ggplot2::facet_grid(. ~ SEX)
@@ -1094,11 +1122,11 @@ print_demog_plots <- function(data) {
     p.wt <- p.wt +
       ggplot2::geom_histogram(colour= "white", binwidth = 5) + ggplot2::facet_grid(. ~ SEX)
   }
-
+  
   p.wt <- p.wt +
     ggplot2::theme(legend.position = "none") + # Remove the legend
     ggplot2::theme(axis.title.y = ggplot2::element_blank())  # Remove the y-axis label
-
+  
   # Create a separate legend plot with custom colors
   legend_plot <- cowplot::get_legend(
     ggplot2::ggplot(data, ggplot2::aes(x = AGE, fill = SEX)) +
@@ -1106,10 +1134,10 @@ print_demog_plots <- function(data) {
       ggplot2::scale_fill_manual(values = c("Male" = "lightblue", "Female" = "pink"), name = "Sex") +
       ggplot2::guides(fill = ggplot2::guide_legend(ncol = 2, title = NULL))  # Set the number of columns in the legend
   )
-
+  
   # Combine the plots side by side
   plots <- cowplot::plot_grid(p.age, p.wt, ncol = 2)
-
+  
   # Combine the plots and the shared legend using plot_grid()
   if(length(unique(data$SEX)) == 2) {
     combined_plot <- cowplot::plot_grid(
@@ -1121,13 +1149,13 @@ print_demog_plots <- function(data) {
   } else { # Otherwise don't show legend
     combined_plot <- plots
   }
-
+  
   # p.sex <-ggplot2::ggplot(data)+
   #   #add_watermark() +
   #   ggplot2::geom_bar(ggplot2::aes(x=SEX),colour="white",fill='grey40')+
   #   ggplot2::labs(x='Sex', y='Frequency')+
   #   ggplot2::theme_bw(base_size = 14)
-
+  
   # Plotting EGFR - uncomment if required
   # p.egfr <- ggplot2::ggplot(data)+
   #   add_watermark() +
@@ -1135,9 +1163,9 @@ print_demog_plots <- function(data) {
   #   ggplot2::labs(x='eGFR (ml/min/1.73 m2)', y='Frequency')+
   #   ggplot2::theme_bw(base_size = 14) +
   #   ggplot2::scale_x_continuous(lim=c(0,150),breaks=c(0,15,30,60,90,120,150))
-
+  
   return(combined_plot) # requires gridExtra package, deprecated
-
+  
 } # End of print_demog_plots function
 
 #-------------------------------------------------------------------------------
@@ -1155,13 +1183,13 @@ print_demog_plots <- function(data) {
 
 print_cov_plot <- function(data, lo_percentile = 0.025, hi_percentile = 0.975) {
   x_string <- names(data)[1]
-
+  
   data_median <- round(quantile(data[[x_string]], probs = 0.5), 1)
   data_lo     <- round(quantile(data[[x_string]], probs = lo_percentile), 1)
   data_hi     <- round(quantile(data[[x_string]], probs = hi_percentile), 1)
-
+  
   title <- paste0("Median = ", data_median, ", [95%: ", data_lo, " - ", data_hi, "]")
-
+  
   plot_object <- ggplot2::ggplot(data, ggplot2::aes(x = .data[[x_string]])) +
     ggplot2::theme_bw(base_size = 14) +
     ggplot2::geom_histogram(alpha = 0.3, fill = "#FFB600", color = "black") +
@@ -1174,7 +1202,7 @@ print_cov_plot <- function(data, lo_percentile = 0.025, hi_percentile = 0.975) {
     #ggplot2::geom_histogram(ggplot2::aes(y = ..density..), alpha = 0.4, fill = "black") +
     #geom_density(alpha = 0.1, fill = "red")
     ggplot2::labs(y = "Count",
-         caption = "solid line = median, dashed line = 95% range") +
+                  caption = "solid line = median, dashed line = 95% range") +
     ggplot2::ggtitle(title)
   return(plot_object)
 }
@@ -1199,23 +1227,23 @@ print_cov_plot <- function(data, lo_percentile = 0.025, hi_percentile = 0.975) {
 
 compare_dist_histogram <- function(df, variable_name, variable_label,
                                    lo_percentile = 0.025, hi_percentile = 0.975) {
-
+  
   df <- df %>% dplyr::mutate(SEX = dplyr::case_when(SEX == 0 ~ "Male",
-                                 SEX == 1 ~ "Female"))
-
+                                                    SEX == 1 ~ "Female"))
+  
   df_male   <- df %>% dplyr::filter(SEX == "Male")
   df_female <- df %>% dplyr::filter(SEX == "Female")
-
+  
   df_male_median <- round(quantile(df_male[[variable_name]], probs = 0.5), 1)
   df_male_lo     <- round(quantile(df_male[[variable_name]], probs = lo_percentile), 1)
   df_male_hi     <- round(quantile(df_male[[variable_name]], probs = hi_percentile), 1)
-
+  
   df_female_median <- round(quantile(df_female[[variable_name]], probs = 0.5), 1)
   df_female_lo     <- round(quantile(df_female[[variable_name]], probs = lo_percentile), 1)
   df_female_hi     <- round(quantile(df_female[[variable_name]], probs = hi_percentile), 1)
-
+  
   range_text    <- (hi_percentile - lo_percentile) * 100
-
+  
   plot_histo <- ggplot2::ggplot()+
     #add_watermark() +
     ggplot2::geom_histogram(data = df_male, ggplot2::aes(y=..count../sum(..count..) * 100, x= .data[[variable_name]]), fill='blue', binwidth = 5, alpha = 0.25) +
@@ -1234,10 +1262,10 @@ compare_dist_histogram <- function(df, variable_name, variable_label,
     ggplot2::annotate(x = df_female_hi, y = -Inf, label = paste0("\n",df_female_hi), geom = "text", color = 'red', lineheight = 0.6, vjust = 1.5, size = 3) +
     ggplot2::coord_cartesian(clip = "off") +
     ggplot2::labs(x = variable_label, y='Percentage of Population (%)',
-         caption = paste0('Blue = Male, Red = Female, Solid Line = Median, Dashed Line = ', range_text, '% range')) +
+                  caption = paste0('Blue = Male, Red = Female, Solid Line = Median, Dashed Line = ', range_text, '% range')) +
     ggplot2::theme_bw(base_size = 14) +
     ggplot2::theme(plot.caption = element_text(size = 10))
-
+  
   return(plot_histo)
 }
 
@@ -1263,11 +1291,11 @@ extract_matrix <- function(input_model_object,
                            remove_zero         = TRUE,
                            coerce_to_character = TRUE,
                            debug               = show_debugging_msg) {
-
+  
   if(debug) {
     message("running extract_matrix()")
   }
-
+  
   if(name_of_matrix == "omega") {
     om <- mrgsolve::omat(input_model_object)
     names_list <- as.list(unlist(mrgsolve::labels(om))) # must use mrgsolve::labels
@@ -1275,7 +1303,7 @@ extract_matrix <- function(input_model_object,
       mrgsolve::omat() %>%
       mrgsolve::as.matrix() # must use mrgsolve::as.matrix, S4
   }
-
+  
   if(name_of_matrix == "sigma") {
     sm <- mrgsolve::smat(input_model_object)
     names_list <- as.list(unlist(mrgsolve::labels(sm))) # must use mrgsolve::labels
@@ -1283,11 +1311,11 @@ extract_matrix <- function(input_model_object,
       mrgsolve::smat() %>%
       mrgsolve::as.matrix() # must use mrgsolve::as.matrix, S4
   }
-
+  
   if(debug) {
     print(omsm_matrix)
   }
-
+  
   if(remove_upper_tri) {
     omsm_matrix[upper.tri(omsm_matrix, diag = FALSE)] <- NA_real_
   }
@@ -1296,18 +1324,18 @@ extract_matrix <- function(input_model_object,
     omsm_matrix[omsm_matrix == 0] <- NA_real_
     diag(omsm_matrix) <- diag_elements
   }
-
+  
   if(coerce_to_character) {
     omsm_matrix <- apply(omsm_matrix, c(1, 2), as.character) %>%
       matrix(., nrow = nrow(.), ncol= ncol(.))
   }
-
+  
   colnames(omsm_matrix) <- names_list
-
+  
   if(debug) {
     message("finish extract_matrix()")
   }
-
+  
   return(omsm_matrix)
 }
 
@@ -1340,60 +1368,60 @@ reconstruct_matrices <- function(input_model_object,
                                  name_of_matrix    = "omega",
                                  coerce_to_numeric = TRUE,
                                  debug             = show_debugging_msg) {
-
+  
   if(nrow(input_matrix) == 0) {
     if(debug) {
       message('no input matrix')
     }
     return(input_matrix)
   }
-
+  
   if(debug) {
     message('Reconstructing Matrix')
   }
-
+  
   ## Store how many matrices there are from the model object
   if(name_of_matrix == "omega") {
     number_of_matrices <- length(input_model_object$omega)
   }
-
+  
   if(name_of_matrix == "sigma") {
     number_of_matrices <- length(input_model_object$sigma)
   }
-
+  
   if(coerce_to_numeric) {
     input_matrix <- apply(input_matrix, c(1, 2), as.numeric) %>%
       matrix(., nrow = nrow(.), ncol= ncol(.))
   }
-
+  
   result        <- list()
   start_row_col <- 1
-
+  
   for(n in 1:number_of_matrices) {
-
+    
     if(name_of_matrix == "omega") {
       nrow_current_matrix <- nrow(input_model_object$omega[[n]])
     }
     if(name_of_matrix == "sigma") {
       nrow_current_matrix <- nrow(input_model_object$sigma[[n]])
     }
-
+    
     result[[n]] <- list()
-
+    
     end_row_col <- start_row_col + nrow_current_matrix - 1
     if(debug) {
       message("Current matrix: ", n, ", start row/col: ", start_row_col)
     }
     result[[n]] <- input_matrix[start_row_col:end_row_col, start_row_col:end_row_col]
-
+    
     # Mirror lower triangle to upper triangle
     lower_triangle <- lower.tri(result[[n]])
     result[[n]][!lower_triangle] <- t(result[[n]])[!lower_triangle]
     result[[n]][is.na(result[[n]])] <- 0 # Required for omat() as NA's don't work
     result[[n]] <- result[[n]] %>% as.matrix() # Required for 1x1 matrix otherwise it becomes a numeric
-
+    
     start_row_col <- start_row_col + nrow_current_matrix # advancing to new starting row/col for next matrix
-
+    
   } # end of number of matrix
   if(debug) {
     message('Matrix reconstruction complete')
@@ -1422,7 +1450,7 @@ update_variability <- function(input_model_object,
                                name_of_matrix = "omega",
                                check_validity = TRUE,
                                debug          = show_debugging_msg) {
-
+  
   if(check_validity) {
     matrix_is_valid <- check_matrix(input_model_object = input_model_object, input_matrix = input_matrix, debug = debug)
     if(!matrix_is_valid) {
@@ -1432,15 +1460,15 @@ update_variability <- function(input_model_object,
       return(input_model_object)
     } # model object is not updated if matrix is invalid
   }
-
+  
   if(name_of_matrix == "omega") {
     tmp <- input_model_object %>% mrgsolve::omat(input_matrix)
   }
-
+  
   if(name_of_matrix == "sigma") {
     tmp <- input_model_object %>% mrgsolve::smat(input_matrix)
   }
-
+  
   return(tmp)
 }
 
@@ -1469,7 +1497,7 @@ check_matrix <- function(input_model_object,
                          display_error = TRUE) {
   #print(input_matrix)
   for(i in 1:length(input_matrix)) {
-
+    
     if(check_diagonal) {
       if(any(diag(input_matrix[[i]]) < 0)) {
         if(display_error) {
@@ -1478,14 +1506,14 @@ check_matrix <- function(input_model_object,
         return(FALSE)
       }
     } # End of check diagonal
-
+    
     if(any(stringr::str_detect(input_model_object$code, "@correlation"))) {
       check_eigenvalues <- FALSE
-
+      
     } else {
       check_eigenvalues <- TRUE
     }
-
+    
     if(check_eigenvalues) { # check that the matrix must be positive semi-definite assuming '@correlation' is not used in ANY code
       if(debug) {
         message("No @correlation found, proceeding to checking eigenvalues")
@@ -1497,14 +1525,14 @@ check_matrix <- function(input_model_object,
         return(FALSE)
       }
     } # End of check eigenvalues
-
+    
     if(check_symmetry) {
       if (!all(identical(input_matrix[[i]], t(input_matrix[[i]])))) {
         return(FALSE)
       }
     } # End of check symmetry
   } # End of each matrix loop
-
+  
   if(debug) {
     message("Check matrix PASS")
   }
@@ -1536,8 +1564,8 @@ quantile_output <- function(iiv_sim_input,
   iiv_sim_input <- iiv_sim_input %>%
     dplyr::group_by(TIME) %>%
     dplyr::mutate(median_yvar   = quantile(.data[[yvar]], probs = 0.5) %>% round(digits = dp),
-           lower_yvar    = quantile(.data[[yvar]], probs = lower_quartile) %>% round(digits = dp),
-           upper_yvar    = quantile(.data[[yvar]], probs = upper_quartile) %>% round(digits = dp)) %>%
+                  lower_yvar    = quantile(.data[[yvar]], probs = lower_quartile) %>% round(digits = dp),
+                  upper_yvar    = quantile(.data[[yvar]], probs = upper_quartile) %>% round(digits = dp)) %>%
     dplyr::ungroup()
 }
 
@@ -1629,7 +1657,7 @@ pknca_table <- function(input_simulated_table,
                         end_time   = NULL,
                         debug      = FALSE
 ) {
-
+  
   reactive_cmin <- paste0(output_conc, '_CMIN_ranged')
   reactive_cmax <- paste0(output_conc, '_CMAX_ranged')
   reactive_cavg <- paste0(output_conc, '_CAVG_ranged')
@@ -1638,7 +1666,7 @@ pknca_table <- function(input_simulated_table,
   reactive_cfbpct <- paste0(output_conc, '_CFBPCT_ranged')
   reactive_mcfbpct <- paste0(output_conc, '_MEANCFBPCT_ranged')
   reactive_nadirpct <- paste0(output_conc, '_NADIRPCT_ranged')
-
+  
   zero_tlast_cmin <- paste0(output_conc, '_CMIN_tlast')
   zero_tlast_cmax <- paste0(output_conc, '_CMAX_tlast')
   zero_tlast_cavg <- paste0(output_conc, '_CAVG_tlast')
@@ -1647,39 +1675,39 @@ pknca_table <- function(input_simulated_table,
   zero_tlast_cfbpct <- paste0(output_conc, '_CFBPCT_tlast')
   zero_tlast_mcfbpct <- paste0(output_conc, '_MEANCFBPCT_tlast')
   zero_tlast_nadirpct <- paste0(output_conc, '_NADIRPCT_tlast')
-
+  
   input_simulated_table$YVARNAME <- input_simulated_table[[output_conc]]
-
+  
   if (debug) {
     message(head(input_simulated_table))
     message(paste0(max(input_simulated_table$YVARNAME)[1]))
   }
-
+  
   metrics_table <- input_simulated_table %>%
     dplyr::mutate(CMIN = min(YVARNAME, na.rm = TRUE)[1],
-           CMAX = max(YVARNAME, na.rm = TRUE)[1],  ### First element if multiple values found
-           CAVG = mean(YVARNAME, na.rm = TRUE),
-           DVBL = dplyr::first(YVARNAME),
-           CFBPCT = ((YVARNAME - DVBL) / DVBL) * 100,
-           MEANCFBPCT = mean(CFBPCT, na.rm = TRUE), # only accurate if sampling points are equidistant
-           NADIRPCT = min(CFBPCT, na.rm = TRUE)[1]
+                  CMAX = max(YVARNAME, na.rm = TRUE)[1],  ### First element if multiple values found
+                  CAVG = mean(YVARNAME, na.rm = TRUE),
+                  DVBL = dplyr::first(YVARNAME),
+                  CFBPCT = ((YVARNAME - DVBL) / DVBL) * 100,
+                  MEANCFBPCT = mean(CFBPCT, na.rm = TRUE), # only accurate if sampling points are equidistant
+                  NADIRPCT = min(CFBPCT, na.rm = TRUE)[1]
     )
-
+  
   DVBL_overall <- metrics_table$DVBL[1] # Note: Baseline is always first ever TIME overall
-
+  
   metrics_table <- metrics_table %>%
     dplyr::mutate(TMAX = .$TIME[.$CMAX[1] == YVARNAME][1],
-           TMIN = .$TIME[.$CMIN[1] == YVARNAME][1])
-
+                  TMIN = .$TIME[.$CMIN[1] == YVARNAME][1])
+  
   metrics_table  <- metrics_table %>%
     dplyr::mutate(YLAG       = dplyr::lag(YVARNAME ),
-           XLAG       = dplyr::lag(TIME),
-           dYVAR      = (YVARNAME  + YLAG) * (TIME - XLAG) * 0.5, # Area for trapezoid
-           dYVAR      = dplyr::if_else(is.na(dYVAR), 0, dYVAR),
-           AUC_tlast    = sum(dYVAR)) %>%
+                  XLAG       = dplyr::lag(TIME),
+                  dYVAR      = (YVARNAME  + YLAG) * (TIME - XLAG) * 0.5, # Area for trapezoid
+                  dYVAR      = dplyr::if_else(is.na(dYVAR), 0, dYVAR),
+                  AUC_tlast    = sum(dYVAR)) %>%
     dplyr::ungroup() %>%
     dplyr::select(-ID, -tad, -TIMEADJ, -YLAG, -XLAG, -dYVAR, -DVBL)
-
+  
   if (debug) {
     message(start_time)
     message(end_time)
@@ -1688,29 +1716,29 @@ pknca_table <- function(input_simulated_table,
     tmp2 <- input_simulated_table %>% dplyr::filter(TIME <= start_time)
     message(dplyr::glimpse(tmp2))
   }
-
+  
   ### Repeat metrics for time range
   metrics_table_time <- input_simulated_table %>% dplyr::filter(TIME >= start_time, TIME <= end_time) %>%
     dplyr::mutate(CMIN = min(YVARNAME, na.rm = TRUE)[1],
-           CMAX = max(YVARNAME, na.rm = TRUE)[1], ### First element if multiple values found
-           CAVG = mean(YVARNAME, na.rm = TRUE),
-           CFBPCT = ((YVARNAME - DVBL_overall) / DVBL_overall) * 100, # Note: Baseline is always first ever TIME overall
-           MEANCFBPCT = mean(CFBPCT, na.rm = TRUE), # only accurate if sampling points are equidistant
-           NADIRPCT = min(CFBPCT, na.rm = TRUE)[1]
+                  CMAX = max(YVARNAME, na.rm = TRUE)[1], ### First element if multiple values found
+                  CAVG = mean(YVARNAME, na.rm = TRUE),
+                  CFBPCT = ((YVARNAME - DVBL_overall) / DVBL_overall) * 100, # Note: Baseline is always first ever TIME overall
+                  MEANCFBPCT = mean(CFBPCT, na.rm = TRUE), # only accurate if sampling points are equidistant
+                  NADIRPCT = min(CFBPCT, na.rm = TRUE)[1]
     )
-
+  
   metrics_table_time <- metrics_table_time %>%
     dplyr::mutate(TMAX = .$TIME[.$CMAX[1] == YVARNAME][1], ### First element if multiple values found
-           TMIN = .$TIME[.$CMIN[1] == YVARNAME][1])
-
+                  TMIN = .$TIME[.$CMIN[1] == YVARNAME][1])
+  
   metrics_table_time  <- metrics_table_time %>%
     dplyr::mutate(YLAG          = dplyr::lag(YVARNAME ),
-           XLAG          = dplyr::lag(TIME),
-           dYVAR         = (YVARNAME + YLAG) * (TIME - XLAG) * 0.5, # Area for trapezoid
-           dYVAR         = dplyr::if_else(is.na(dYVAR), 0, dYVAR),
-           AUC_ranged    = sum(dYVAR)) %>%
+                  XLAG          = dplyr::lag(TIME),
+                  dYVAR         = (YVARNAME + YLAG) * (TIME - XLAG) * 0.5, # Area for trapezoid
+                  dYVAR         = dplyr::if_else(is.na(dYVAR), 0, dYVAR),
+                  AUC_ranged    = sum(dYVAR)) %>%
     dplyr::ungroup()
-
+  
   CMIN_time <-  metrics_table_time[["CMIN"]][1]
   CMAX_time <-  metrics_table_time[["CMAX"]][1]
   CAVG_time <-  metrics_table_time[["CAVG"]][1]
@@ -1720,27 +1748,27 @@ pknca_table <- function(input_simulated_table,
   CFBPCT_time <- dplyr::last(metrics_table_time[["CFBPCT"]])
   MCFBPCT_time <- metrics_table_time[["MEANCFBPCT"]][1]
   NADIRPCT_time <- metrics_table_time[["NADIRPCT"]][1]
-
+  
   metrics_table <- metrics_table %>%
     dplyr::mutate(!!reactive_cmin := CMIN_time,
-           !!reactive_cmax := CMAX_time,
-           !!reactive_cavg := CAVG_time,
-           !!reactive_tmax := TMAX_time,
-           !!reactive_tmin := TMIN_time,
-           AUC_ranged := AUC_time,
-           !!reactive_cfbpct := CFBPCT_time,
-           !!reactive_mcfbpct := MCFBPCT_time,
-           !!reactive_nadirpct := NADIRPCT_time) %>%
+                  !!reactive_cmax := CMAX_time,
+                  !!reactive_cavg := CAVG_time,
+                  !!reactive_tmax := TMAX_time,
+                  !!reactive_tmin := TMIN_time,
+                  AUC_ranged := AUC_time,
+                  !!reactive_cfbpct := CFBPCT_time,
+                  !!reactive_mcfbpct := MCFBPCT_time,
+                  !!reactive_nadirpct := NADIRPCT_time) %>%
     dplyr::rename(!!zero_tlast_cmin := CMIN,
-           !!zero_tlast_cmax := CMAX,
-           !!zero_tlast_cavg := CAVG,
-           !!zero_tlast_tmax := TMAX,
-           !!zero_tlast_tmin := TMIN,
-           !!zero_tlast_cfbpct := CFBPCT,
-           !!zero_tlast_mcfbpct := MEANCFBPCT,
-           !!zero_tlast_nadirpct := NADIRPCT) %>%
+                  !!zero_tlast_cmax := CMAX,
+                  !!zero_tlast_cavg := CAVG,
+                  !!zero_tlast_tmax := TMAX,
+                  !!zero_tlast_tmin := TMIN,
+                  !!zero_tlast_cfbpct := CFBPCT,
+                  !!zero_tlast_mcfbpct := MEANCFBPCT,
+                  !!zero_tlast_nadirpct := NADIRPCT) %>%
     dplyr::select(-YVARNAME)
-
+  
   return(metrics_table)
 }
 
@@ -1797,87 +1825,87 @@ smart_x_axis <- function(p1,
                          xvar = "TIMEADJ",
                          xlabel,
                          debug = FALSE) {
-
+  
   if(is.null(max_x)) {
     # Extract the maximum value of the x-axis - by default this is expanded by 5%,
     # so we have to divide it back to arrive at the true range
     max_x <- ggplot2::ggplot_build(p1)$layout$panel_params[[1]]$x.range[[2]] / 1.05
     #message("Max x is ", max_x)
   }
-
+  
   if(debug) {
     message(paste0("Max X: ", max_x))
   }
-
+  
   if(!is.na(max_x) & is.finite(max_x)) { # prevents app crashing when time_unit input is empty
-
+    
     if(xlabel == "Time (hours)") {
       x_tick_size <- dplyr::case_when(max_x <=  4  ~ 0.5,
-                               max_x <= 12  ~ 1,
-                               max_x <= 24  ~ 2,
-                               max_x <= 48  ~ 4,
-                               max_x <= 72  ~ 12,
-                               max_x <= 96  ~ 12,
-                               max_x <= 168 ~ 24,
-                               max_x <= 336 ~ 48,
-                               max_x <= 480 ~ 48,
-                               max_x <= 2016~ 168,
-                               TRUE         ~ 672)
-
+                                      max_x <= 12  ~ 1,
+                                      max_x <= 24  ~ 2,
+                                      max_x <= 48  ~ 4,
+                                      max_x <= 72  ~ 12,
+                                      max_x <= 96  ~ 12,
+                                      max_x <= 168 ~ 24,
+                                      max_x <= 336 ~ 48,
+                                      max_x <= 480 ~ 48,
+                                      max_x <= 2016~ 168,
+                                      TRUE         ~ 672)
+      
       if(debug) {
         message(paste0("x_tick_size: ", x_tick_size))
       }
-
+      
       p1 <- p1 + ggplot2::scale_x_continuous(breaks = seq(0, max_x + x_tick_size, by = x_tick_size))
     }
-
+    
     if(xlabel == "Time (days)") {
       x_tick_size <- dplyr::case_when(max_x <= 7   ~ 1,
-                               max_x <= 14  ~ 2,
-                               max_x <= 28  ~ 7,
-                               max_x <= 56  ~ 7,
-                               max_x <= 84  ~ 14,
-                               TRUE         ~ 28)
-
+                                      max_x <= 14  ~ 2,
+                                      max_x <= 28  ~ 7,
+                                      max_x <= 56  ~ 7,
+                                      max_x <= 84  ~ 14,
+                                      TRUE         ~ 28)
+      
       if(debug) {
         message(print(paste0("x_tick_size: ", x_tick_size)))
       }
-
+      
       p1 <- p1 + ggplot2::scale_x_continuous(breaks = seq(0, max_x + x_tick_size, by = x_tick_size))
     }
-
+    
     if(xlabel == "Time (weeks)") {
       x_tick_size <- dplyr::case_when(max_x <= 2  ~ 0.2,
-                               max_x <= 4  ~ 0.5,
-                               max_x <= 16 ~ 1,
-                               max_x <= 32 ~ 2,
-                               max_x <= 52 ~ 4,
-                               TRUE        ~ 12)
-
+                                      max_x <= 4  ~ 0.5,
+                                      max_x <= 16 ~ 1,
+                                      max_x <= 32 ~ 2,
+                                      max_x <= 52 ~ 4,
+                                      TRUE        ~ 12)
+      
       if(debug) {
         message(print(paste0("x_tick_size: ", x_tick_size)))
       }
-
+      
       p1 <- p1 + ggplot2::scale_x_continuous(breaks = seq(0, max_x + x_tick_size, by = x_tick_size))
     }
-
+    
     if(xlabel == "Time (months)") {
       x_tick_size <- dplyr::case_when(max_x <= 1  ~ 0.25,
-                               max_x <= 2  ~ 0.25,
-                               max_x <= 4  ~ 0.5,
-                               max_x <= 12 ~ 1,
-                               max_x <= 24 ~ 2,
-                               max_x <= 48 ~ 4,
-                               TRUE        ~ 12)
-
+                                      max_x <= 2  ~ 0.25,
+                                      max_x <= 4  ~ 0.5,
+                                      max_x <= 12 ~ 1,
+                                      max_x <= 24 ~ 2,
+                                      max_x <= 48 ~ 4,
+                                      TRUE        ~ 12)
+      
       if(debug) {
         message(print(paste0("x_tick_size: ", x_tick_size)))
       }
-
+      
       p1 <- p1 + ggplot2::scale_x_continuous(breaks = seq(0, max_x + x_tick_size, by = x_tick_size))
     }
   }
-
+  
   return(p1)
 }
 
@@ -1936,23 +1964,23 @@ plot_data_with_nm <- function(
     title  = NULL,
     line_color_1 = "#F8766D",
     line_color_2 = "#7570B3") {
-
+  
   if (debug) {
     message("Running plot_data_with_nm()")
   }
-
+  
   if(!is.null(input_dataset1)) {
     p1 <- ggplot2::ggplot(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]))
   }
-
+  
   if(!is.null(input_dataset2)) {
     p1 <- ggplot2::ggplot(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]))
   }
-
+  
   if (!is.null(nonmem_dataset)) {
     if(!is.null(color_data_by) & color_data_by %in% names(nonmem_dataset)) {
       nonmem_dataset[[color_data_by]] <- as.factor(nonmem_dataset[[color_data_by]])
-
+      
       p1 <- p1 +
         ggplot2::geom_line(data = nonmem_dataset, ggplot2::aes(x=.data[[xvar]], y= .data[[nm_yvar]], group = ID, color = .data[[color_data_by]]), alpha = 0.2)
     } else {
@@ -1964,71 +1992,71 @@ plot_data_with_nm <- function(
         p1 <- p1 +
           ggplot2::geom_point(data = nonmem_dataset, ggplot2::aes(x=.data[[xvar]], y= .data[[nm_yvar]], group = ID, color = .data[[color_data_by]]), alpha = 0.2)
       } else {
-
+        
         p1 <- p1 +
           ggplot2::geom_point(data = nonmem_dataset, ggplot2::aes(x=.data[[xvar]], y= .data[[nm_yvar]], group = ID), color = 'grey', alpha = 0.2)
       }
     }
-
+    
     if(stat_summary_data_option) {
-
+      
       bin_number    <- 20 # Sets the number of bins to be used for the median lines.
       max_data_x    <- max(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
       min_data_x    <- min(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
       bin_increment <- (max_data_x - min_data_x) / bin_number
       bin_times     <- seq(min_data_x, max_data_x, by = bin_increment)
-
+      
       nonmem_dataset <- nonmem_dataset %>%
         dplyr::mutate(
           binned_xvar = quantize(nonmem_dataset[[xvar]], levels = bin_times)
         )
-
+      
       if(stat_summary_data_by == "") {
         p1 <- p1 + ggplot2::stat_summary(data = nonmem_dataset, ggplot2::aes(x = binned_xvar, y = .data[[nm_yvar]]), fun = median, geom="line", colour = "black", alpha = 0.8)
       } else { # end of stat_summary_data_by NULL check
         p1 <- p1 + ggplot2::stat_summary(data = nonmem_dataset, ggplot2::aes(x = binned_xvar, y = .data[[nm_yvar]], color = as.factor(.data[[stat_summary_data_by]])),
-                                fun = median, geom="line", alpha = 0.8)
+                                         fun = median, geom="line", alpha = 0.8)
       }
     } # end of stat_summary_data_option
   } # end of nonmem_dataset
-
+  
   if(!is.null(input_dataset1)) {
     p1 <- p1 +
       ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]), color = line_color_1) +
       ggplot2::theme_bw() +
       ggplot2::labs(x = xlabel,
-           y = ylabel) +
+                    y = ylabel) +
       ggplot2::ggtitle(title)
-
+    
     if (geom_point_sim_option) {
       p1 <- p1 +
         ggplot2::geom_point(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]),  color = line_color_1)
     }
   }
-
+  
   if(!is.null(input_dataset2)) {
     p1 <- p1 +
       ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]), color = line_color_2) +
       ggplot2::theme_bw() +
       ggplot2::labs(x = xlabel,
-           y = ylabel) +
+                    y = ylabel) +
       ggplot2::ggtitle(title)
-
+    
     if (geom_point_sim_option) {
       p1 <- p1 +
         ggplot2::geom_point(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]), color = line_color_2)
     }
   }
-
+  
   # max_x_value <- dplyr::case_when(!is.null(input_dataset1) & !is.null(input_dataset2) ~
   #                            max(max(input_dataset1[[xvar]]), max(input_dataset2[[xvar]])),
   #                          !is.null(input_dataset1) ~ max(input_dataset1[[xvar]]),
   #                          !is.null(input_dataset2) ~ max(input_dataset2[[xvar]]),
   #                          TRUE                     ~ 10
   # )
-
+  
   p1 <- smart_x_axis(p1, xlabel = xlabel, debug = debug)
-
+  
   ## Apply log axis if required
   if(log_x_axis) {
     p1 <- p1 +
@@ -2036,14 +2064,14 @@ plot_data_with_nm <- function(
       ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) +
       ggplot2::annotation_logticks(sides = "b")
   }
-
+  
   if(log_y_axis) {
     p1 <- p1 +
       #ggplot2::scale_y_log10(guide = "axis_logticks")#, labels=log_y_labels) # Doesn't display as nice
       ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
       ggplot2::annotation_logticks(sides = "l")
   }
-
+  
   if(!is.null(nonmem_dataset) & !is.null(color_data_by) & color_data_by %in% names(nonmem_dataset)) {
     p1 <- p1 +
       ggplot2::theme(legend.position = "bottom")
@@ -2051,11 +2079,11 @@ plot_data_with_nm <- function(
     p1 <- p1 +
       ggplot2::theme(legend.position = "none")
   }
-
+  
   if (debug) {
     message("plot_data_with_nm() OK")
   }
-
+  
   return(p1)
 }
 
@@ -2125,33 +2153,33 @@ plot_three_data_with_nm <- function(
     debug  = FALSE,
     title  = NULL
 ) {
-
+  
   if (debug) {
     message(paste0("x_min: : ", x_min))
     message(paste0("x_max: : ", x_max))
   }
-
+  
   ## Mutating a new column programmatically to use the selected parameter name
   df_min <- input_dataset_min %>% dplyr::mutate(ID = "Min", "{param_name}" := param_min_value)
   df_mid <- input_dataset_mid %>% dplyr::mutate(ID = "Mid", "{param_name}" := param_mid_value)
   df_max <- input_dataset_max %>% dplyr::mutate(ID = "Max", "{param_name}" := param_max_value)
-
+  
   ## Combining into a single dataset to easily facilitate legends in ggplot
   combined_input <- dplyr::bind_rows(df_min, df_mid, df_max)
   combined_input[[param_name]] <- as.factor(combined_input[[param_name]]) %>%
     forcats::fct_inorder()
-
+  
   ## assigning maximum x-value for later checks
   max_x_value <- max(combined_input[[xvar]])
-
+  
   # geom_ribbon input
   ribbon_id1 <- dplyr::filter(combined_input, ID == "Min" & .data[[xvar]] >= x_min & .data[[xvar]] <= x_max)
   ribbon_id2 <- dplyr::filter(combined_input, ID == "Mid" & .data[[xvar]] >= x_min & .data[[xvar]] <= x_max)
   ribbon_id3 <- dplyr::filter(combined_input, ID == "Max" & .data[[xvar]] >= x_min & .data[[xvar]] <= x_max)
-
+  
   p1 <- ggplot2::ggplot(data = combined_input, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]], group = ID, color = !!dplyr::sym(param_name))) #+
   #add_watermark()
-
+  
   if (!is.null(nonmem_dataset)) {
     p1 <- p1 +
       ggplot2::geom_line(data = nonmem_dataset, ggplot2::aes(x= .data[[xvar]], y= .data[[nm_yvar]], group = ID, color = NULL), color = 'grey', alpha = 0.2)
@@ -2159,32 +2187,32 @@ plot_three_data_with_nm <- function(
       p1 <- p1 +
         ggplot2::geom_point(data = nonmem_dataset, ggplot2::aes(x= .data[[xvar]], y= .data[[nm_yvar]], group = ID, color = NULL), color = 'grey', alpha = 0.2)
     }
-
+    
     if(stat_summary_data_option) { # 2023-07-24 steve
-
+      
       bin_number    <- 20 # Sets the number of bins to be used for the median lines.
       max_data_x    <- max(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
       max_x_value   <- max(max_x_value, max_data_x) # Take the larger of the two when a dataset is present
       min_data_x    <- min(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
       bin_increment <- (max_data_x - min_data_x) / bin_number
       bin_times     <- seq(min_data_x, max_data_x, by = bin_increment)
-
+      
       nonmem_dataset <- nonmem_dataset %>%
         dplyr::mutate(
           binned_xvar = quantize(nonmem_dataset[[xvar]], levels = bin_times)
         )
-
+      
       p1 <- p1 + ggplot2::stat_summary(data = nonmem_dataset, ggplot2::aes(x = binned_xvar, y = .data[[nm_yvar]], group = NULL, color = NULL), geom="line", fun = median, colour = "black", alpha = 0.8)
     } # end of stat_summary_data_option
   }
-
+  
   if (geom_ribbon_option) {
     p1 <- p1 +
       ggplot2::geom_ribbon(data = ribbon_id1, ggplot2::aes(ymax = .data[[yvar]], ymin = 0), alpha = 0.3, fill = "#1B9E77") +
       ggplot2::geom_ribbon(data = ribbon_id2, ggplot2::aes(ymax = .data[[yvar]], ymin = 0), alpha = 0.4, fill = "#D95F02") +
       ggplot2::geom_ribbon(data = ribbon_id3, ggplot2::aes(ymax = .data[[yvar]], ymin = 0), alpha = 0.5, fill = "#7570B3")
   }
-
+  
   if(geom_vline_option) {
     if(x_min > min(combined_input[["TIMEADJ"]]) | x_max < max_x_value) { # Only plot vlines if the ranges are not default
       p1 <- p1 +
@@ -2192,37 +2220,37 @@ plot_three_data_with_nm <- function(
         ggplot2::geom_vline(xintercept = x_max, linetype = "longdash", alpha = 0.3)
     }
   }
-
+  
   p1 <- p1 +
     ggplot2::geom_line(alpha = 0.7) +
     ggplot2::theme_bw() +
     ggplot2::labs(x = xlabel,
-         y = ylabel) +
+                  y = ylabel) +
     ggplot2::ggtitle(title) +
     ggplot2::scale_color_brewer(palette = "Dark2") +
     #ggplot2::scale_colour_discrete(name  = param_name) +
     ggplot2::theme(legend.position="bottom")
-
+  
   if (geom_point_sim_option) {
     p1 <- p1 +
       ggplot2::geom_point(alpha = 0.7)
   }
-
+  
   p1 <- smart_x_axis(p1, max_x = max_x_value, xlabel = xlabel) # max_x = max_x_value,
-
+  
   ### Apply log axis if required
   if(log_x_axis) {
     p1<- p1 +
       ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) #+
     #annotation_logticks(sides = "bl")
   }
-
+  
   if(log_y_axis) {
     p1<- p1 +
       ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) #+
     #annotation_logticks(sides = "bl")
   }
-
+  
   return(p1)
 }
 
@@ -2294,44 +2322,44 @@ plot_iiv_data_with_nm <- function(
     show_y_intercept = FALSE,
     y_intercept_value = NULL
 ) {
-
+  
   if (debug) {
     message("Running plot_iiv_data_with_nm()")
   }
-
+  
   if(!is.null(input_dataset1)) {
     if(debug) {
       message('dataset provided')
     }
-
+    
     input_dataset1 <- input_dataset1 %>% dplyr::select(ID, dplyr::all_of(c(xvar, yvar)), median_yvar, lower_yvar, upper_yvar) # Only include relevant columns to be plotted
-
+    
     p1 <- ggplot2::ggplot(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]))
   }
-
+  
   if(!is.null(input_dataset2)) {
     if(debug) {
       message('dataset provided')
     }
     input_dataset2 <- input_dataset2 %>% dplyr::select(ID, all_of(c(xvar, yvar_2)), median_yvar, lower_yvar, upper_yvar) # Only include relevant columns to be plotted
-
+    
     p1 <- ggplot2::ggplot(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]))
   }
-
+  
   if(show_x_intercept) {
     if(!is.null(x_intercept_value) & !is.na(x_intercept_value)) {
       p1 <- p1 +
         ggplot2::geom_vline(xintercept = x_intercept_value, linetype = "longdash", alpha = 0.3)
     }
   }
-
+  
   if(show_y_intercept) {
     if(!is.null(y_intercept_value) & !is.na(y_intercept_value)) {
       p1 <- p1 +
         ggplot2::geom_hline(yintercept = y_intercept_value, linetype = "longdash", alpha = 0.3)
     }
   }
-
+  
   if (!is.null(nonmem_dataset)) {
     nonmem_dataset <- nonmem_dataset %>% dplyr::select(ID, dplyr::all_of(c(xvar, nm_yvar))) # Only include relevant columns to be plotted
     p1 <- p1 +
@@ -2340,24 +2368,24 @@ plot_iiv_data_with_nm <- function(
       p1 <- p1 +
         ggplot2::geom_point(data = nonmem_dataset, ggplot2::aes(x=.data[[xvar]], y= .data[[nm_yvar]], group = ID), color = 'grey', alpha = 0.2)
     }
-
+    
     if(stat_summary_data_option) { # 2023-07-24 steve
-
+      
       bin_number    <- 20 # Sets the number of bins to be used for the median lines.
       max_data_x    <- max(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
       min_data_x    <- min(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
       bin_increment <- (max_data_x - min_data_x) / bin_number
       bin_times     <- seq(min_data_x, max_data_x, by = bin_increment)
-
+      
       nonmem_dataset <- nonmem_dataset %>%
         dplyr::mutate(
           binned_xvar = quantize(nonmem_dataset[[xvar]], levels = bin_times)
         )
-
+      
       p1 <- p1 + ggplot2::stat_summary(data = nonmem_dataset, ggplot2::aes(x = binned_xvar, y = .data[[nm_yvar]]), fun = median, geom="line", colour = "black", alpha = 0.7)
     } # end of stat_summary_data_option
   } # end of nonmem_dataset
-
+  
   if(!is.null(input_dataset1)) {
     if(!show_ind_profiles) {
       p1 <- p1 +
@@ -2365,7 +2393,7 @@ plot_iiv_data_with_nm <- function(
         ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[y_median]]), color = line_color_1, linewidth = 1.2) +
         ggplot2::theme_bw() +
         ggplot2::labs(x = xlabel,
-             y = ylabel) +
+                      y = ylabel) +
         ggplot2::ggtitle(title) +
         ggplot2::theme(legend.position = "none")
     } else {
@@ -2373,7 +2401,7 @@ plot_iiv_data_with_nm <- function(
         ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]], color = ID), alpha = 0.4) +
         ggplot2::theme_bw() +
         ggplot2::labs(x = xlabel,
-             y = ylabel) +
+                      y = ylabel) +
         ggplot2::ggtitle(title) +
         ggplot2::theme(legend.position = "none")
       if(debug) {
@@ -2381,7 +2409,7 @@ plot_iiv_data_with_nm <- function(
       }
     }
   } # end of input_dataset1
-
+  
   if(!is.null(input_dataset2)) {
     if(!show_ind_profiles) {
       p1 <- p1 +
@@ -2389,7 +2417,7 @@ plot_iiv_data_with_nm <- function(
         ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[y_median]]), color = line_color_2, linewidth = 1.2) +
         ggplot2::theme_bw() +
         ggplot2::labs(x = xlabel,
-             y = ylabel) +
+                      y = ylabel) +
         ggplot2::ggtitle(title) +
         ggplot2::theme(legend.position = "none")
     } else {
@@ -2397,7 +2425,7 @@ plot_iiv_data_with_nm <- function(
         ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]], color = ID), alpha = 0.4) +
         ggplot2::theme_bw() +
         ggplot2::labs(x = xlabel,
-             y = ylabel) +
+                      y = ylabel) +
         ggplot2::ggtitle(title) +
         ggplot2::theme(legend.position = "none")
       if(debug) {
@@ -2405,22 +2433,22 @@ plot_iiv_data_with_nm <- function(
       }
     }
   } # end of input_dataset2
-
+  
   p1 <- smart_x_axis(p1, xlabel = xlabel) # max_x = max_x_value,
-
+  
   ### Apply log axis if required
   if(log_x_axis) {
     p1 <- p1 +
       ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) +
       ggplot2::annotation_logticks(sides = "b")
   }
-
+  
   if(log_y_axis) {
     p1 <- p1 +
       ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
       ggplot2::annotation_logticks(sides = "l")
   }
-
+  
   return(p1)
 }
 
@@ -2460,13 +2488,13 @@ extract_model_params <- function(input_model_object) {
 #-------------------------------------------------------------------------------
 
 update_model_object <- function(input_model_object, input_new_df) {
-
+  
   tmp1 <- as.data.frame(input_new_df) %>%
     tidyr::pivot_wider(names_from = name, values_from = value) %>%
     as.list()
-
+  
   new_mod <- mrgsolve::param(input_model_object, tmp1)
-
+  
   return(new_mod)
 }
 
@@ -2503,13 +2531,13 @@ convert_to_plotly_watermark <- function(ggplot_object,
                                         height      = NULL,
                                         debug       = FALSE,
                                         plotly_watermark = TRUE) {
-
+  
   if (debug) {
     message("Converting ggplot object to plotly")
   }
-
+  
   tmp <- plotly::ggplotly(ggplot_object)
-
+  
   tmp <- tmp %>%
     plotly::add_annotations(
       text = dplyr::if_else(plotly_watermark, "For Internal Use Only", ""),
@@ -2521,24 +2549,24 @@ convert_to_plotly_watermark <- function(ggplot_object,
       font = list(family = font_name, size = 58, color = paste0("rgba(0, 0, 0, ", opacity, ")"))
     ) %>%
     plotly::config(toImageButtonOptions = list(format   = format, # one of png, svg, jpeg, webp
-                                       filename = filename,
-                                       height   = height,
-                                       width    = width,
-                                       scale    = 1 ),
-           modeBarButtonsToAdd = c('drawopenpath',
-                                   'drawline',
-                                   'drawcircle',
-                                   'drawrect',
-                                   'eraseshape'),
-           #modeBarButtonsToRemove = c('lasso2d')) ## For some unknown reason removal of lasso2d breaks the plot
-           displayModeBar = TRUE,
-           displaylogo = FALSE) #,
+                                               filename = filename,
+                                               height   = height,
+                                               width    = width,
+                                               scale    = 1 ),
+                   modeBarButtonsToAdd = c('drawopenpath',
+                                           'drawline',
+                                           'drawcircle',
+                                           'drawrect',
+                                           'eraseshape'),
+                   #modeBarButtonsToRemove = c('lasso2d')) ## For some unknown reason removal of lasso2d breaks the plot
+                   displayModeBar = TRUE,
+                   displaylogo = FALSE) #,
   #scrollZoom = TRUE,
-
+  
   if (debug) {
     message("Converting ggplot object to plotly successful.")
   }
-
+  
   return(tmp)
 }
 
@@ -2596,13 +2624,13 @@ sanitize_numeric_input <- function(numeric_input,
                                    legal_maximum = NULL,
                                    legal_minimum = NULL,
                                    display_error = FALSE) {
-
+  
   sanitized_input <- as.numeric(numeric_input)
-
+  
   if(as_integer) {
     sanitized_input <- as.integer(sanitized_input)
   }
-
+  
   # Handling NA's
   if(is.na(sanitized_input)) {
     if(allow_zero) {
@@ -2621,7 +2649,7 @@ sanitize_numeric_input <- function(numeric_input,
       return(sanitized_input)
     }
   }
-
+  
   # Handling zeroes
   if(sanitized_input == 0) {
     if(allow_zero) {
@@ -2635,7 +2663,7 @@ sanitize_numeric_input <- function(numeric_input,
       return(sanitized_input)
     }
   }
-
+  
   # Handling negative numbers
   if(sanitized_input < 0) {
     if(allow_zero) {
@@ -2654,7 +2682,7 @@ sanitize_numeric_input <- function(numeric_input,
       return(sanitized_input)
     }
   }
-
+  
   if(!is.null(legal_maximum)) {
     if(sanitized_input > legal_maximum) {
       if(display_error) {
@@ -2667,7 +2695,7 @@ sanitize_numeric_input <- function(numeric_input,
       return(sanitized_input)
     }
   }
-
+  
   if(!is.null(legal_minimum)) {
     if(sanitized_input < legal_minimum) {
       if(display_error) {
@@ -2680,7 +2708,7 @@ sanitize_numeric_input <- function(numeric_input,
       return(sanitized_input)
     }
   }
-
+  
   return(sanitized_input)
 }
 
@@ -2701,17 +2729,17 @@ sanitize_numeric_input <- function(numeric_input,
 #-------------------------------------------------------------------------------
 
 create_value_box <- function(input_dataset, name_ends_with, value_box_subtitle, width = infoBox_width, color, sigdig = 4, dp = FALSE) {
-
+  
   metric_value <- input_dataset %>%
     dplyr::select(dplyr::ends_with(name_ends_with)) %>%
     unique()  # %>%
-
+  
   if(dp) {
     metric_value <- metric_value %>% round(digits = as.integer(sigdig))
   } else {
     metric_value <- metric_value %>% signif(digits = as.integer(sigdig))
   }
-
+  
   created_box <- shinydashboard::valueBox(
     value = tags$p(style = font_size, metric_value),
     subtitle = value_box_subtitle,
@@ -2739,14 +2767,14 @@ check_and_combine_df <- function(model_1_is_valid,
                                  model_2_is_valid,
                                  input_df_1 = NULL,
                                  input_df_2 = NULL) {
-
+  
   if(model_1_is_valid & model_2_is_valid) {
-
+    
     common_columns <- dplyr::intersect(names(input_df_1), names(input_df_2))
     combined_model <- dplyr::full_join(input_df_1, input_df_2, by = common_columns)
-
+    
     return(combined_model)
-
+    
   } else if (model_1_is_valid) {
     return(input_df_1)
   } else if (model_2_is_valid) {
@@ -2781,26 +2809,26 @@ pct_above_y_at_x <- function(model_is_valid = FALSE,
                              x_name  = "TIME",
                              x_value = NA,
                              return_number_ids = FALSE) {
-
+  
   if(!model_is_valid | is.null(x_value) | is.null(y_value)) {
     return(NA)
   }
-
+  
   if(model_is_valid & !is.na(y_value) & !is.na(x_value) ) {
-
+    
     input_df_filtered <- input_df %>%
       dplyr::filter(!!dplyr::sym(y_name)  > y_value,
                     !!dplyr::sym(x_name) == x_value)
-
+    
     number_of_ids_in_df          <- length(unique(input_df$ID))
     number_of_ids_in_df_filtered <- length(unique(input_df_filtered$ID))
-
+    
     if(return_number_ids) {
       return(number_of_ids_in_df_filtered)
     } else {
       return(round(number_of_ids_in_df_filtered/number_of_ids_in_df * 100,1))
     }
-
+    
   } else {
     return(NA)
   }
@@ -2820,18 +2848,18 @@ pct_above_y_at_x <- function(model_is_valid = FALSE,
 
 create_alert <- function(ppm_name = "Firstname Lastname",
                          ppm_email = "dummy.email@company.com") {
-
+  
   email_html <- paste0("<a href='mailto:",
                        ppm_email,
                        "?subject=Model%20Visualization%20Platform%20(MVP)%20Usage'>",
                        ppm_name,
                        "</a>")
-
+  
   warning_text <- paste0("The unlocked model is provided for exploratory purposes only.<br>Please consult with your Project Pharmacometrician (PPM), ",
                          email_html,
                          ", for more information.<br><br>",
                          "<b><font color='red'>Usage of any output produced in this App without the PPM's prior knowledge and approval is strictly prohibited.</font></b>")
-
+  
   password_alert <- shinyalert::shinyalert(
     title = "Disclaimer",
     text = warning_text,
@@ -2848,7 +2876,7 @@ create_alert <- function(ppm_name = "Firstname Lastname",
     imageUrl = "",
     animation = TRUE
   )
-
+  
   return(password_alert)
 }
 
@@ -2918,7 +2946,7 @@ split_data_frame <- function(df, N = 4) {
   } else if (N > nrow(df)) { # This may be redundant as n.cores already have a safeguard
     stop("N must be less than nrows(df)")
   }
-
+  
   # split the data.frame into a list
   res <- split(df, cut(seq_len(nrow(df)), N, labels = FALSE))
   return(res)
@@ -2937,14 +2965,14 @@ split_data_frame <- function(df, N = 4) {
 #' @export
 #-------------------------------------------------------------------------------
 binary_cat_dist <- function(n = 20, percent = 50, catvalue1 = 1, catvalue2 = 0) {
-
+  
   # Calculate the number of 1s and 2s
   n_in_first  <- round(n * percent/100)
   n_in_second <- n - n_in_first
-
+  
   # Generate the vector
   vec <- sample(c(rep(catvalue1, n_in_first), rep(catvalue2, n_in_second)))
-
+  
   return(vec)
 }
 
@@ -2963,7 +2991,7 @@ binary_cat_dist <- function(n = 20, percent = 50, catvalue1 = 1, catvalue2 = 0) 
 #-------------------------------------------------------------------------------
 
 check_cov_name <- function(orig_name, replaced_name = "DUMMY", list_of_reserved_strings = c("AGE", "AGEMO", "SEX", "WT", "BMI", "BSA")) {
-
+  
   if (orig_name %in% list_of_reserved_strings) {
     new_name <- replaced_name
     shiny::showNotification(paste0("WARNING: Covariate name is reserved. Will show up as ", replaced_name, " instead."), type = "warning", duration = 10)
@@ -3029,16 +3057,16 @@ add_watermark <- function(watermark_toggle = TRUE,
                           #   "left" | "right" | "center" | "centre" | "top" | "bottom"
                           #   can also be given as vector of length 2, first horizontal, then vertical
 ) {
-
+  
   if(watermark_toggle) {
-
+    
     watermark_grob <- grid::grob(
       lab = lab, cl = "watermark",
       col = col, alpha = alpha, fontface = fontface,
       rot = rot, width = width, pos = pos, align = align
     )
     ggplot2::annotation_custom(xmin = -Inf, ymin = -Inf, xmax = Inf, ymax = Inf,
-                      watermark_grob)
+                               watermark_grob)
   } else {
     ggplot2::geom_blank()
   }
@@ -3084,13 +3112,13 @@ drawDetails.watermark <- function(x, ...) {
     grid::convertUnit(grid::grobWidth(grid::textGrob(x$lab)), unitTo = "mm", val = TRUE) *
     x$width
   grid::grid.text(x$lab,
-            rot = rotation,
-            gp = grid::gpar(
-              cex = scale_to_target_width,
-              col = x$col,
-              fontface = x$fontface,
-              alpha = x$alpha),
-            x = grid::unit(x$pos[1], "npc"), y = grid::unit(x$pos[2], "npc"), just = x$align
+                  rot = rotation,
+                  gp = grid::gpar(
+                    cex = scale_to_target_width,
+                    col = x$col,
+                    fontface = x$fontface,
+                    alpha = x$alpha),
+                  x = grid::unit(x$pos[1], "npc"), y = grid::unit(x$pos[2], "npc"), just = x$align
   )
 }
 
@@ -3114,32 +3142,32 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
                        down = "Linear", R2ADJ = 0, MW = 0, SS = FALSE, iAUC = "",
                        excludeDelta = 1, watermark = TRUE, internal_version = TRUE, debug_msg = TRUE)
 {
-
+  
   if(debug_msg) {
     message(fileName)
     message(getwd())
   }
-
+  
   if(!internal_version) { # Workaround for AWS hosting
     #fileName <- paste0("/tmp/", fileName) # didn't work
     setwd("/tmp") # Trying setwd method
   }
-
+  
   if(debug_msg) {
     message(getwd())
   }
-
+  
   class(concData) = "data.frame"
   defPar = par(no.readonly = TRUE)
-
+  
   if(debug_msg) {
     message("Trying to open pdf device")
   }
   ncar::PrepPDF(fileName)
-
+  
   ncar::AddPage()
   ncar::Text1(1, 1, "Individual Noncompartmental Analysis Result (Non-Validated)",
-        Cex = 1.2)
+              Cex = 1.2)
   maxx = max(concData[, colTime], na.rm = TRUE)
   maxy = max(concData[, colConc], na.rm = TRUE)
   miny = min(concData[concData[, colConc] > 0, colConc], na.rm = TRUE)
@@ -3171,12 +3199,12 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
       x = tData[, colTime]
       y = tData[, colConc]
       tabRes = NonCompart::sNCA(x, y, dose = dose[i], adm = adm, dur = dur,
-                    doseUnit = doseUnit, timeUnit = timeUnit, concUnit = concUnit,
-                    down = down, R2ADJ = R2ADJ, MW = MW, SS = SS,
-                    iAUC = iAUC, Keystring = strHeader, excludeDelta = excludeDelta)
+                                doseUnit = doseUnit, timeUnit = timeUnit, concUnit = concUnit,
+                                down = down, R2ADJ = R2ADJ, MW = MW, SS = SS,
+                                iAUC = iAUC, Keystring = strHeader, excludeDelta = excludeDelta)
       UsedPoints = attr(tabRes, "UsedPoints")
       txtRes = ncar::Res2Txt(tabRes, x, y, dose = dose[i], adm = adm,
-                       dur = dur, doseUnit = doseUnit, down = down)
+                             dur = dur, doseUnit = doseUnit, down = down)
       Res = c(Res, txtRes)
       ncar::AddPage(Header1 = strHeader)
       ncar::TextM(txtRes, StartRow = 1, Header1 = strHeader)
@@ -3190,38 +3218,38 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
       ncar::Text1(1, 1, strHeader, Cex = 1)
       screen(ScrNo[2])
       par(oma = c(1, 1, 1, 1), mar = c(4, 4, 3, 1), adj = 0.5)
-
+      
       if(watermark) {
         grid::pushViewport(grid::viewport(angle = 50, name = "WM"))
         grid::grid.text("For Internal Use Only", x = unit(0.5, "npc"), y = unit(0.5, "npc"),
-                  gp = grid::gpar(col = "grey", fontsize = 52, alpha = 0.5))
+                        gp = grid::gpar(col = "grey", fontsize = 52, alpha = 0.5))
         grid::popViewport()
       }
-
+      
       plot(x, y, type = "b", cex = 0.7, xlim = c(0, maxx),
            ylim = c(0, maxy), xlab = paste0("Time (", timeUnit,
                                             ")"), ylab = paste0("Concentration (", concUnit,
                                                                 ")"))
-
+      
       screen(ScrNo[3])
       par(oma = c(1, 1, 1, 1), mar = c(4, 4, 3, 1), adj = 0.5)
       x0 = x[!is.na(y) & y > 0]
       y0 = y[!is.na(y) & y > 0]
       if (length(x0) > 0) {
-
+        
         if(watermark) {
           grid::pushViewport(grid::viewport(angle = 50, name = "WM"))
           grid::grid.text("For Internal Use Only", x = unit(0.5, "npc"), y = unit(0.5, "npc"),
                           gp = grid::gpar(col = "grey", fontsize = 52, alpha = 0.5))
           grid::popViewport()
         }
-
+        
         plot(x0, log10(y0), type = "b", cex = 0.7, xlim = c(0,
                                                             maxx), ylim = c(log10(miny), log10(maxy)),
              yaxt = "n", xlab = paste0("Time (", timeUnit,
                                        ")"), ylab = paste0("Concentration (log interval) (",
                                                            concUnit, ")"))
-
+        
         points(x[UsedPoints], log10(y[UsedPoints]), pch = 16)
         yticks = seq(round(min(log10(y0))), ceiling(max(log10(y0))))
         ylabels = sapply(yticks, function(i) as.expression(bquote(10^.(i))))
@@ -3241,7 +3269,7 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
   }
   par(defPar)
   ncar::ClosePDF()
-
+  
 }
 
 #-------------------------------------------------------------------------------
@@ -3300,8 +3328,8 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
                                      wt_multiplication_value = 1,
                                      create_dummy_ev = TRUE,
                                      debug = FALSE
-                                     ) {
-
+) {
+  
   dosing_scheme_1 <- mrgsolve::ev(amt     =  sanitize_numeric_input(amt1) * mw_conversion * wt_multiplication_value,
                                   time    =  sanitize_numeric_input(delay_time1),
                                   cmt     =  cmt1,
@@ -3337,14 +3365,14 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
                                   total   =  sanitize_numeric_input(total5, allow_zero = FALSE, as_integer = TRUE),
                                   ii      =  sanitize_numeric_input(ii5, allow_zero = FALSE)
   )
-
+  
   total_doses <- c(dosing_scheme_1, dosing_scheme_2, dosing_scheme_3,
                    dosing_scheme_4, dosing_scheme_5) %>%
     as.data.frame() %>%
     dplyr::arrange(time) %>%
     dplyr::filter(amt > 0) %>%
     mrgsolve::as.ev()
-
+  
   if(create_dummy_ev) {
     if(nrow(total_doses) == 0) {
       total_doses <- mrgsolve::ev(amt   = 0,
@@ -3353,13 +3381,13 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
                                   tinf  = 0,
                                   total = 1,
                                   ii    = 0)
-
+      
     }
   }
-
+  
   if(debug) {
     message("Dosing regimen generated")
   }
-
+  
   return(total_doses)
 }

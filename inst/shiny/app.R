@@ -201,8 +201,6 @@ ui <- shiny::navbarPage(
                                                         downloadButton("download_data_plot", "Download Non-Interactive Plot"),
                                                         shinyBS::bsPopover('download_data_plot', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover")
                                     ),
-                                    #plotly::plotlyOutput('dataset_page_plot', height = '600px') %>%
-                                    # shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)),
                                     shinydashboard::box(width = 12,
                                                         title = 'Plotting Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE,
                                                         fluidRow(
@@ -1590,6 +1588,7 @@ ui <- shiny::navbarPage(
                                p('For bug reports or general feedback, please ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/issues", "submit an issue on GitHub.", target = "_blank"), ''),
                                p(
                                  tags$ul(
+                                   tags$li("Blank sub-categories may reduce the size of interactive plots in Data Exploration."),
                                    tags$li("Using 'outvars' would sometimes fail to display the plot. A current workaround is to re-define the outvars to a compartment name and then switching back."),
                                    tags$li("Model will crash if model code contains 'R_' pattern which does not refer to modelling rate."),
                                    tags$li("Weight-based dosing is not propagated in IIV models."),

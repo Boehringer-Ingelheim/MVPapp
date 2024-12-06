@@ -38,9 +38,9 @@ bspop_deselect        <- '(Optional) choose any number of columns to remove from
 #' @export
 bspop_apply           <- 'After pressing Apply, check the Console below to see if there are any errors.'
 #' @export
-bspop_select_columns  <- 'ID, TIME, and DV are required columns for the Dataset to be supported in plotting. <br><br> If missing, the user can create their own in the code editor.'
+bspop_select_columns  <- 'ID, TIME, and DV are required columns for the Dataset to be fully supported in plotting. <br><br> If missing, the user can create their own in the code editor.'
 #' @export
-bspop_dataset_code    <- '(Optional) Adjust the uploaded dataset to facilitate quick data exploration or to ensure full compatibility with the App (requires at minimum the ID, TIME, and DV columns).'
+bspop_dataset_code    <- '(Optional) Adjust the uploaded dataset to facilitate quick data exploration or to ensure full compatibility with the App (requires the ID, TIME, and DV columns).<br><br>At minimum, the ID column needs to be present for Data Exploration.'
 
 #' @export
 transpose_checkbox    <- 'Transpose Table'
@@ -344,7 +344,7 @@ bspop_catvalue1       <- "The percentage slider determines the approximate propo
 #' @export
 bspop_catvalue2       <- "(100 - percentage slider) determines the approximate proportion of subjects with this numeric value."
 #' @export
-bspop_do_iiv_plotly   <- 'Interactive plots using the "plotly" package could take a long time for simulations with more than a few hundred subjects.<br><br>Note - "Download Options" do not apply when plots are not interactive.'
+bspop_do_iiv_plotly   <- 'Interactive plots using the "plotly" package could take a long time for simulations with more than a few hundred subjects.'#<br><br>Note - "Download Options" do not apply when plots are not interactive.'
 
 #infoBox
 #' @export
