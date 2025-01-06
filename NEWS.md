@@ -1,3 +1,15 @@
+# MVPapp 0.2.12 (2025-01-06)
+
+## Features
+
+* Individual plots for exploring uploaded datasets (#15)  
+* Mean trend toggle for variability plots (#13)  
+* Progress bars for longer computations where a spinner graphic is not feasible (#16)
+
+## Bugfixes
+
+* Allow "Total Doses" for each Dosing Regimen to be 0 (#14)
+
 # MVPapp 0.2.11 (2024-12-04)
 
 ## Features

@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.11</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,7 +57,7 @@
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p><code>MVPapp</code> is an R package that bundles the <a href="https://mvp.boehringer-ingelheim.com/" target="_blank" class="external-link">Model Visualization Platform (MVP)</a> Shiny application for local use and/or deployment. MVP is an interactive pharmacometrics environment requiring minimal setup from the users, and is developed with user-friendliness as a top priority so even non-modelers may be able to explore different aspects of the models without too much hassle, while balancing complexity for advanced users. Some features include:<br>
+<p><code>MVPapp</code> is an R package that bundles the <a href="https://mvp.boehringer-ingelheim.com/" target="_blank" class="external-link">Model Visualization Platform (MVP)</a> Shiny application for local use and/or deployment. MVP is an interactive pharmacometrics environment requiring minimal setup from the users, and is developed with user-friendliness as a top priority so even non-modelers may be able to explore different aspects of the models without too much hassle, whilst balancing complexity for advanced users. Some features include:<br>
 - Live code editing using <a href="https://github.com/metrumresearchgroup/mrgsolve" target="_blank" class="external-link">mrgsolve</a><br>
 - Flexible dosing regimens, supporting up to 5 independent dosing schedules per model<br>
 - Basic data exploration and data cleaning, and overlaying of data<br>
@@ -94,9 +94,8 @@
 <h3 id="simulations-without-variability">Simulations without Variability<a class="anchor" aria-label="anchor" href="#simulations-without-variability"></a>
 </h3>
 <p>This is the default landing page when the App is launched. It looks a bit empty at the moment, however it is very simple to start generating a model and show a plot. All important settings are neatly situated together on the same page so the user can appreciate in real-time whenever they change certain aspects of the model. This page should be the <strong>homepage</strong> as other pages of the app inherit settings from this page (e.g. dosing and axis choices).</p>
-<figure><img src="www/simtab1.png" alt="Simulation tab"><figcaption aria-hidden="true">
-Simulation tab
-</figcaption></figure><ol style="list-style-type: decimal">
+<p><img src="www/simtab1.png"></p>
+<ol style="list-style-type: decimal">
 <li>Navigate to the “Select Model 1” box on the left hand side and choose a template model from the drop-down list, or upload your own .cpp file.
 <ul>
 <li>Once a model is selected or uploaded, you can make further changes in the Code Editor below.<br>
@@ -123,14 +122,11 @@ Simulation tab
 </ul>
 </li>
 </ol>
-<figure><img src="www/2models1.png" alt="Two independent models with their own unique model structure and dosing"><figcaption aria-hidden="true">
-Two independent models with their own unique model structure and dosing
-</figcaption></figure><ol start="7" style="list-style-type: decimal">
+<p><img src="www/2models1.png"></p>
+<ol start="7" style="list-style-type: decimal">
 <li>In general, most plots are interactive (using the <code>plotly</code> package), which allows zooming, panning, drawing etc, controlled from the top right of the plot. The camera icon downloads the current plot, based on the options set by the “Download Options” box on the bottom right of the page.</li>
 </ol>
-<figure><img src="www/plotlytoolbar.png" alt="Camera icon from the plotly toolbar"><figcaption aria-hidden="true">
-Camera icon from the plotly toolbar
-</figcaption></figure>
+<p><img src="www/plotlytoolbar.png"></p>
 </div>
 <div class="section level3">
 <h3 id="uploading-datasets-and-data-exploration">Uploading Datasets and Data Exploration<a class="anchor" aria-label="anchor" href="#uploading-datasets-and-data-exploration"></a>
@@ -143,19 +139,16 @@ Camera icon from the plotly toolbar
 </li>
 <li>Descriptive statistics (NCA) can be derived (supporting non-NONMEM datasets) by defining the options and then clicking the “Calculate NCA” button, from the “Descriptive Statistics” tab. Note that <strong>this feature is experimental and assumes a single dose per subject only for a single compartment. The user may need to filter their dataset accordingly.</strong> The displayed table can be transposed if required. Results and plots per subject can be downloaded by the buttons at the bottom of the page.</li>
 </ol>
-<figure><img src="www/ncaexample.png" alt="Descriptive Statistics (NCA)"><figcaption aria-hidden="true">
-Descriptive Statistics (NCA)
-</figcaption></figure><ol start="4" style="list-style-type: decimal">
-<li>Quick data exploration are provided by the “Plot Output” (tip: clicking on the legend can toggle each subgroup on/off) and “Correlation Plot” tabs:</li>
+<p><img src="www/ncaexample.png"></p>
+<ol start="4" style="list-style-type: decimal">
+<li>Quick data exploration are provided by the “General Plot”, “Ind. Plot”, and “Corr. Plot” tabs (tip: clicking on the legend can toggle each subgroup on/off when the plot is interactive):</li>
 </ol>
-<figure><img src="www/facet_plot.png" alt="Example Plot Output by Facet"><figcaption aria-hidden="true">
-Example Plot Output by Facet
-</figcaption></figure><figure><img src="www/corr_plot.png" alt="Example Correlation Plot"><figcaption aria-hidden="true">
-Example Correlation Plot
-</figcaption></figure><p><strong>Note: once a dataset is uploaded, its display can be toggled on other pages by checking the “Overlay Dataset” checkbox in the “Plotting Options” in each respective page!</strong></p>
-<figure><img src="www/overlayexp.png" alt="Simulation page plot with data overlaid"><figcaption aria-hidden="true">
-Simulation page plot with data overlaid
-</figcaption></figure>
+<p>General plots are flexible plots that can handle continuous/continuous, continuous/discrete, and discrete/discrete types of data. Settings from General Plots will be carried over to the “Ind. Plot”, where users can explore individual profiles in more detail.</p>
+<p><img src="www/facet_plot.png"></p>
+<p>Correlation plots are grouped by ID and are useful to explore potential correlations between covariates.</p>
+<p><img src="www/corr_plot.png"></p>
+<p><strong>Note: once a dataset is uploaded, its display can be toggled on other pages by checking the “Overlay Dataset” checkbox in the “Plotting Options” in each respective page!</strong></p>
+<p><img src="www/overlayexp.png"></p>
 </div>
 <div class="section level3">
 <h3 id="parameter-sensitivity-analysis">Parameter Sensitivity Analysis<a class="anchor" aria-label="anchor" href="#parameter-sensitivity-analysis"></a>
@@ -184,9 +177,7 @@ Simulation page plot with data overlaid
 </li>
 <li>Simulations of the middle profile, in addition to its derived metrics can be downloaded in the Table page.</li>
 </ol>
-<figure><img src="www/psaexample.png" alt="Parameter Sensitivity Analysis"><figcaption aria-hidden="true">
-Parameter Sensitivity Analysis
-</figcaption></figure>
+<p><img src="www/psaexample.png"></p>
 </div>
 <div class="section level3">
 <h3 id="simulations-with-variability">Simulations with Variability<a class="anchor" aria-label="anchor" href="#simulations-with-variability"></a>
@@ -212,9 +203,8 @@ Parameter Sensitivity Analysis
 </ul>
 </li>
 </ol>
-<figure><img src="www/demog1.png" alt="Sampling from External Databases"><figcaption aria-hidden="true">
-Sampling from External Databases
-</figcaption></figure><ol start="2" style="list-style-type: decimal">
+<p><img src="www/demog1.png"></p>
+<ol start="2" style="list-style-type: decimal">
 <li>Custom covariate distributions can be defined (e.g. <code>EGFR</code>) and inserted similarly together with the database shown in step 1). Up to 3 unique covariate distributions are enabled.
 <ul>
 <li>Normal, Log-normal, uniform, binary categorical distributions are supported.<br>
@@ -223,9 +213,7 @@ Sampling from External Databases
 </ul>
 </li>
 </ol>
-<figure><img src="www/egfrexample.png" alt="User-defined Custom Covariate(s) Distributions"><figcaption aria-hidden="true">
-User-defined Custom Covariate(s) Distributions
-</figcaption></figure>
+<p><img src="www/egfrexample.png"></p>
 </div>
 <div class="section level4">
 <h4 id="assessing-variability">Assessing Variability<a class="anchor" aria-label="anchor" href="#assessing-variability"></a>
@@ -243,9 +231,7 @@ User-defined Custom Covariate(s) Distributions
 </ul>
 </li>
 </ol>
-<figure><img src="www/varplot.png" alt="Comparing Percentages Above Thresholds"><figcaption aria-hidden="true">
-Comparing Percentages Above Thresholds
-</figcaption></figure>
+<p><img src="www/varplot.png"></p>
 </div>
 </div>
 </div>
@@ -255,7 +241,7 @@ Comparing Percentages Above Thresholds
 <div class="section level3">
 <h3 id="providing-external-models-and-changing-default-settings">Providing external models and changing default settings<a class="anchor" aria-label="anchor" href="#providing-external-models-and-changing-default-settings"></a>
 </h3>
-<p>Please see the vignette on “Supplying Passworded Models” (<code>vignette("supply-passwords", package = "MVPapp"</code>) for instructions on how to provide external models on App start-up.</p>
+<p>Please see the article on <a href="https://boehringer-ingelheim.github.io/MVPapp/articles/supply-passwords.html">Supplying Passworded Models</a>, or access the vignette on this topic in R (<code>vignette("supply-passwords", package = "MVPapp"</code>) for instructions on how to provide external models on App start-up.</p>
 </div>
 <div class="section level3">
 <h3 id="run-mvp-as-a-regular-shiny-app">Run MVP as a regular Shiny App<a class="anchor" aria-label="anchor" href="#run-mvp-as-a-regular-shiny-app"></a>

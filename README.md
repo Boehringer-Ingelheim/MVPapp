@@ -12,7 +12,7 @@ Visualization Platform (MVP)</a> Shiny application for local use and/or
 deployment. MVP is an interactive pharmacometrics environment requiring
 minimal setup from the users, and is developed with user-friendliness as
 a top priority so even non-modelers may be able to explore different
-aspects of the models without too much hassle, while balancing
+aspects of the models without too much hassle, whilst balancing
 complexity for advanced users. Some features include:  
 - Live code editing using
 <a href="https://github.com/metrumresearchgroup/mrgsolve"
@@ -67,10 +67,7 @@ whenever they change certain aspects of the model. This page should be
 the **homepage** as other pages of the app inherit settings from this
 page (e.g. dosing and axis choices).
 
-<figure>
-<img src="www/simtab1.png" alt="Simulation tab" />
-<figcaption aria-hidden="true">Simulation tab</figcaption>
-</figure>
+![](www/simtab1.png)
 
 1.  Navigate to the “Select Model 1” box on the left hand side and
     choose a template model from the drop-down list, or upload your own
@@ -118,12 +115,7 @@ page (e.g. dosing and axis choices).
       appearance. Click on the “+” icon on the right hand side to expand
       it.
 
-<figure>
-<img src="www/2models1.png"
-alt="Two independent models with their own unique model structure and dosing" />
-<figcaption aria-hidden="true">Two independent models with their own
-unique model structure and dosing</figcaption>
-</figure>
+![](www/2models1.png)
 
 7.  In general, most plots are interactive (using the `plotly` package),
     which allows zooming, panning, drawing etc, controlled from the top
@@ -131,12 +123,7 @@ unique model structure and dosing</figcaption>
     on the options set by the “Download Options” box on the bottom right
     of the page.
 
-<figure>
-<img src="www/plotlytoolbar.png"
-alt="Camera icon from the plotly toolbar" />
-<figcaption aria-hidden="true">Camera icon from the plotly
-toolbar</figcaption>
-</figure>
+![](www/plotlytoolbar.png)
 
 ### Uploading Datasets and Data Exploration
 
@@ -163,35 +150,29 @@ rename these columns using the code editor.
     Results and plots per subject can be downloaded by the buttons at
     the bottom of the page.
 
-<figure>
-<img src="www/ncaexample.png" alt="Descriptive Statistics (NCA)" />
-<figcaption aria-hidden="true">Descriptive Statistics (NCA)</figcaption>
-</figure>
+![](www/ncaexample.png)
 
-4.  Quick data exploration are provided by the “Plot Output” (tip:
-    clicking on the legend can toggle each subgroup on/off) and
-    “Correlation Plot” tabs:
+4.  Quick data exploration are provided by the “General Plot”, “Ind.
+    Plot”, and “Corr. Plot” tabs (tip: clicking on the legend can toggle
+    each subgroup on/off when the plot is interactive):
 
-<figure>
-<img src="www/facet_plot.png" alt="Example Plot Output by Facet" />
-<figcaption aria-hidden="true">Example Plot Output by Facet</figcaption>
-</figure>
+General plots are flexible plots that can handle continuous/continuous,
+continuous/discrete, and discrete/discrete types of data. Settings from
+General Plots will be carried over to the “Ind. Plot”, where users can
+explore individual profiles in more detail.
 
-<figure>
-<img src="www/corr_plot.png" alt="Example Correlation Plot" />
-<figcaption aria-hidden="true">Example Correlation Plot</figcaption>
-</figure>
+![](www/facet_plot.png)
+
+Correlation plots are grouped by ID and are useful to explore potential
+correlations between covariates.
+
+![](www/corr_plot.png)
 
 **Note: once a dataset is uploaded, its display can be toggled on other
 pages by checking the “Overlay Dataset” checkbox in the “Plotting
 Options” in each respective page!**
 
-<figure>
-<img src="www/overlayexp.png"
-alt="Simulation page plot with data overlaid" />
-<figcaption aria-hidden="true">Simulation page plot with data
-overlaid</figcaption>
-</figure>
+![](www/overlayexp.png)
 
 ### Parameter Sensitivity Analysis
 
@@ -223,11 +204,7 @@ previously defined model settings and making them available (i.e. in
 6.  Simulations of the middle profile, in addition to its derived
     metrics can be downloaded in the Table page.
 
-<figure>
-<img src="www/psaexample.png" alt="Parameter Sensitivity Analysis" />
-<figcaption aria-hidden="true">Parameter Sensitivity
-Analysis</figcaption>
-</figure>
+![](www/psaexample.png)
 
 ### Simulations with Variability
 
@@ -265,11 +242,7 @@ live)!
       simulations.  
     - Histogram of weight and age can be viewed in the “Plots” sub-tab.
 
-<figure>
-<img src="www/demog1.png" alt="Sampling from External Databases" />
-<figcaption aria-hidden="true">Sampling from External
-Databases</figcaption>
-</figure>
+![](www/demog1.png)
 
 2.  Custom covariate distributions can be defined (e.g. `EGFR`) and
     inserted similarly together with the database shown in step 1). Up
@@ -279,12 +252,7 @@ Databases</figcaption>
     - Once defined, they will be made available in the “Summary
       Statistics” sub tab and able to be downloaded.
 
-<figure>
-<img src="www/egfrexample.png"
-alt="User-defined Custom Covariate(s) Distributions" />
-<figcaption aria-hidden="true">User-defined Custom Covariate(s)
-Distributions</figcaption>
-</figure>
+![](www/egfrexample.png)
 
 #### Assessing Variability
 
@@ -307,12 +275,7 @@ matrices has reverted to its last known state.
     - By default, the last time is used. However this can be changed
       using the “At Time (Original Scale)” option.
 
-<figure>
-<img src="www/varplot.png"
-alt="Comparing Percentages Above Thresholds" />
-<figcaption aria-hidden="true">Comparing Percentages Above
-Thresholds</figcaption>
-</figure>
+![](www/varplot.png)
 
 ## Extended Features
 

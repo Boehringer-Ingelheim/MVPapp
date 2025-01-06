@@ -21,6 +21,7 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/convert_to_plotly_watermark.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/create_alert.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/create_value_box.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/do_data_page_ind_plot.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/do_data_page_plot.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/drawDetails.watermark.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/draw_correlation_plot.html</loc></url>
@@ -63,8 +64,10 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/safely_run_single_sim.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/sample_age_wt.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/sanitize_numeric_input.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/search_id_col.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/smart_x_axis.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/split_data_frame.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/tblNCA_progress.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/today_numeric.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/update_model_choices.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/update_model_object.html</loc></url>

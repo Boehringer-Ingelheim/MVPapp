@@ -25,9 +25,9 @@ if(debug_mode) {
   # Pre-loads external patient databases ('cdc.expand', 'who.expand', 'nhanes.filtered')
   # The raw data used to create .rda is available on Github inside 'data-raw' folder
   source("databases_v_0_2_1.R")
-  source("ui_settings_v_0_2_11.R")       # List of UI settings e.g. labels and descriptions
+  source("ui_settings_v_0_2_12.R")       # List of UI settings e.g. labels and descriptions
   source("code_templates_v_0_2_10.R")    # List of example mrgsolve models
-  source("functions_v_0_2_11.R")         # List of helper functions required for the app
+  source("functions_v_0_2_12.R")         # List of helper functions required for the app
 
   ## Start-up options for the App
   #source("config.R")   # options - handled below
@@ -80,7 +80,7 @@ ui <- shiny::navbarPage(
                                                 checkboxInput('EVID_filter', 'Remove dosing rows (exclude EVID == 1)', width = '100%', TRUE),
                                                 checkboxInput('BLQ_filter', 'Remove BLQ observations (exclude BLQ >= 1)', width = '100%', TRUE),
                                                 checkboxInput('turn_all_numeric', 'Coerce Dataset to Numeric (all characters becomes "NA")', width = '100%', TRUE),
-                                                checkboxInput('create_id_col', 'Create ID column if not found (from "SUBJIDN" or "USUBJID")', width = '100%', TRUE)
+                                                checkboxInput('create_id_col', 'Create ID column if not found (from "SUBJIDN", "USUBJID", or "PTNO")', width = '100%', TRUE)
                             ),
                             shinyBS::bsPopover("bspop_deselect", title = "De-select Columns to Display", content = bspop_deselect, placement = "right", trigger = "hover"),
                             shinydashboard::box(width = 12,
@@ -121,7 +121,7 @@ ui <- shiny::navbarPage(
              mainPanel(width = mainbar_width,
                        shinydashboard::tabBox(
                          side = 'left', width = 12,
-                         tabPanel('Filtered Table',
+                         tabPanel('Filtered Data',
                                   fluidRow(
                                     column(width = 12,
                                            DT::dataTableOutput('dataset_page_table')),
@@ -191,9 +191,9 @@ ui <- shiny::navbarPage(
                                   ), # end of fluidRow
                                   uiOutput("descriptive_stats_summary") %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen),
                                   downloadButton("download_descriptive_stats", "Download Individual Results"),
-                                  downloadButton("download_nca_report", "Generate NCA Report")
+                                  downloadButton("download_nca_report", "Generate NCA Report", icon = icon("cog", class = "fa-spin"))
                          ), # end of tabPanel
-                         tabPanel('Plot Output',
+                         tabPanel('General Plot',
                                   fluidRow(
                                     shinydashboard::box(width = 12,
                                                         title = 'Data Exploration', status = 'primary', solidHeader = TRUE, collapsible = FALSE,
@@ -201,8 +201,10 @@ ui <- shiny::navbarPage(
                                                         downloadButton("download_data_plot", "Download Non-Interactive Plot"),
                                                         shinyBS::bsPopover('download_data_plot', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover")
                                     ),
+                                    shinyBS::bsPopover("bspop_data_plot_options", title = "Plotting Options", content = bspop_data_plot_options, placement = "right", trigger = "hover"),
                                     shinydashboard::box(width = 12,
-                                                        title = 'Plotting Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE,
+                                                        title = tags$span(htmltools::HTML("Plotting Options&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_data_plot_options")),
+                                                        status = 'primary', solidHeader = TRUE, collapsible = TRUE,
                                                         fluidRow(
                                                           column(width = 2,
                                                                  selectizeInput('y_axis', select_y_axis, character(0))),
@@ -211,7 +213,8 @@ ui <- shiny::navbarPage(
                                                           column(width = 2,
                                                                  selectizeInput('color', select_color, character(0))),
                                                           column(width = 2,
-                                                                 selectizeInput('facet_by', facet_by_label, character(0), selected = NULL)),
+                                                                 selectizeInput('facet_by',
+                                                                                facet_by_label, character(0), selected = NULL, multiple = TRUE)),
                                                           column(width = 2,
                                                                  selectizeInput('median_line_by', select_median, character(0))),
                                                           column(width = 2,
@@ -249,34 +252,129 @@ ui <- shiny::navbarPage(
                                                           column(width = 4,
                                                                  div(style = "height: 20px;"),  # Empty div to add space
                                                                  shinyBS::bsPopover('do_data_plotly', 'Interactive Plot (Slower)' , content = bspop_do_data_plotly, placement = "top", trigger = "hover"),
-                                                                 checkboxInput('do_data_plotly', 'Interactive Plot (Slower)', value = TRUE))
+                                                                 checkboxInput('do_data_plotly', 'Interactive Plot (Slower)', value = FALSE))
                                                         )
 
                                     ), # end of box
                                     shinydashboard::box(width = 12,
                                                         title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
-                                                        column(width = 3,
+                                                        column(width = 6,
                                                                textInput('plotlyd_filename', plotly_filename_label, value = paste0(today_numeric(), '_data_plot')),
                                                                shinyBS::bsPopover('plotlyd_filename', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
                                                         ),
-                                                        column(width = 3,
+                                                        column(width = 2,
                                                                selectInput('plotlyd_format', label = plotly_format_label,
                                                                            choices = c("png","jpeg","svg","webp"),
                                                                            selected = 'png',
                                                                            selectize = FALSE)
                                                         ),
-                                                        column(width = 3,
+                                                        column(width = 2,
                                                                numericInput('plotlyd_width', plotly_width_label, value = NULL, min = 1, step = 10),
                                                                shinyBS::bsPopover('plotlyd_width', title = plotly_width_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
                                                         ),
-                                                        column(width = 3,
+                                                        column(width = 2,
                                                                numericInput('plotlyd_height', plotly_height_label, value = NULL, min = 1, step = 10),
                                                                shinyBS::bsPopover('plotlyd_height', title = plotly_height_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
                                                         )
                                     )          # end of box
                                   )               # end of fluidRow
                          ),                     # end of tabPanel from tabBox
-                         tabPanel('Correlation Plot',
+                         tabPanel('Ind. Plot',
+                                  fluidRow(
+                                    shinydashboard::box(width = 12,
+                                                        title = 'Data Exploration', status = 'primary', solidHeader = TRUE, collapsible = FALSE,
+                                                        uiOutput('dataset_page_ind_plot'),
+                                                        downloadButton("download_data_ind_plot", "Download Non-Interactive Plot"),
+                                                        shinyBS::bsPopover('download_data_ind_plot', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover"),
+                                                        tags$span(style = "padding: 10px;"), # Add horizontal space
+                                                        downloadButton("download_data_ind_plot_all", "Generate All Individuals (.pdf)", icon = icon("cog", class = "fa-spin")),
+                                                        shinyBS::bsPopover('download_data_ind_plot_all', 'Generate All Individuals (.pdf)' , content = bspop_download_plot_all, placement = "left", trigger = "hover")
+                                    ),
+                                    shinyBS::bsPopover("bspop_ind_plot_options", title = "Plotting Options", content = bspop_ind_plot_options, placement = "right", trigger = "hover"),
+                                    shinydashboard::box(width = 12,
+                                                        title = tags$span(htmltools::HTML("Plotting Options&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_ind_plot_options")),
+                                                        status = 'primary', solidHeader = TRUE, collapsible = TRUE,
+                                                        fluidRow(
+                                                          column(width = 3,
+                                                                 selectizeInput('filter_by_id', label_filter_by_id, NULL, multiple = TRUE),
+                                                                 shinyBS::bsPopover('filter_by_id',  label_filter_by_id, content = bspop_filter_by_id, placement = 'left', trigger = 'focus')
+                                                          ),
+                                                          column(width = 2,
+                                                                 selectInput('page_number', label = "Page:",
+                                                                             choices = seq(1, 10, by = 1),
+                                                                             selected = 1,
+                                                                             selectize = FALSE)),
+                                                          column(width = 2,
+                                                                 selectInput('number_of_rows', label = "Rows per Page",
+                                                                             choices = seq(1, 6, by = 1),
+                                                                             selected = 3,
+                                                                             selectize = FALSE)),
+                                                          column(width = 2,
+                                                                 selectInput('number_of_cols', label = "Columns per Page",
+                                                                             choices = seq(1, 6, by = 1),
+                                                                             selected = 3,
+                                                                             selectize = FALSE)),
+                                                          column(width = 3,
+                                                                 div(style = "height: 20px;"),  # Empty div to add space
+                                                                 shinyBS::bsPopover('do_data_ind_plotly', 'Interactive Plot (Slower)' , content = bspop_do_data_plotly, placement = "top", trigger = "hover"),
+                                                                 checkboxInput('do_data_ind_plotly', 'Interactive Plot', value = FALSE))
+                                                        ), # end of fluidRow
+                                                        fluidRow(
+                                                          column(width = 3,
+                                                                 selectizeInput('highlight_var', label_highlight, NULL, multiple = FALSE),
+                                                                 shinyBS::bsPopover('highlight_var',  label_highlight, content = bspop_highlight_var, placement = 'top', trigger = 'hover'),
+                                                                 update_resistant_popover('highlight_var', title = label_highlight, content = bspop_highlight_var, trigger = 'top', placement = 'hover')
+                                                          ),
+                                                          column(width = 4,
+                                                                 selectizeInput('highlight_var_values', label_highlight_values, NULL, multiple = TRUE)
+                                                          )
+                                                        ) # end of fluidRow
+                                    ), # end of box
+                                    shinydashboard::box(width = 12,
+                                                        title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
+                                                        fluidRow(
+                                                          column(width = 6,
+                                                                 textInput('plotlydi_filename', plotly_filename_label, value = paste0(today_numeric(), '_ind_plot')),
+                                                                 shinyBS::bsPopover('plotlydi_filename', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
+                                                          ),
+                                                          column(width = 2,
+                                                                 selectInput('plotlydi_format', label = plotly_format_label,
+                                                                             choices = c("png","jpeg","svg","webp"),
+                                                                             selected = 'png',
+                                                                             selectize = FALSE)
+                                                          ),
+                                                          column(width = 2,
+                                                                 numericInput('plotlydi_width', plotly_width_label, value = NULL, min = 1, step = 10),
+                                                                 shinyBS::bsPopover('plotlydi_width', title = plotly_width_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
+                                                          ),
+                                                          column(width = 2,
+                                                                 numericInput('plotlydi_height', plotly_height_label, value = NULL, min = 1, step = 10),
+                                                                 shinyBS::bsPopover('plotlydi_height', title = plotly_height_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
+                                                          )
+                                                        ),
+                                                        fluidRow(tags$div(tags$hr(style="border-color: #CCCCCC; border-width: 4px; width: 95%; margin-left: auto; margin-right: auto;"))),
+                                                        fluidRow(
+                                                          column(width = 6,
+                                                                 textInput('plotlydi_all_filename', plotly_filename_all_label, value = paste0(today_numeric(), '_ind_plot_all')),
+                                                                 shinyBS::bsPopover('plotlydi_filename_all', title = plotly_filename_all_label, content = bspop_plotly_file_name_all_label, placement = 'left', trigger = "focus")
+                                                          ),
+                                                          column(width = 2,
+                                                                 selectInput('plotlydi_all_format', label = plotly_format_all_label,
+                                                                             choices = c("pdf"),
+                                                                             selected = 'pdf',
+                                                                             selectize = FALSE)
+                                                          ),
+                                                          column(width = 2,
+                                                                 numericInput('plotlydi_all_width', plotly_width_all_label, value = 10, min = 1, step = 1)
+                                                          ),
+                                                          column(width = 2,
+                                                                 numericInput('plotlydi_all_height', plotly_height_all_label, value = 8, min = 1, step = 1)
+                                                          )
+                                                        ) # end fluidRow
+                                    )          # end of box
+                                  )               # end of fluidRow
+                         ),                     # end of tabPanel from tabBox
+                         tabPanel('Corr. Plot',
                                   fluidRow(
                                     shinydashboard::box(width = 12,
                                                         title = 'Data Exploration', status = 'primary', solidHeader = TRUE, collapsible = FALSE,
@@ -296,27 +394,27 @@ ui <- shiny::navbarPage(
                                     ), # end of box
                                     shinydashboard::box(width = 12,
                                                         title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
-                                                        column(width = 3,
+                                                        column(width = 6,
                                                                textInput('plotlyd_corr_filename', plotly_filename_label, value = paste0(today_numeric(), '_corr_plot')),
                                                                shinyBS::bsPopover('plotlyd_corr_filename', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
                                                         ),
-                                                        column(width = 3,
+                                                        column(width = 2,
                                                                selectInput('plotlyd_corr_format', label = plotly_format_label,
                                                                            choices = c("png","pdf","jpeg","svg"),
                                                                            selected = 'png',
                                                                            selectize = FALSE)
                                                         ),
-                                                        column(width = 3,
+                                                        column(width = 2,
                                                                numericInput('plotlyd_corr_width', plotly_width_label, value = NULL, min = 1, step = 10),
                                                                shinyBS::bsPopover('plotlyd_corr_width', title = plotly_width_label, content = bspop_plotly_width_height_corr, placement = 'left', trigger = "focus")
                                                         ),
-                                                        column(width = 3,
+                                                        column(width = 2,
                                                                numericInput('plotlyd_corr_height', plotly_height_label, value = NULL, min = 1, step = 10),
                                                                shinyBS::bsPopover('plotlyd_corr_height', title = plotly_height_label, content = bspop_plotly_width_height_corr, placement = 'left', trigger = "focus")
                                                         )
                                     )          # end of box
                                   ) # end of fluidRow
-                         ) # end of corr plot tabPanel
+                         ), # end of corr plot tabPanel
                        ) # end of tabBox
              ) # end of mainPanel
            ) # end of sidebarLayout
@@ -356,8 +454,10 @@ ui <- shiny::navbarPage(
                                                                                      shinycssloaders::withSpinner(type = 8, color = bi_darkgreen, size = 0.5, proxy.height = '50px')
                                                                           )
                                                       ),
+                                                      shinyBS::bsPopover("bspop_model_code_1", title = "Model Code", content = bspop_model_code, placement = "right", trigger = "hover"),
                                                       shinydashboard::box(width = 12,
-                                                                          title = 'Model 1 Code', status = 'primary', solidHeader = TRUE, collapsible = TRUE,
+                                                                          title = tags$span(htmltools::HTML("Model 1 Code&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_model_code_1")),
+                                                                          status = 'primary', solidHeader = TRUE, collapsible = TRUE,
                                                                           id = "model_code_panel",
                                                                           tabPanel(title = "Model 1",
                                                                                    shinyAce::aceEditor('model_input', mode = 'r', value = one_cmt, height = '550px',
@@ -411,8 +511,10 @@ ui <- shiny::navbarPage(
                                                                                      shinycssloaders::withSpinner(type = 8, color = bi_darkgreen, size = 0.5, proxy.height = '50px')
                                                                           )
                                                       ),
+                                                      shinyBS::bsPopover("bspop_model_code_2", title = "Model Code", content = bspop_model_code, placement = "right", trigger = "hover"),
                                                       shinydashboard::box(width = 12,
-                                                                          title = 'Model 2 Code', status = 'primary', solidHeader = TRUE, collapsible = TRUE,
+                                                                          title = tags$span(htmltools::HTML("Model 2 Code&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_model_code_2")),
+                                                                          status = 'primary', solidHeader = TRUE, collapsible = TRUE,
                                                                           id = "model_code_panel_2",
                                                                           tabPanel(title = "Model 2",
                                                                                    shinyAce::aceEditor('model_input2', mode = 'r', value = one_cmt, height = '550px',
@@ -496,11 +598,11 @@ ui <- shiny::navbarPage(
                                                                shinyBS::bsPopover('amt1', label_dose, content = bspop_dose, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('delay_time1', label_first_dose_time, value = 0),
+                                                               numericInput('delay_time1', label_first_dose_time, value = 0, min = 0, step = 1),
                                                                shinyBS::bsPopover('delay_time1', label_first_dose_time, content = bspop_time_units, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('total1', label_total_doses, value = 1, min = 1)
+                                                               numericInput('total1', label_total_doses, value = 1, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
                                                                numericInput('ii1', label_ii, value = 1, min = 1),
@@ -521,10 +623,10 @@ ui <- shiny::navbarPage(
                                                                shinyBS::bsPopover('amt2', label_dose, content = bspop_dose, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('delay_time2', label_first_dose_time, value = 12)
+                                                               numericInput('delay_time2', label_first_dose_time, value = 12, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('total2', label_total_doses, value = 1, min = 1)
+                                                               numericInput('total2', label_total_doses, value = 1, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
                                                                numericInput('ii2', label_ii, value = 1, min = 1)
@@ -543,10 +645,10 @@ ui <- shiny::navbarPage(
                                                                shinyBS::bsPopover('amt3', label_dose, content = bspop_dose, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('delay_time3', label_first_dose_time, value = 24)
+                                                               numericInput('delay_time3', label_first_dose_time, value = 24, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('total3', label_total_doses, value = 1, min = 1)
+                                                               numericInput('total3', label_total_doses, value = 1, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
                                                                numericInput('ii3', label_ii, value = 1, min = 1)
@@ -565,10 +667,10 @@ ui <- shiny::navbarPage(
                                                                shinyBS::bsPopover('amt4', label_dose, content = bspop_dose, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('delay_time4', label_first_dose_time, value = 0)
+                                                               numericInput('delay_time4', label_first_dose_time, value = 36, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('total4', label_total_doses, value = 1, min = 1)
+                                                               numericInput('total4', label_total_doses, value = 1, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
                                                                numericInput('ii4', label_ii, value = 1, min = 1)
@@ -587,10 +689,10 @@ ui <- shiny::navbarPage(
                                                                shinyBS::bsPopover('amt5', label_dose, content = bspop_dose, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('delay_time5', label_first_dose_time, value = 0)
+                                                               numericInput('delay_time5', label_first_dose_time, value = 48, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('total5', label_total_doses, value = 1, min = 1)
+                                                               numericInput('total5', label_total_doses, value = 1, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
                                                                numericInput('ii5', label_ii, value = 1, min = 1)
@@ -651,11 +753,11 @@ ui <- shiny::navbarPage(
                                                                shinyBS::bsPopover('amt1_2', label_dose, content = bspop_dose, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('delay_time1_2', label_first_dose_time, value = 0),
+                                                               numericInput('delay_time1_2', label_first_dose_time, value = 0, min = 0, step = 1),
                                                                shinyBS::bsPopover('delay_time1_2', label_first_dose_time, content = bspop_time_units, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('total1_2', label_total_doses, value = 1, min = 1)
+                                                               numericInput('total1_2', label_total_doses, value = 1, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
                                                                numericInput('ii1_2', label_ii, value = 1, min = 1),
@@ -676,10 +778,10 @@ ui <- shiny::navbarPage(
                                                                shinyBS::bsPopover('amt2_2', label_dose, content = bspop_dose, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('delay_time2_2', label_first_dose_time, value = 12)
+                                                               numericInput('delay_time2_2', label_first_dose_time, value = 12, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('total2_2', label_total_doses, value = 1, min = 1)
+                                                               numericInput('total2_2', label_total_doses, value = 1, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
                                                                numericInput('ii2_2', label_ii, value = 1, min = 1)
@@ -698,10 +800,10 @@ ui <- shiny::navbarPage(
                                                                shinyBS::bsPopover('amt3_2', label_dose, content = bspop_dose, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('delay_time3_2', label_first_dose_time, value = 24)
+                                                               numericInput('delay_time3_2', label_first_dose_time, value = 24, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('total3_2', label_total_doses, value = 1, min = 1)
+                                                               numericInput('total3_2', label_total_doses, value = 1, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
                                                                numericInput('ii3_2', label_ii, value = 1, min = 1)
@@ -720,10 +822,10 @@ ui <- shiny::navbarPage(
                                                                shinyBS::bsPopover('amt4_2', label_dose, content = bspop_dose, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('delay_time4_2', label_first_dose_time, value = 0)
+                                                               numericInput('delay_time4_2', label_first_dose_time, value = 36, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('total4_2', label_total_doses, value = 1, min = 1)
+                                                               numericInput('total4_2', label_total_doses, value = 1, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
                                                                numericInput('ii4_2', label_ii, value = 1, min = 1)
@@ -742,10 +844,10 @@ ui <- shiny::navbarPage(
                                                                shinyBS::bsPopover('amt5_2', label_dose, content = bspop_dose, trigger = 'focus', placement = 'left')
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('delay_time5_2', label_first_dose_time, value = 0)
+                                                               numericInput('delay_time5_2', label_first_dose_time, value = 48, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
-                                                               numericInput('total5_2', label_total_doses, value = 1, min = 1)
+                                                               numericInput('total5_2', label_total_doses, value = 1, min = 0, step = 1)
                                                         ),
                                                         column(width = 2,
                                                                numericInput('ii5_2', label_ii, value = 1, min = 1)
@@ -824,7 +926,8 @@ ui <- shiny::navbarPage(
                                                       update_resistant_popover('yaxis_name',  label_y_axis_sim_1, content = bspop_y_axis_sim, placement = 'left', trigger = 'focus'),
                                                       selectInput('yaxis_name_2', label_y_axis_sim_2, character(0)),
                                                       shinyBS::bsPopover('yaxis_name_2',  label_y_axis_sim_2, content = bspop_y_axis_sim, placement = 'left', trigger = 'focus'),
-                                                      update_resistant_popover('yaxis_name_2',  label_y_axis_sim_2, content = bspop_y_axis_sim, placement = 'left', trigger = 'focus')),
+                                                      update_resistant_popover('yaxis_name_2',  label_y_axis_sim_2, content = bspop_y_axis_sim, placement = 'left', trigger = 'focus')
+                                               ),
                                                column(width = 6,
                                                       textInput('y_axis_label', label_y_axis, value = "Concentration", placeholder = 'write label on y axis'),
                                                       textInput('plot_title_sim', plot_title_label, value = NULL, placeholder = plot_title_placeholder)
@@ -1004,8 +1107,9 @@ ui <- shiny::navbarPage(
                         mainPanel(width = mainbar_width,
                                   shinydashboard::box(width = 12,
                                                       title = label_main_sim_plot, status = 'primary', solidHeader = TRUE, collapsible = FALSE,
-                                                      plotly::plotlyOutput('psa_plot_output_model_1', height = '600px') %>%
-                                                        shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+                                                      uiOutput('psa_plot_output_model_1'),
+                                                      downloadButton("download_psa_plot_model_1", "Download Non-Interactive Plot"),
+                                                      shinyBS::bsPopover('download_psa_plot_model_1', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover")
                                   ),
                                   shinydashboard::box(width = 12,
                                                       title = 'Select Time Interval for Deriving Metrics (Original Time Scale)', status = 'primary', solidHeader = TRUE, collapsible = TRUE,
@@ -1032,27 +1136,32 @@ ui <- shiny::navbarPage(
                                                              checkboxInput('geom_ribbon_option_model_1', add_geom_ribbon, width = '100%', value = FALSE),
                                                              checkboxInput('stat_sum_data_option_model_1', add_data_stat_sum, width = '100%', value = TRUE),
                                                              shinyBS::bsPopover('stat_sum_data_option_model_1', title = add_data_stat_sum, content = bspop_data_stat_sum, placement = 'right')),
-                                                      column(width = 12,
+                                                      column(width = 9,
                                                              textInput('plot_title_psa_model_1', plot_title_label, value = NULL, placeholder = plot_title_placeholder)
+                                                      ),
+                                                      column(width = 3,
+                                                             div(style = "height: 15px;"),  # Empty div to add space
+                                                             shinyBS::bsPopover('do_psa_plotly_model_1', 'Interactive Plot (Slower)' , content = bspop_do_sim_plotly, placement = "top", trigger = "hover"),
+                                                             checkboxInput('do_psa_plotly_model_1', 'Interactive Plot (Slower)', value = TRUE)
                                                       )
                                   ),       # end of box
                                   shinydashboard::box(width = 12,
                                                       title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
-                                                      column(width = 3,
-                                                             textInput('plotly3_filename_model_1', plotly_filename_label, value = paste0(today_numeric(), '_psa_plot')),
+                                                      column(width = 6,
+                                                             textInput('plotly3_filename_model_1', plotly_filename_label, value = paste0(today_numeric(), '_psa_plot_model_1')),
                                                              shinyBS::bsPopover('plotly3_filename_model_1', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
                                                       ),
-                                                      column(width = 3,
+                                                      column(width = 2,
                                                              selectInput('plotly3_format_model_1', label = plotly_format_label,
                                                                          choices = c("png","jpeg","svg","webp"),
                                                                          selected = 'png',
                                                                          selectize = FALSE)
                                                       ),
-                                                      column(width = 3,
+                                                      column(width = 2,
                                                              numericInput('plotly3_width_model_1', plotly_width_label, value = NULL, min = 1, step = 10),
                                                              shinyBS::bsPopover('plotly3_width_model_1', title = plotly_width_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
                                                       ),
-                                                      column(width = 3,
+                                                      column(width = 2,
                                                              numericInput('plotly3_height_model_1', plotly_height_label, value = NULL, min = 1, step = 10),
                                                              shinyBS::bsPopover('plotly3_height_model_1', title = plotly_height_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
                                                       )
@@ -1144,8 +1253,9 @@ ui <- shiny::navbarPage(
                         mainPanel(width = mainbar_width,
                                   shinydashboard::box(width = 12,
                                                       title = label_main_sim_plot, status = 'primary', solidHeader = TRUE, collapsible = FALSE,
-                                                      plotly::plotlyOutput('psa_plot_output_model_2', height = '600px') %>%
-                                                        shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+                                                      uiOutput('psa_plot_output_model_2'),
+                                                      downloadButton("download_psa_plot_model_2", "Download Non-Interactive Plot"),
+                                                      shinyBS::bsPopover('download_psa_plot_model_2', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover")
                                   ),
                                   shinydashboard::box(width = 12,
                                                       title = 'Select Time Interval for Deriving Metrics (Original Time Scale)', status = 'primary', solidHeader = TRUE, collapsible = TRUE,
@@ -1173,27 +1283,32 @@ ui <- shiny::navbarPage(
                                                              checkboxInput('geom_ribbon_option_model_2', add_geom_ribbon, width = '100%', value = FALSE),
                                                              checkboxInput('stat_sum_data_option_model_2', add_data_stat_sum, width = '100%', value = TRUE),
                                                              shinyBS::bsPopover('stat_sum_data_option_model_2', title = add_data_stat_sum, content = bspop_data_stat_sum, placement = 'right')),
-                                                      column(width = 12,
+                                                      column(width = 9,
                                                              textInput('plot_title_psa_model_2', plot_title_label, value = NULL, placeholder = plot_title_placeholder)
+                                                      ),
+                                                      column(width = 3,
+                                                             div(style = "height: 15px;"),  # Empty div to add space
+                                                             shinyBS::bsPopover('do_psa_plotly_model_2', 'Interactive Plot (Slower)' , content = bspop_do_sim_plotly, placement = "top", trigger = "hover"),
+                                                             checkboxInput('do_psa_plotly_model_2', 'Interactive Plot (Slower)', value = TRUE)
                                                       )
                                   ),       # end of box
                                   shinydashboard::box(width = 12,
                                                       title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
-                                                      column(width = 3,
-                                                             textInput('plotly3_filename_model_2', plotly_filename_label, value = 'parameter_sensitivity_plot'),
+                                                      column(width = 6,
+                                                             textInput('plotly3_filename_model_2', plotly_filename_label, value = paste0(today_numeric(), '_psa_plot_model_2')),
                                                              shinyBS::bsPopover('plotly3_filename_model_2', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
                                                       ),
-                                                      column(width = 3,
+                                                      column(width = 2,
                                                              selectInput('plotly3_format_model_2', label = plotly_format_label,
                                                                          choices = c("png","jpeg","svg","webp"),
                                                                          selected = 'png',
                                                                          selectize = FALSE)
                                                       ),
-                                                      column(width = 3,
+                                                      column(width = 2,
                                                              numericInput('plotly3_width_model_2', plotly_width_label, value = NULL, min = 1, step = 10),
                                                              shinyBS::bsPopover('plotly3_width_model_2', title = plotly_width_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
                                                       ),
-                                                      column(width = 3,
+                                                      column(width = 2,
                                                              numericInput('plotly3_height_model_2', plotly_height_label, value = NULL, min = 1, step = 10),
                                                              shinyBS::bsPopover('plotly3_height_model_2', title = plotly_height_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
                                                       )
@@ -1208,12 +1323,12 @@ ui <- shiny::navbarPage(
            bslib::navset_pill(
              tabPanel('Model 1',
                       htmltools::br(),
-                      DT::dataTableOutput('pknca', width = '100%'),
-                      downloadButton("download_NCA_table", "Download Data (.csv)")),
+                      DT::dataTableOutput('psa_data_mid_model_1', width = '100%'),
+                      downloadButton("download_psa_data_mid_model_1", "Download Data (.csv)")),
              tabPanel('Model 2',
                       htmltools::br(),
-                      DT::dataTableOutput('pknca_model_2', width = '100%'),
-                      downloadButton("download_NCA_table_model_2", "Download Data (.csv)")
+                      DT::dataTableOutput('psa_data_mid_model_2', width = '100%'),
+                      downloadButton("download_psa_data_mid_model_2", "Download Data (.csv)")
              )
            )
   ),
@@ -1510,7 +1625,8 @@ ui <- shiny::navbarPage(
                                            fluidRow(
                                              column(width = 3,
                                                     checkboxInput('show_iiv_model_1', label = 'Show Model 1', value = TRUE),
-                                                    checkboxInput('log_y_axis_iiv', log_y_axis_label)),
+                                                    checkboxInput('log_y_axis_iiv', log_y_axis_label),
+                                                    checkboxInput('show_mean_iiv', show_mean_iiv_label)),
                                              column(width = 3,
                                                     checkboxInput('show_iiv_model_2', label = 'Show Model 2', value = TRUE),
                                                     checkboxInput('log_x_axis_iiv', log_x_axis_label)),
@@ -1538,21 +1654,21 @@ ui <- shiny::navbarPage(
                        ), # end of box
                        shinydashboard::box(width = 12,
                                            title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
-                                           column(width = 3,
+                                           column(width = 6,
                                                   textInput('plotly_iiv_filename', plotly_filename_label, value = paste0(today_numeric(), '_iiv_plot')),
                                                   shinyBS::bsPopover('plotly_iiv_filename', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
                                            ),
-                                           column(width = 3,
+                                           column(width = 2,
                                                   selectInput('plotly_iiv_format', label = plotly_format_label,
                                                               choices = c("png","jpeg","svg","webp"),
                                                               selected = 'png',
                                                               selectize = FALSE)
                                            ),
-                                           column(width = 3,
+                                           column(width = 2,
                                                   numericInput('plotly_iiv_width', plotly_width_label, value = NULL, min = 1, step = 10),
                                                   shinyBS::bsPopover('plotly_iiv_width', title = plotly_width_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
                                            ),
-                                           column(width = 3,
+                                           column(width = 2,
                                                   numericInput('plotly_iiv_height', plotly_height_label, value = NULL, min = 1, step = 10),
                                                   shinyBS::bsPopover('plotly_iiv_height', title = plotly_height_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
                                            )
@@ -1577,18 +1693,17 @@ ui <- shiny::navbarPage(
                                p('1. Choose a pre-set model from the "Select Model" option in the "Simulation" page, or enter your own', a(href = "https://mrgsolve.org/", "mrgsolve", target = "_blank"), ' code by selecting "Blank Template" in the list of models. Alternatively a user-supplied .cpp file can be uploaded (and edited) via the "Upload .cpp File" drop-down option.'),
                                p('2. Click "Generate Model" after any necessary code adjustments. Interactive boxes will be generated for each parameter. For model comparison, repeat for Model 2. Note: check the Console below the code editor for potential errors in the code if no parameter value boxes are generated.'),
                                p('3. Adjust the various Dosing Regimens (including any dose transformations and/or modeling duration or rate), Simulation Options, and Plotting Options as required. Note: the plot is interactive, hover over the plot for additional options (download button etc).'),
-                               p('4. (Optional): To visualize observations, navigate to the "Data Input" tab and upload your own NONMEM-compatible dataset, and apply any custom filtering in the provided code editor. Quick NCA in addition to data exploration is provided in the Table Output, Plot Output, and Descriptive Statistics tabs. Note: Any uploaded data is erased when the session is closed, and not accessible by anyone else at any time.'),
-                               p('5. (Optional) If the dataset is present, it can be displayed by checking the "Overlay Dataset" option inside "Plotting options" in the "Simulation" or "Parameter Sensitivity Analysis" tab.'),
-                               p('6. Parameter sensitivity analysis can be explored in the corresponding tab. All model code, dosing options, and simulations options are carried over from the "Simulation" tab. NCA Metrics is dynamically derived by selecting the desired time intervals.'),
-                               p('7. (Optional) After parameter sensitivity analysis, the simulation results containing derived metrics for the middle parameter can be viewed and downloaded from the "Tables" tab.'),
-                               p('8. (Optional) Random effects can be explored in the Variability tab. External population databases can be selected with a range of covariate options to sample from. Covariate distributions can be customized and be used as input for the model. Note: Generated distributions of external population databases can be assessed and downloaded separately.')
+                               p('4. (Optional): To visualize observations, navigate to the "Data Input" page and upload your own NONMEM-compatible dataset, and apply any custom filtering in the provided code editor. Quick NCA in addition to data exploration is provided in the various sub-tabs on the right hand side. Note: Any uploaded data is erased when the session is closed, and not accessible by anyone else at any time.'),
+                               p('5. (Optional) If the dataset is present, it can be displayed by checking the "Overlay Dataset" option inside "Plotting options" in the "Simulation" or "Parameter Sensitivity Analysis" page.'),
+                               p('6. Parameter sensitivity analysis can be explored in the corresponding page. All model code, dosing options, and simulations options are carried over from the "Simulation" tab. NCA Metrics is dynamically derived by selecting the desired time intervals.'),
+                               p('7. (Optional) After parameter sensitivity analysis, the simulation results containing derived metrics for the middle parameter can be viewed and downloaded from the "Tables" page.'),
+                               p('8. (Optional) Random effects can be explored in the Variability page. External population databases can be selected with a range of covariate options to sample from. Covariate distributions can be customized and be used as input for the model. Note: Generated distributions of external population databases can be assessed and downloaded separately.')
            ),
            shinydashboard::box(width = 12,
                                title = 'Known Issues', status = 'primary', solidHeader = TRUE,
                                p('For bug reports or general feedback, please ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/issues", "submit an issue on GitHub.", target = "_blank"), ''),
                                p(
                                  tags$ul(
-                                   tags$li("Blank sub-categories may reduce the size of interactive plots in Data Exploration."),
                                    tags$li("Using 'outvars' would sometimes fail to display the plot. A current workaround is to re-define the outvars to a compartment name and then switching back."),
                                    tags$li("Model will crash if model code contains 'R_' pattern which does not refer to modelling rate."),
                                    tags$li("Weight-based dosing is not propagated in IIV models."),
@@ -1616,6 +1731,7 @@ ui <- shiny::navbarPage(
            ),
            shinydashboard::box(width = 12,
                                title = 'Changelog', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
+                               p('v0.2.12 (2025-01-03) - Mean value display for Variability Plot. Allows minimum total doses to be 0. Individual Plots for Datasets. Multiple facets for General Plot. Progress bars for long computations.'),
                                p('v0.2.11 (2024-12-04) - Support for uploading tab-delimited .txt files on Data Upload (also option to automatically create ID column). Uses dose column instead of manually entering dose amount for NCA. NCA unit and report bugfixes. Download Options now support non-interactive plots.'),
                                p('v0.2.10 (2024-11-27) - Support for mrgsolve v1.5.2. Fixed some typos. Minor QoL improvements to selectizeInputs to sort alphabetically. Interactive plot toggle for Sim and Data page. Less strict dataset requirements for Data Exploration plots. Boxplot functionality for Data Exploration - Plot Output.'),
                                p('v0.2.9 (2024-10-20) - Smoother, linear regression, and facet options for Data Page Plot Output. Consistently include dates for all downloadable files. Bugfix to disallow PSA plots when previous model fails to compile. Bugfix for Median Line binning.'),
@@ -1788,29 +1904,7 @@ server <- function(input, output, session) {
     }
 
     if (input$create_id_col) {
-      if (!('ID' %in% names(tmp))) {
-        if('SUBJIDN' %in% names(tmp)) {
-          tmp <- tmp %>% dplyr::mutate(ID = SUBJIDN) %>%
-            dplyr::select(ID, dplyr::everything())
-          shiny::showNotification("ID column has been created from 'SUBJIDN' column.", type = "message", duration = 10)
-        }
-
-        if (!('ID' %in% names(tmp))) { # If "SUBJIDN" is not present, try "SUBJID"
-          if('SUBJID' %in% names(tmp)) {
-            tmp <- tmp %>% dplyr::mutate(ID = SUBJID) %>%
-              dplyr::select(ID, dplyr::everything())
-            shiny::showNotification("ID column has been created from 'SUBJID' column.", type = "message", duration = 10)
-          }
-        }
-
-        if (!('ID' %in% names(tmp))) { # If "SUBJID" is not present, try "USUBJID"
-          if('USUBJID' %in% names(tmp)) {
-            tmp <- tmp %>% dplyr::mutate(ID = USUBJID) %>%
-              dplyr::select(ID, dplyr::everything())
-            shiny::showNotification("ID column has been created from 'USUBJID' column.", type = "message", duration = 10)
-          }
-        }
-      }
+      tmp <- search_id_col(tmp, names_of_id_cols = c("SUBJIDN", "SUBJID", "USUBJID", "PTNO"))
     }
 
     return(tmp)
@@ -1977,6 +2071,8 @@ server <- function(input, output, session) {
 
     if('ID' %in% names(nonmem_dataset)) {
       nonmem_dataset <- nonmem_dataset %>% dplyr::mutate(ID   = as.character(ID))
+      nonmem_dataset$ID <- as.factor(nonmem_dataset$ID)
+      nonmem_dataset$ID <- forcats::fct_inorder(nonmem_dataset$ID) # factor levels in order by which they appear
       id_is_in_dataset(TRUE)
     } else {
       id_is_in_dataset(FALSE)
@@ -2058,13 +2154,13 @@ server <- function(input, output, session) {
     updateSelectizeInput(session,
                          "facet_by",
                          choices = names(nmdataset_for_plot()) %>% sort(),
-                         selected = '')
+                         selected = NULL)
 
-    if('SEX' %in% names(nmdataset_for_plot())) {
+    if('DOSE' %in% names(nmdataset_for_plot())) {
       updateSelectizeInput(session,
                            "color_corr",
                            choices = names(nmdataset_for_plot()) %>% sort(),
-                           selected = 'SEX')
+                           selected = 'DOSE')
     }
 
     ## Update selections for NCA
@@ -2116,8 +2212,44 @@ server <- function(input, output, session) {
                                                      "DOSEMG" %in% names(nmdataset_for_plot()) ~ "DOSEMG",
                                                      TRUE ~ "DUMMY")
     )
+
+    if('ID' %in% names(nmdataset_for_plot())) {
+      updateSelectizeInput(session,
+                           "filter_by_id",
+                           choices = unique(nmdataset_for_plot()$ID),
+                           selected = NULL,
+                           server = TRUE
+      )
+    }
+
+    updateSelectizeInput(session,
+                         "highlight_var",
+                         choices = names(nmdataset_for_plot()) %>% sort(),
+                         selected = ''
+    )
+
     #}
   }, label = 'Update selectizeInput after uploaded_data()')
+
+  observeEvent(c(nmdataset_for_plot(), input$number_of_rows, input$number_of_cols), {
+    if('ID' %in% names(nmdataset_for_plot())) {
+      updateSelectizeInput(session,
+                           "page_number",
+                           choices = 1:(ceiling(length(unique(nmdataset_for_plot()$ID)) / (as.numeric(input$number_of_rows) * as.numeric(input$number_of_cols)))),
+                           selected = 1
+      )
+    }
+  }, label = 'Update page_number')
+
+  observeEvent(c(nmdataset_for_plot(), input$highlight_var), {
+    if(!is.null(input$highlight_var) && input$highlight_var != '') {
+      updateSelectizeInput(session,
+                           "highlight_var_values",
+                           choices = unique(nmdataset_for_plot()[[input$highlight_var]]) %>% sort(),
+                           selected = ''
+      )
+    }
+  }, label = 'Update highlight_var_values')
 
   ## Download nmdataset_for_plot() ----
   output$download_nmdataset_for_plot <- downloadHandler(
@@ -2193,21 +2325,21 @@ server <- function(input, output, session) {
       dplyr::distinct() %>%
       .[[input$dose_colname]]
 
-    NonCompart::tblNCA(nmdataset_for_nca,
-                       key = c(input$subject_colname, input$additional_keys),
-                       colTime = input$time_colname,
-                       colConc = input$conc_colname,
-                       dose = doses_by_id,
-                       #dose = input$dose_value,
-                       adm = input$adm_route,
-                       dur = input$dur_inf,
-                       doseUnit = input$desc_dose_unit,
-                       timeUnit = input$desc_time_unit,
-                       concUnit = input$desc_conc_unit,
-                       down = input$down_method,
-                       #SS = input$SS_value,
-                       #R2ADJ = input$R2ADJ_value,
-                       MW = input$mw_value) %>%
+    tblNCA_progress(nmdataset_for_nca, ## originally was NonCompart::tblNCA, modified to support progress bars
+                    key = c(input$subject_colname, input$additional_keys),
+                    colTime = input$time_colname,
+                    colConc = input$conc_colname,
+                    dose = doses_by_id,
+                    #dose = input$dose_value,
+                    adm = input$adm_route,
+                    dur = input$dur_inf,
+                    doseUnit = input$desc_dose_unit,
+                    timeUnit = input$desc_time_unit,
+                    concUnit = input$desc_conc_unit,
+                    down = input$down_method,
+                    #SS = input$SS_value,
+                    #R2ADJ = input$R2ADJ_value,
+                    MW = input$mw_value) %>%
 
       dplyr::select(where(~any(!is.na(.)))) ## Remove columns with NA's if inputs are non-sensible
 
@@ -2267,34 +2399,36 @@ server <- function(input, output, session) {
                                               transpose = input$transpose_nca,
                                               dp = 3,
                                               sigdig = TRUE,
-                                              id_colname = input$subject_colname,
-    )
+                                              id_colname = input$subject_colname)
 
-    for(i in 1:length(list_of_nca)) {
-      if(input$transpose_nca) {
-        list_of_nca[[i]] <- list_of_nca[[i]] %>%
-          flextable::flextable() %>%
-          flextable::font(font = "Arial") %>%
-          flextable::bold(part = "header") %>%
-          flextable::add_header_lines(paste0(input$additional_keys, " = ", unique(stat_table_renamed[[input$additional_keys]])[i])) %>%
-          flextable::bold(j = c("gMean")) %>%
-          flextable::autofit() %>%
-          flextable::theme_zebra() %>%
-          flextable::htmltools_value()
-      } else {
-        max_n <- max(list_of_nca[[i]]$N) # removing N from Statistic to be technically correct
-        list_of_nca[[i]] <- list_of_nca[[i]] %>%
-          dplyr::select(-N) %>%
-          flextable::flextable() %>%
-          flextable::font(font = "Arial") %>%
-          flextable::bold(part = "header") %>%
-          flextable::add_header_lines(paste0(input$additional_keys, " = ", unique(stat_table_renamed[[input$additional_keys]])[i], " (n=", max_n, ")")) %>%
-          flextable::bold(i = 6) %>%
-          flextable::autofit() %>%
-          flextable::theme_zebra() %>%
-          flextable::htmltools_value()
+    withProgress(message = "Tabulating NCA", value = 0, {
+      for(i in 1:length(list_of_nca)) {
+        setProgress(value = i / length(list_of_nca))
+        if(input$transpose_nca) {
+          list_of_nca[[i]] <- list_of_nca[[i]] %>%
+            flextable::flextable() %>%
+            flextable::font(font = "Arial") %>%
+            flextable::bold(part = "header") %>%
+            flextable::add_header_lines(paste0(input$additional_keys, " = ", unique(stat_table_renamed[[input$additional_keys]])[i])) %>%
+            flextable::bold(j = c("gMean")) %>%
+            flextable::autofit() %>%
+            flextable::theme_zebra() %>%
+            flextable::htmltools_value()
+        } else {
+          max_n <- max(list_of_nca[[i]]$N) # removing N from Statistic to be technically correct
+          list_of_nca[[i]] <- list_of_nca[[i]] %>%
+            dplyr::select(-N) %>%
+            flextable::flextable() %>%
+            flextable::font(font = "Arial") %>%
+            flextable::bold(part = "header") %>%
+            flextable::add_header_lines(paste0(input$additional_keys, " = ", unique(stat_table_renamed[[input$additional_keys]])[i], " (n=", max_n, ")")) %>%
+            flextable::bold(i = 6) %>%
+            flextable::autofit() %>%
+            flextable::theme_zebra() %>%
+            flextable::htmltools_value()
+        }
       }
-    }
+    })
 
     fluidRow(list_of_nca)
   })
@@ -2337,24 +2471,29 @@ server <- function(input, output, session) {
         dplyr::distinct() %>%
         .[[input$dose_colname]]
 
-      pdfNCA_wm(fileName = file, ## originally was ncar::pdfNCA, modified to support watermarks in plots
-                nmdataset_for_nca2,
-                key = c(input$subject_colname, input$additional_keys),
-                colTime = input$time_colname,
-                colConc = input$conc_colname,
-                dose = doses_by_id2,
-                adm = input$adm_route,
-                dur = input$dur_inf,
-                doseUnit = input$desc_dose_unit,
-                timeUnit = input$desc_time_unit,
-                concUnit = input$desc_conc_unit,
-                down = input$down_method,
-                #SS = input$SS_value,
-                #R2ADJ = input$R2ADJ_value,
-                MW = input$mw_value,
-                watermark = insert_watermark,
-                internal_version = internal_version,
-                debug_msg = FALSE)
+      withProgress(message = 'Generating report', value = 0, {
+        pdfNCA_wm(fileName = file, ## originally was ncar::pdfNCA, modified to support progress bars and watermarks in plots
+                  nmdataset_for_nca2,
+                  key = c(input$subject_colname, input$additional_keys),
+                  colTime = input$time_colname,
+                  colConc = input$conc_colname,
+                  dose = doses_by_id2,
+                  adm = input$adm_route,
+                  dur = input$dur_inf,
+                  doseUnit = input$desc_dose_unit,
+                  timeUnit = input$desc_time_unit,
+                  concUnit = input$desc_conc_unit,
+                  down = input$down_method,
+                  #SS = input$SS_value,
+                  #R2ADJ = input$R2ADJ_value,
+                  MW = input$mw_value,
+                  watermark = insert_watermark,
+                  internal_version = internal_version,
+                  debug_msg = FALSE,
+                  show_progress = TRUE)
+      })
+
+
     })
 
   # Data output plotting
@@ -2456,6 +2595,7 @@ server <- function(input, output, session) {
     }
   )
 
+  ## UI: output$dataset_page_plot_corr ----
   correlation_plot <- reactive({
     if (shiny::req(input$color_corr) %in% names(nmdataset_for_plot()) &
         shiny::req(input$var_corr[1]) %in% names(nmdataset_for_plot())) {
@@ -2468,7 +2608,6 @@ server <- function(input, output, session) {
     }
   })
 
-  ## UI: output$dataset_page_plot_corr ----
   output$dataset_page_plot_corr <- renderPlot({
 
     if (id_is_in_dataset()) {
@@ -2496,6 +2635,164 @@ server <- function(input, output, session) {
                       width = input$plotlyd_corr_width,
                       height = input$plotlyd_corr_height
       )
+    }
+  )
+
+  ## UI: output$dataset_page_ind_plot ----
+  dataset_page_ind_plot <- reactive({
+    if (show_debugging_msg) {
+      message('Creating dataset_page_ind_plot')
+    }
+
+    if (id_is_in_dataset()) {
+      if(input$x_axis == "" | input$y_axis == "") { # Dummy panel
+        return(ggplot2::ggplot() + ggplot2::theme(panel.background = ggplot2::element_blank()))
+      }
+
+      shiny::req(input$x_axis)
+      shiny::req(input$y_axis)
+
+      a <- do_data_page_ind_plot(nmd         = nmdataset_for_plot(),
+                                 rownums     = as.numeric(input$number_of_rows),
+                                 colnums     = as.numeric(input$number_of_cols),
+                                 pagenum     = as.numeric(input$page_number),
+                                 filter_id   = input$filter_by_id,
+                                 filter_cmt  = input$filter_cmt_data,
+                                 x_axis      = input$x_axis,
+                                 y_axis      = input$y_axis,
+                                 color_by    = input$color,
+                                 med_line    = input$median_line_data,
+                                 med_line_by = input$median_line_by,
+                                 boxplot     = input$do_boxplot,
+                                 dolm        = input$insert_lm_eqn,
+                                 smoother    = input$insert_smoother,
+                                 #facet_name  = input$facet_by,
+                                 logy        = input$log_y_axis_data,
+                                 logx        = input$log_x_axis_data,
+                                 lby         = logbreaks_y,
+                                 lbx         = logbreaks_x,
+                                 plot_title  = input$plot_title_data,
+                                 label_size  = as.numeric(input$select_label_size),
+                                 highlight_var = input$highlight_var,
+                                 highlight_var_values = input$highlight_var_values,
+                                 debug       = show_debugging_msg)
+
+    } else {
+      a <- ggplot2::ggplot() +
+        ggplot2::labs(title = unsupported_dataset) +
+        ggplot2::theme(panel.background = ggplot2::element_blank(),
+                       plot.title = ggplot2::element_text(color = model_1_color))
+    }
+
+    return(a)
+  }, label = 'dataset_page_ind_plot')
+
+  output$dataset_page_ind_plot <- renderUI({
+    shiny::conditionalPanel(
+      condition = "true",
+      div(style = "height:600px",
+          if (!is.null(dataset_page_ind_plot())) {
+            if(input$do_data_ind_plotly) {
+              plotly::plotlyOutput("data_ind_plotly", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+            } else {
+              plotOutput("data_ind_ggplot", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+            }
+          }
+      )
+    )
+  })
+  #### size = 16 is used for regular ggplots to approximate looks compared to plotly in browser. For download, this size change is not applied
+  output$data_ind_ggplot <- renderPlot(dataset_page_ind_plot() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
+
+  output$data_ind_plotly <- plotly::renderPlotly(convert_to_plotly_watermark(dataset_page_ind_plot(),
+                                                                             format           = input$plotlydi_format,
+                                                                             filename         = input$plotlydi_filename,
+                                                                             width            = input$plotlydi_width,
+                                                                             height           = input$plotlydi_height,
+                                                                             plotly_watermark = insert_watermark,
+                                                                             debug            = show_debugging_msg)
+  )
+
+  #### Individual Plot download section
+  observeEvent(input$do_data_ind_plotly, {
+    if (input$do_data_ind_plotly) {
+      shinyjs::disable("download_data_ind_plot")
+      updateSelectInput(session, "plotlydi_format", label = plotly_format_label,
+                        choices = c("png", "jpeg", "svg", "webp"))
+    } else {
+      shinyjs::enable("download_data_ind_plot")
+      updateSelectInput(session, "plotlydi_format", label = plotly_format_label,
+                        choices = c("png", "pdf", "jpeg", "svg"))
+    }
+  }, label = "update_download_data_ind_plot")
+
+  output$download_data_ind_plot <- downloadHandler(
+    filename = function() {
+      paste0(input$plotlydi_filename, ".", input$plotlydi_format)
+    },
+    content = function(file) {
+      ggplot2::ggsave(file,
+                      plot = dataset_page_ind_plot() + add_watermark(watermark_toggle = insert_watermark),
+                      device = input$plotlydi_format,
+                      units = "px",
+                      width = input$plotlydi_width,
+                      height = input$plotlydi_height
+      )
+    }
+  )
+
+  ### All Individual Plots download
+  output$download_data_ind_plot_all <- downloadHandler(
+    filename = function() {
+      paste0(input$plotlydi_all_filename, ".", input$plotlydi_all_format)
+    },
+    content = function(file) {
+
+      unique_ids         <- unique(nmdataset_for_plot()$ID)
+      length_unique_ids  <- length(unique_ids)
+      number_of_pages    <- ceiling(length_unique_ids / (as.numeric(input$number_of_rows) * as.numeric(input$number_of_cols)))
+
+      p_ind_all       <- list() # Initiating empty lists to store multiple pages
+
+      withProgress(message = 'Generating plots', value = 0, {
+        for (i in 1:number_of_pages) {
+          # Estimating that generation of plots take approx 20% of the total time
+          setProgress(value = i/number_of_pages * 0.2, detail = paste0("plot ", i, "/", number_of_pages))
+          p_ind_all[[i]]  <- do_data_page_ind_plot(
+            nmd         = nmdataset_for_plot(),
+            rownums     = as.numeric(input$number_of_rows),
+            colnums     = as.numeric(input$number_of_cols),
+            pagenum     = i, #as.numeric(input$page_number),
+            filter_id   = '',
+            filter_cmt  = input$filter_cmt_data,
+            x_axis      = input$x_axis,
+            y_axis      = input$y_axis,
+            color_by    = input$color,
+            med_line    = input$median_line_data,
+            med_line_by = input$median_line_by,
+            boxplot     = input$do_boxplot,
+            dolm        = input$insert_lm_eqn,
+            smoother    = input$insert_smoother,
+            #facet_name  = input$facet_by,
+            logy        = input$log_y_axis_data,
+            logx        = input$log_x_axis_data,
+            lby         = logbreaks_y,
+            lbx         = logbreaks_x,
+            plot_title  = input$plot_title_data,
+            label_size  = as.numeric(input$select_label_size),
+            highlight_var = input$highlight_var,
+            highlight_var_values = input$highlight_var_values,
+            debug       = show_debugging_msg) +
+            add_watermark(watermark_toggle = insert_watermark)
+        }
+
+        pdf(file = file, width = input$plotlydi_all_width, height = input$plotlydi_all_height)
+        for(m in seq_along(p_ind_all)) {
+          setProgress(value = 0.2 + (m/length(p_ind_all) * 0.8), message = 'Compiling PDF', detail = paste0("page ", m, "/", length(p_ind_all)))
+          print(p_ind_all[[m]])
+        }
+        dev.off()
+      })
     }
   )
 
@@ -3555,7 +3852,7 @@ server <- function(input, output, session) {
   })
 
 
-  ## Download variability MODEL 1 table ----
+  ## Download simulated combined table ----
   output$download_sim_data <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_simulated_data.csv")
@@ -3962,9 +4259,10 @@ server <- function(input, output, session) {
   output$nadirpct_max_model_1 <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_1(), 'NADIRPCT_ranged', 'Nadir % CFB', color = "purple", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
 
   # PSA plot from new_sim_min/mid/max
-  ## psa_page_plot() ----
+  ## psa_page_plot_model_1() ----
   psa_page_plot_model_1 <- reactive({
     shiny::req(model_1_is_valid())
+
     nonmem_dataset <- if (input$combine_nmdata_1_model_1 && final_output_executed()) {
       nmdata_cmt_filtered()
     } else {
@@ -4006,13 +4304,61 @@ server <- function(input, output, session) {
       title = title
     )
 
-    return(convert_to_plotly_watermark(psa_plot_model_1, format = input$plotly3_format_model_1, filename = input$plotly3_filename_model_1, width = input$plotly3_width_model_1, height = input$plotly3_height_model_1, plotly_watermark = insert_watermark, debug = show_debugging_msg))
+    return(psa_plot_model_1)
   }, label = 'psa_page_plot_model_1')
 
   ## UI: output$psa_plot_output ----
-  output$psa_plot_output_model_1 <- plotly::renderPlotly({
-    psa_page_plot_model_1()
+  output$psa_plot_output_model_1 <- renderUI({
+    shiny::conditionalPanel(
+      condition = "true",
+      div(style = "height:600px",
+          if(input$do_psa_plotly_model_1) {
+            plotly::plotlyOutput("psa_plotly_model_1", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          } else {
+            plotOutput("psa_ggplot_model_1", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          }
+      )
+    )
   })
+
+  output$psa_ggplot_model_1 <- renderPlot(psa_page_plot_model_1() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
+
+  output$psa_plotly_model_1 <- plotly::renderPlotly(convert_to_plotly_watermark(psa_page_plot_model_1(),
+                                                                                format           = input$plotly3_format_model_1,
+                                                                                filename         = input$plotly3_filename_model_1,
+                                                                                width            = input$plotly3_width_model_1,
+                                                                                height           = input$plotly3_height_model_1,
+                                                                                plotly_watermark = insert_watermark,
+                                                                                debug            = show_debugging_msg)
+  )
+
+  #### PSA Plot download section
+  observeEvent(input$do_psa_plotly_model_1, {
+    if (input$do_psa_plotly_model_1) {
+      shinyjs::disable("download_psa_plot_model_1")
+      updateSelectInput(session, "plotly3_format_model_1", label = plotly_format_label,
+                        choices = c("png", "jpeg", "svg", "webp"))
+    } else {
+      shinyjs::enable("download_psa_plot_model_1")
+      updateSelectInput(session, "plotly3_format_model_1", label = plotly_format_label,
+                        choices = c("png", "pdf", "jpeg", "svg"))
+    }
+  }, label = "update_download_psa_plot_model_1")
+
+  output$download_psa_plot_model_1 <- downloadHandler(
+    filename = function() {
+      paste0(input$plotly3_filename_model_1, ".", input$plotly3_format_model_1)
+    },
+    content = function(file) {
+      ggplot2::ggsave(file,
+                      plot = psa_page_plot_model_1() + add_watermark(watermark_toggle = insert_watermark),
+                      device = input$plotly3_format_model_1,
+                      units = "px",
+                      width = input$plotly3_width_model_1,
+                      height = input$plotly3_height_model_1
+      )
+    }
+  )
 
   # Model 2 ----
   ### Update input$auc_time_range ----
@@ -4361,18 +4707,6 @@ server <- function(input, output, session) {
   output$mcfbpct_max_model_2  <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_2(), 'MEANCFBPCT_ranged',   'Mean % CFB', color = "purple", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$nadirpct_max_model_2 <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_2(), 'NADIRPCT_ranged', 'Nadir % CFB', color = "purple", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
 
-  output$pknca <- DT::renderDT({
-    DT::datatable(react_metrics_mid_model_1() %>% dplyr::mutate(dplyr::across(where(is.numeric), ~ signif(., 5))),
-                  caption = paste0('Table results from the middle parameter value are displayed. NCA ranged metrics are derived based on the "Select Time Interval for Deriving Metrics" (Currently from time ', input$min_nca_obs_time_model_1, ' - ', input$max_nca_obs_time_model_1, ')'),
-                  rownames = FALSE, # Remove row names
-                  options = list(
-                    initComplete = DT::JS(
-                      "function(settings, json) {",
-                      "$(this.api().table().header()).css({'background-color': '#08312A', 'color': '#00E47C', 'border-color': '#00E47C'});",
-                      "}")
-                  ))
-  })
-
   # PSA plot from new_sim_min_model_2/mid/max
   ## psa_page_plot_model_2() ----
   psa_page_plot_model_2 <- reactive({
@@ -4417,10 +4751,76 @@ server <- function(input, output, session) {
       title = title
     )
 
-    return(convert_to_plotly_watermark(psa_plot_model_2, format = input$plotly3_format_model_2, filename = input$plotly3_filename_model_2, width = input$plotly3_width_model_2, height = input$plotly3_height_model_2, plotly_watermark = insert_watermark, debug = show_debugging_msg))
+    return(psa_plot_model_2)
   })
 
-  output$pknca_model_2 <- DT::renderDT({
+  ## UI: output$psa_plot_output_model_2 ----
+  output$psa_plot_output_model_2 <- renderUI({
+    shiny::conditionalPanel(
+      condition = "true",
+      div(style = "height:600px",
+          if(input$do_psa_plotly_model_2) {
+            plotly::plotlyOutput("psa_plotly_model_2", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          } else {
+            plotOutput("psa_ggplot_model_2", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          }
+      )
+    )
+  })
+
+  output$psa_ggplot_model_2 <- renderPlot(psa_page_plot_model_2() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
+
+  output$psa_plotly_model_2 <- plotly::renderPlotly(convert_to_plotly_watermark(psa_page_plot_model_2(),
+                                                                                format           = input$plotly3_format_model_2,
+                                                                                filename         = input$plotly3_filename_model_2,
+                                                                                width            = input$plotly3_width_model_2,
+                                                                                height           = input$plotly3_height_model_2,
+                                                                                plotly_watermark = insert_watermark,
+                                                                                debug            = show_debugging_msg)
+  )
+
+  #### PSA Plot download section
+  observeEvent(input$do_psa_plotly_model_2, {
+    if (input$do_psa_plotly_model_2) {
+      shinyjs::disable("download_psa_plot_model_2")
+      updateSelectInput(session, "plotly3_format_model_2", label = plotly_format_label,
+                        choices = c("png", "jpeg", "svg", "webp"))
+    } else {
+      shinyjs::enable("download_psa_plot_model_2")
+      updateSelectInput(session, "plotly3_format_model_2", label = plotly_format_label,
+                        choices = c("png", "pdf", "jpeg", "svg"))
+    }
+  }, label = "update_download_psa_plot_model_2")
+
+  output$download_psa_plot_model_2 <- downloadHandler(
+    filename = function() {
+      paste0(input$plotly3_filename_model_2, ".", input$plotly3_format_model_2)
+    },
+    content = function(file) {
+      ggplot2::ggsave(file,
+                      plot = psa_page_plot_model_2() + add_watermark(watermark_toggle = insert_watermark),
+                      device = input$plotly3_format_model_2,
+                      units = "px",
+                      width = input$plotly3_width_model_2,
+                      height = input$plotly3_height_model_2
+      )
+    }
+  )
+
+  ## Page 4 -- Download Mid Metrics table ----
+  output$psa_data_mid_model_1 <- DT::renderDT({
+    DT::datatable(react_metrics_mid_model_1() %>% dplyr::mutate(dplyr::across(where(is.numeric), ~ signif(., 5))),
+                  caption = paste0('Table results from the middle parameter value are displayed. NCA ranged metrics are derived based on the "Select Time Interval for Deriving Metrics" (Currently from time ', input$min_nca_obs_time_model_1, ' - ', input$max_nca_obs_time_model_1, ')'),
+                  rownames = FALSE, # Remove row names
+                  options = list(
+                    initComplete = DT::JS(
+                      "function(settings, json) {",
+                      "$(this.api().table().header()).css({'background-color': '#08312A', 'color': '#00E47C', 'border-color': '#00E47C'});",
+                      "}")
+                  ))
+  })
+
+  output$psa_data_mid_model_2 <- DT::renderDT({
     DT::datatable(react_metrics_mid_model_2() %>% dplyr::mutate(dplyr::across(where(is.numeric), ~ signif(., 5))),
                   caption = paste0('Table results from the middle parameter value are displayed. NCA ranged metrics are derived based on the "Select Time Interval for Deriving Metrics" (Currently from time ', input$min_nca_obs_time_model_2, ' - ', input$max_nca_obs_time_model_2, ')'),
                   rownames = FALSE, # Remove row names
@@ -4432,29 +4832,21 @@ server <- function(input, output, session) {
                   ))
   })
 
-  ## UI: output$psa_plot_output ----
-  output$psa_plot_output_model_2 <- plotly::renderPlotly({
-    psa_page_plot_model_2()
-  })
-
-  ## Page 4 -- Download NCA table ----
-  output$download_NCA_table <- downloadHandler(
+  output$download_psa_data_mid_model_1 <- downloadHandler(
     filename = function() {
-      paste0(today_numeric(), "_pknca_data_model_1.csv")
+      paste0(today_numeric(), "_mid_metrics_model_1.csv")
     },
     content = function(file) {
-      #write.csv(react_metrics_mid_model_1(), file, row.names = FALSE)
       data.table::fwrite(react_metrics_mid_model_1(), file, quote = FALSE, row.names = FALSE)
     },
     contentType = "text/csv"
   )
 
-  output$download_NCA_table_model_2 <- downloadHandler(
+  output$download_psa_data_mid_model_2 <- downloadHandler(
     filename = function() {
-      paste0(today_numeric(), "_pknca_data_model_2.csv")
+      paste0(today_numeric(), "_mid_metrics_model_2.csv")
     },
     content = function(file) {
-      #write.csv(react_metrics_mid_model_2(), file, row.names = FALSE)
       data.table::fwrite(react_metrics_mid_model_2(), file, quote = FALSE, row.names = FALSE)
     },
     contentType = "text/csv"
@@ -5962,6 +6354,8 @@ server <- function(input, output, session) {
                                         nm_yvar = input$nonmem_y_axis,
                                         show_ind_profiles = input$show_ind_profiles,
                                         y_median = 'median_yvar',
+                                        y_mean = 'mean_yvar',
+                                        show_y_mean = input$show_mean_iiv,
                                         y_min = 'lower_yvar',
                                         y_max = 'upper_yvar',
                                         title = input$plot_title_iiv,

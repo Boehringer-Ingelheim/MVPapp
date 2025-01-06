@@ -82,14 +82,14 @@ lm_eqn_old <- function(df, x, y){
 #'
 #' @returns A dataframe containing the column "label" containing the string
 #' formula of R2 coefficient for use in ggplot labels or title
-#' @importFrom dplyr group_by summarise if_else sym
+#' @importFrom dplyr group_by summarise if_else sym syms case_when n
 #' @export
 #---------------------------------------------------------------------------
 
 lm_eqn <- function(df, facet_name, x, y) {
-  if(facet_name != "") {
+  if(!is.null(facet_name) && facet_name[1] != "") {
     df_stats <- df %>%
-      dplyr::group_by(!!dplyr::sym(facet_name))
+      dplyr::group_by(!!!dplyr::syms(facet_name))
   } else {
     df_stats <- df
   }
@@ -105,24 +105,38 @@ lm_eqn <- function(df, facet_name, x, y) {
   } else {
     
     df_stats <- df_stats %>%
-      dplyr::summarise(rsq = summary(lm(as.formula(string_name)))$r.squared,
-                       slope = coef(lm(as.formula(string_name)))[2],
-                       intercept = coef(lm(as.formula(string_name)))[1])
-    #label_x = median(!!dplyr::sym(x)), # not necessary unless it is free_scale
-    #label_y = max(!!dplyr::sym(y), na.rm = TRUE))
+      dplyr::summarise(
+        rsq = if(any(!is.na(!!dplyr::sym(y)))) { # safeguard for when there are no valid y-values to calculate lm
+          summary(lm(as.formula(string_name)))$r.squared
+        } else {
+          NA_real_
+        },
+        slope = if(any(!is.na(!!dplyr::sym(y)))) {
+          coef(lm(as.formula(string_name)))[2]
+        } else {
+          NA_real_
+        },
+        intercept = if(any(!is.na(!!dplyr::sym(y)))) {
+          coef(lm(as.formula(string_name)))[1]
+        } else {
+          NA_real_
+        }
+      )
   }
   
   df_stats <- df_stats %>%
     dplyr::mutate(slope_direction = dplyr::if_else(slope >= 0, " + ", " - "),
-                  label = case_when(!is.na(slope) ~
-                                      paste0("y = ",
-                                             format(unname(intercept), digits = 2),
-                                             slope_direction,
-                                             format(unname(abs(slope)), digits = 2),
-                                             "\u00B7x, R\u00B2 = ",
-                                             format(unname(rsq), digits = 3)),
-                                    is.na(slope) ~ # if there's no slope, display only the intercept
-                                      paste0("y = ", format(unname(intercept), digits = 2), " [mean]")
+                  label = dplyr::case_when(
+                    is.na(intercept) ~ "", # this means no non-NA data in this group at all
+                    !is.na(slope) ~
+                      paste0("y = ",
+                             format(unname(intercept), digits = 2),
+                             slope_direction,
+                             format(unname(abs(slope)), digits = 2),
+                             "\u00B7x, R\u00B2 = ",
+                             format(unname(rsq), digits = 3)),
+                    is.na(slope) ~ # if there's no slope, display only the intercept
+                      paste0("y = ", format(unname(intercept), digits = 2), " [mean]")
                   )
     )
   
@@ -200,6 +214,12 @@ log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks
 #-------------------------------------------------------------------------------
 #' @name do_data_page_plot
 #' @title Quick Plot for Data Exploration
+#' 
+#' @description
+#' This is the main function for plotting uploaded datasets. It is designed to be
+#' flexible enough to handle continuous/continuous, discrete/continuous, and 
+#' discrete/discrete type of data to cover most use cases.
+#' 
 #'
 #' @param nmd The NONMEM dataset for plotting (requires ID, TIME, DV at minimum)
 #' @param filter_cmt Filter by this CMT
@@ -211,7 +231,7 @@ log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks
 #' @param boxplot Draws a geom_boxplot instead of geom_point and geom_line
 #' @param dolm Insert linear regression with formula on top of plot
 #' @param smoother Insert smoother
-#' @param facet_name variable to facet by
+#' @param facet_name variable(s) to facet by
 #' @param logy Log Y-axis
 #' @param lby  Log breaks for Y-axis
 #' @param logx Log X-axis
@@ -226,7 +246,9 @@ log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks
 #' @returns a ggplot object
 #' @importFrom ggplot2 ggplot aes geom_point geom_line xlab ylab theme_bw labs scale_size_area
 #' @importFrom ggplot2 stat_summary stat_smooth scale_y_log10 scale_x_log10 after_stat geom_count
-#' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap geom_boxplot label_both
+#' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap geom_boxplot label_both vars
+#' @importFrom ggplot2 scale_color_manual
+#' @importFrom scales hue_pal
 #' @importFrom dplyr filter distinct sym group_by summarise across all_of count ungroup mutate
 #' @importFrom tibble glimpse
 #' @export
@@ -264,7 +286,6 @@ do_data_page_plot <- function(nmd,
   }
   
   # Safeguard for blanks ("") since plotly has bugs with handling it
-  #
   if(is.character(nmd[[y_axis]]) && any(nmd[[y_axis]] == "")) {
     shiny::showNotification(paste0("WARNING: Some ", y_axis, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
     nmd <- nmd %>% dplyr::mutate(!!y_axis := ifelse(!!dplyr::sym(y_axis) == "", ".(blank)", !!dplyr::sym(y_axis)))
@@ -274,11 +295,19 @@ do_data_page_plot <- function(nmd,
     shiny::showNotification(paste0("WARNING: Some ", x_axis, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
     nmd <- nmd %>% dplyr::mutate(!!x_axis := ifelse(!!dplyr::sym(x_axis) == "", ".(blank)", !!dplyr::sym(x_axis)))
   }
-
-  if(is.character(nmd[[facet_name]]) && facet_name != "" & facet_name != x_axis) {
-    if(any(nmd[[facet_name]] == "")) {
-      shiny::showNotification(paste0("WARNING: Some ", facet_name, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
-      nmd <- nmd %>% dplyr::mutate(!!facet_name := ifelse(!!dplyr::sym(facet_name) == "", ".(blank)", !!dplyr::sym(facet_name)))
+  
+  if(debug) {
+    message(paste0("Testing for blanks"))
+  }
+  
+  if(!is.null(facet_name[1]) && facet_name[1] != "") {
+    for (i in seq_along(facet_name)) {
+      if(is.character(nmd[[facet_name[i]]]) && facet_name[i] != x_axis) {
+        if(any(nmd[[facet_name[i]]] == "")) {
+          shiny::showNotification(paste0("WARNING: Some ", facet_name[i], " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
+          nmd <- nmd %>% dplyr::mutate(!!facet_name[i] := ifelse(!!dplyr::sym(facet_name[i]) == "", ".(blank)", !!dplyr::sym(facet_name[i])))
+        }
+      }
     }
   }
   
@@ -287,14 +316,20 @@ do_data_page_plot <- function(nmd,
     # Only applicable if the column is character type as int columns with NAs will fail
     if(is.character(nmd[[color_by]]) && any(nmd[[color_by]] == "")) {
       shiny::showNotification(paste0("WARNING: Some ", color_by, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
-    nmd <- nmd %>%
-      dplyr::mutate(!!color_by := ifelse(!!dplyr::sym(color_by) == "", ".(blank)", !!dplyr::sym(color_by)))
+      nmd <- nmd %>%
+        dplyr::mutate(!!color_by := ifelse(!!dplyr::sym(color_by) == "", ".(blank)", !!dplyr::sym(color_by)))
     }
     nmd[[color_by]] <- as.factor(nmd[[color_by]])
+    
+    # Create a named vector of colors - this is required to be consistent with ind plots if some pages don't have all factor levels during color_by
+    n <- nlevels(nmd[[color_by]])
+    color_map <- scales::hue_pal()(n)
+    named_color_vector <- setNames(color_map, levels(nmd[[color_by]]))
   }
   
   if(color_by != "" & !boxplot) {
-    a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID, color = !!dplyr::sym(color_by)))
+    a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID, color = !!dplyr::sym(color_by))) +
+      ggplot2::scale_color_manual(values = named_color_vector)
   } else {
     a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID))
   }
@@ -319,7 +354,8 @@ do_data_page_plot <- function(nmd,
     }
     
     if(color_by != "" ) {
-      a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], color = !!dplyr::sym(color_by)))
+      a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], color = !!dplyr::sym(color_by))) +
+        ggplot2::scale_color_manual(values = named_color_vector)
     } else {
       a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]]))
     }
@@ -328,14 +364,14 @@ do_data_page_plot <- function(nmd,
     df_count <- nmd %>%
       dplyr::distinct(ID, .keep_all = TRUE)
     
-    if(facet_name != "") {
-      if(facet_name != x_axis) {
+    if(!is.null(facet_name[1]) && facet_name[1] != "") {
+      if(!(x_axis %in% facet_name)) {
         if(treat_y_axis_as_discrete) {
           df_count <- df_count %>%
-            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis), !!dplyr::sym(facet_name))      
+            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis), !!!dplyr::syms(facet_name))      
         } else {
           df_count <- df_count %>%
-            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(facet_name))
+            dplyr::count(!!dplyr::sym(x_axis), !!!dplyr::syms(facet_name))
         }
       } else {
         shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
@@ -400,10 +436,10 @@ do_data_page_plot <- function(nmd,
       )
     
     if(med_line_by == "") {
-      a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL), fun = median, geom="line", colour = "black", alpha = 0.8)
+      a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL), fun = median, geom="line", colour = "black", alpha = 1.0)
     } else { # end of stat_summary_data_by NULL check
       a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL, color = as.factor(.data[[med_line_by]])),
-                                     fun = median, geom="line", alpha = 0.8)
+                                     fun = median, geom="line", alpha = 1.0)
     }
     
   } # end of stat_summary_data_option
@@ -427,15 +463,16 @@ do_data_page_plot <- function(nmd,
     }
   }
   
-  if (facet_name != "") {
-    if(length(unique(nmd[[facet_name]])) > 25 ) {
-      shiny::showNotification("ERROR: Too many facets (>25) found. Please filter further or choose another variable.", type = "error", duration = 10)
+  if (!is.null(facet_name[1]) && facet_name[1] != "") {
+    if(x_axis %in% facet_name) {
+      shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
     } else {
-      if(facet_name != x_axis) {
-        facet_formula <- as.formula(paste0("~", facet_name))
-        a <- a + ggplot2::facet_wrap(facet_formula, labeller = ggplot2::label_both)
+      num_facets <- prod(sapply(facet_name, function(v) length(unique(nmd[[v]]))))
+      if(num_facets > 25 ) {
+        shiny::showNotification("ERROR: Too many facets (>25) found. Please filter further or choose another variable(s).", type = "error", duration = 10)
       } else {
-        shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
+        facet_formula <- as.formula(paste0("~", paste(facet_name, collapse = "+")))
+        a <- a + ggplot2::facet_wrap(facet_formula, labeller = ggplot2::label_both)
       }
     }
   }
@@ -459,6 +496,316 @@ do_data_page_plot <- function(nmd,
   
   return(a)
 }
+
+#-------------------------------------------------------------------------------
+#' @name do_data_page_ind_plot
+#' @title Individual Plot for Data Exploration
+#' 
+#' @description
+#' This is the main function for plotting individual plots from uploaded datasets.
+#' It is designed to be flexible enough to handle continuous/continuous, discrete/continuous, and 
+#' discrete/discrete type of data to cover most use cases.
+#'
+#' @param nmd The NONMEM dataset for plotting (requires ID, TIME, DV at minimum)
+#' @param rownums How many rows per page
+#' @param colnums How many cols per page
+#' @param filter_id Filter by these IDs
+#' @param filter_cmt Filter by this CMT
+#' @param x_axis X-axis for plot
+#' @param y_axis Y-axis for plot
+#' @param color_by Color by this column
+#' @param med_line When TRUE, will draw median line by equidistant X-axis bins
+#' @param med_line_by Column name to draw median line by
+#' @param boxplot Draws a geom_boxplot instead of geom_point and geom_line
+#' @param dolm Insert linear regression with formula on top of plot
+#' @param smoother Insert smoother
+#' @param facet_name variable to facet by
+#' @param logy Log Y-axis
+#' @param lby  Log breaks for Y-axis
+#' @param logx Log X-axis
+#' @param lbx  Log breaks for X-axis
+#' @param plot_title Optional plot title
+#' @param label_size font size for geom_text labels (N=x for boxplots or linear regressions)
+#' @param discrete_threshold Draws geom_count if there are <= this number of unique Y-values
+#' @param boxplot_x_threshold Throws an error when the unique values of x-axis exceeds this number
+#' @param error_text_color error text color for element text
+#' @param highlight_var variable name to be highlighted by a different shape
+#' @param highlight_var_values variable values associated with highlight_var to be highlighted 
+#' @param debug show debugging messages
+#'
+#' @returns a ggplot object
+#' @importFrom ggplot2 ggplot aes geom_point geom_line xlab ylab theme_bw labs scale_size_area
+#' @importFrom ggplot2 stat_summary stat_smooth scale_y_log10 scale_x_log10 after_stat geom_count
+#' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap geom_boxplot label_both
+#' @importFrom ggplot2 scale_color_manual
+#' @importFrom scales hue_pal
+#' @importFrom dplyr filter distinct sym group_by summarise across all_of count ungroup mutate any_of
+#' @importFrom tibble glimpse
+#' @importFrom forcats fct_inorder
+#' @export
+#-------------------------------------------------------------------------------
+
+do_data_page_ind_plot <- function(nmd,
+                                  rownums,
+                                  colnums,
+                                  pagenum = 1,
+                                  filter_id,
+                                  filter_cmt,
+                                  x_axis,
+                                  y_axis,
+                                  color_by,
+                                  med_line,
+                                  med_line_by,
+                                  boxplot,
+                                  dolm,
+                                  smoother,
+                                  facet_name = "ID",
+                                  logy,
+                                  lby = logbreaks_y,
+                                  lbx = logbreaks_x,
+                                  logx,
+                                  plot_title,
+                                  label_size = 3,
+                                  discrete_threshold = 7,
+                                  boxplot_x_threshold = 20,
+                                  error_text_color = "#F8766D",
+                                  highlight_var,
+                                  highlight_var_values,
+                                  debug = FALSE) {
+  if(debug) {
+    message(paste0("Creating data_page_ind_plot"))
+  }
+  
+  nmd <- nmd %>% dplyr::ungroup() # Safeguard to always ungroup() the data
+  
+  if(filter_cmt != 'NULL') {
+    nmd <- nmd %>% dplyr::filter(CMT %in% filter_cmt)
+  }
+  
+  if(color_by != "") {
+    # Safeguard for blanks ("") since plotly has bugs with handling it
+    # Only applicable if the column is character type as int columns with NAs will fail
+    if(is.character(nmd[[color_by]]) && any(nmd[[color_by]] == "")) {
+      shiny::showNotification(paste0("WARNING: Some ", color_by, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
+      nmd <- nmd %>%
+        dplyr::mutate(!!color_by := ifelse(!!dplyr::sym(color_by) == "", ".(blank)", !!dplyr::sym(color_by)))
+    }
+    nmd[[color_by]] <- as.factor(nmd[[color_by]])
+
+    # Create a named vector of colors - this is required to be consistent with ind plots if some pages don't have all factor levels during color_by
+    n <- nlevels(nmd[[color_by]])
+    color_map <- scales::hue_pal()(n)
+    named_color_vector <- setNames(color_map, levels(nmd[[color_by]]))
+  }
+  
+  # Filter the data to be page Z, where each page has X rows * Y cols
+  if(is.null(filter_id[1]) || filter_id[1] == '') { # selectizeInput with multiple choices are picky
+    unique_ids         <- unique(nmd$ID)
+    length_unique_ids  <- length(unique_ids)
+    number_of_pages    <- ceiling(length_unique_ids / (rownums * colnums))
+    ids_this_page      <- unique_ids[((rownums * colnums) * (pagenum - 1) + 1):((rownums * colnums) * pagenum)]
+    nmd <- nmd %>% dplyr::filter(ID %in% ids_this_page)
+  } else {
+    nmd <- nmd %>% dplyr::filter(ID %in% filter_id)
+  }
+  
+  # Safeguard for blanks ("") since plotly has bugs with handling it
+  if(is.character(nmd[[y_axis]]) && any(nmd[[y_axis]] == "")) {
+    shiny::showNotification(paste0("WARNING: Some ", y_axis, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
+    nmd <- nmd %>% dplyr::mutate(!!y_axis := ifelse(!!dplyr::sym(y_axis) == "", ".(blank)", !!dplyr::sym(y_axis)))
+  }
+  
+  if(is.character(nmd[[x_axis]]) && any(nmd[[x_axis]] == "")) {
+    shiny::showNotification(paste0("WARNING: Some ", x_axis, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
+    nmd <- nmd %>% dplyr::mutate(!!x_axis := ifelse(!!dplyr::sym(x_axis) == "", ".(blank)", !!dplyr::sym(x_axis)))
+  }
+  
+  if(is.character(nmd[[facet_name]]) && facet_name != "" & facet_name != x_axis) {
+    if(any(nmd[[facet_name]] == "")) {
+      shiny::showNotification(paste0("WARNING: Some ", facet_name, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
+      nmd <- nmd %>% dplyr::mutate(!!facet_name := ifelse(!!dplyr::sym(facet_name) == "", ".(blank)", !!dplyr::sym(facet_name)))
+    }
+  }
+  
+  if(color_by != "" & !boxplot) {
+    a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID, color = !!dplyr::sym(color_by))) +
+      ggplot2::scale_color_manual(values = named_color_vector)
+  } else {
+    a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID))
+  }
+  
+  if(boxplot) {
+    if(length(unique(nmd[[x_axis]])) > boxplot_x_threshold) {
+      a <- ggplot2::ggplot() +
+        ggplot2::labs(title = paste0('ERROR: There are too many X-axis categories (>', boxplot_x_threshold, ') for boxplots.')) +
+        ggplot2::theme(panel.background = ggplot2::element_blank(),
+                       plot.title = ggplot2::element_text(color = error_text_color))
+      return(a)
+    }
+    nmd[[x_axis]] <- as.factor(nmd[[x_axis]])
+    
+    if(is.character(nmd[[y_axis]]) || length(unique(nmd[[y_axis]])) <= discrete_threshold ) { # ... or if there are <= discrete_threshold unique values of y-axis
+      shiny::showNotification(paste0("WARNING: Treating Y-axis as discrete as it is a character type, or there are <=", discrete_threshold ," unique Y values."), type = "warning", duration = 10)
+      treat_y_axis_as_discrete <- TRUE 
+      nmd[[y_axis]] <- as.factor(nmd[[y_axis]])
+    } else {
+      treat_y_axis_as_discrete <- FALSE
+      nmd[[y_axis]] <- as.numeric(nmd[[y_axis]])
+    }
+    
+    if(color_by != "" ) {
+      a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], color = !!dplyr::sym(color_by))) +
+        ggplot2::scale_color_manual(values = named_color_vector)
+    } else {
+      a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]]))
+    }
+    
+    # Calculate the number of observations for each category
+    df_count <- nmd %>%
+      dplyr::distinct(ID, .keep_all = TRUE)
+    
+    if(facet_name != "") {
+      if(facet_name != x_axis) {
+        if(treat_y_axis_as_discrete) {
+          df_count <- df_count %>%
+            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis), !!dplyr::sym(facet_name))      
+        } else {
+          df_count <- df_count %>%
+            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(facet_name))
+        }
+      } else {
+        shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
+        if(treat_y_axis_as_discrete) {
+          df_count <- df_count %>%
+            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))          
+        } else {
+          df_count <- df_count %>%
+            dplyr::count(!!dplyr::sym(x_axis))
+        }
+      }
+    } else { ## end of valid facet_name
+      
+      if(treat_y_axis_as_discrete) {
+        df_count <- df_count %>%
+          dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))        
+      } else {
+        df_count <- df_count %>%
+          dplyr::count(!!dplyr::sym(x_axis)) 
+      }
+    }
+    
+    if(treat_y_axis_as_discrete) {
+      a <- a + 
+        ggplot2::geom_count() + ggplot2::scale_size_area(max_size = 12)
+      
+      if(label_size > 0) {
+        a <- a +
+          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 2, size = label_size) 
+      }
+      
+    } else {
+      a <- a + 
+        ggplot2::geom_boxplot(varwidth = TRUE)
+      if(label_size > 0) {
+        a <- a +
+          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]]) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+      }
+    }
+    
+  } else { # end of boxplot check
+    a <- a + ggplot2::geom_point(alpha = 1) +
+      ggplot2::geom_line(alpha = 0.7)
+    
+    # Highlighting variable value(s)
+    if(!is.null(highlight_var) && highlight_var != "" && !is.null(highlight_var_values[1]) && highlight_var_values[1] != "") {
+      nmd_highlight <- nmd %>% dplyr::filter(!!dplyr::sym(highlight_var) %in% highlight_var_values)
+      a <- a +
+        geom_point(data = nmd_highlight, shape = 8, size = 4, alpha = 1) # big red asterix shape
+    }
+    
+  }
+  
+  a <- a + ggplot2::xlab(x_axis) +
+    ggplot2::ylab(y_axis) +
+    ggplot2::theme_bw() +
+    ggplot2::labs(color = color_by)
+  
+  # median line and smoother not relevant for ind plots
+  
+  # if(med_line & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) { # can only do median line when both x & y are numeric
+  # 
+  #   d_bin_number    <- 20 # Sets the number of bins to be used for the median lines.
+  #   d_max_data_x    <- max(as.numeric(nmd[[x_axis]]), na.rm = TRUE)
+  #   d_min_data_x    <- min(as.numeric(nmd[[x_axis]]), na.rm = TRUE)
+  #   d_bin_increment <- (d_max_data_x - d_min_data_x) / d_bin_number
+  #   d_bin_times     <- seq(d_min_data_x, d_max_data_x, by = d_bin_increment)
+  # 
+  #   nmd <- nmd %>%
+  #     dplyr::mutate(
+  #       binned_xvar = quantize(nmd[[x_axis]], levels = d_bin_times)
+  #     )
+  # 
+  #   if(med_line_by == "") {
+  #     a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL), fun = median, geom="line", colour = "black", alpha = 0.8)
+  #   } else { # end of stat_summary_data_by NULL check
+  #     a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL, color = as.factor(.data[[med_line_by]])),
+  #                                    fun = median, geom="line", alpha = 0.8)
+  #   }
+  # 
+  # } # end of stat_summary_data_option
+  # 
+  # if(smoother & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) {
+  #   a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), se = FALSE, linetype = "dashed")
+  # }
+  
+  if(dolm & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) {
+    # Calculate linear regression and R-squared value for each facet
+    df_stats <- lm_eqn(df = nmd, facet_name = facet_name, x = x_axis, y = y_axis)
+    
+    data <- ggplot2::ggplot_build(a)$data[[1]]
+    med_x <- (min(data$x, na.rm = TRUE) + max(data$x, na.rm = TRUE))/2 # median works better for plotly, while min is better for ggplot
+    max_y <- max(data$y, na.rm = TRUE)
+    
+    a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), method = "lm", formula = y ~ x, se = FALSE, colour = "grey", show.legend = FALSE)
+    if(label_size > 0) {
+      a <- a + ggplot2::geom_text(data = df_stats, aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
+                                  hjust = 0.5, vjust = 1, show.legend = FALSE, size = label_size)      
+    }
+  }
+  
+  if (facet_name != "") {
+    if(facet_name == x_axis) {
+      shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
+    } else {
+      facet_formula <- as.formula(paste0("~", facet_name))
+      if(is.null(filter_id[1]) || filter_id[1] == "") {
+        a <- a + ggplot2::facet_wrap(facet_formula, labeller = ggplot2::label_both, nrow = rownums, ncol = colnums)
+      } else {
+        a <- a + ggplot2::facet_wrap(facet_formula, labeller = ggplot2::label_both) 
+      }
+    }
+  }
+  
+  if (logy & is.numeric(nmd[[y_axis]])) {
+    a <- a +
+      ggplot2::scale_y_log10(breaks = logbreaks_y, labels = logbreaks_y) +
+      ggplot2::annotation_logticks(sides = "l")
+  }
+  
+  if (logx & is.numeric(nmd[[x_axis]]) & !boxplot) {
+    a <- a +
+      ggplot2::scale_x_log10(breaks = logbreaks_x, labels = logbreaks_x) +
+      ggplot2::annotation_logticks(sides = "b")
+  }
+  
+  if (!is.null(plot_title)) {
+    a <- a +
+      ggplot2::ggtitle(plot_title)
+  }
+  
+  return(a)
+}
+
 
 #-------------------------------------------------------------------------------
 #' @name lowerFn
@@ -1026,7 +1373,7 @@ calc_summary_stats_as_list <- function(nca_df, group_by_name,
         dplyr::filter(Statistic %in% c("Min", "Mean", "Median", "Max", "CV%", "gMean", "gMean CV%")) %>%
         dplyr::select(Statistic, N, tidyr::everything())
     }
-  }
+  } # end of group_by_name big loop
   
   return(list_of_descriptive_stats_by_keys)
 }
@@ -1564,27 +1911,11 @@ quantile_output <- function(iiv_sim_input,
   iiv_sim_input <- iiv_sim_input %>%
     dplyr::group_by(TIME) %>%
     dplyr::mutate(median_yvar   = quantile(.data[[yvar]], probs = 0.5) %>% round(digits = dp),
+                  mean_yvar     = mean(.data[[yvar]]) %>% round(digits = dp),
                   lower_yvar    = quantile(.data[[yvar]], probs = lower_quartile) %>% round(digits = dp),
                   upper_yvar    = quantile(.data[[yvar]], probs = upper_quartile) %>% round(digits = dp)) %>%
     dplyr::ungroup()
 }
-
-#-------------------------------------------------------------------------------
-#' @name safely_run_single_sim
-#'
-#' @title purrr:safely wrappers for various functions
-#' @param ... args to be passed
-#'
-#' @returns A list with two elements:
-#' * `result`: The result of `run_single_sim`, or `NULL` if an error occurred.
-#' * `error`: The error that occurred, or `NULL` if no error occurred.
-#'
-#' @seealso `run_single_sim`
-#' @importFrom purrr safely
-#' @export
-#-------------------------------------------------------------------------------
-
-safely_run_single_sim <- purrr::safely(run_single_sim)
 
 #-------------------------------------------------------------------------------
 #' @name safely_eval
@@ -2074,7 +2405,7 @@ plot_data_with_nm <- function(
   
   if(!is.null(nonmem_dataset) & !is.null(color_data_by) & color_data_by %in% names(nonmem_dataset)) {
     p1 <- p1 +
-      ggplot2::theme(legend.position = "bottom")
+      ggplot2::theme(legend.position = "right")
   } else {
     p1 <- p1 +
       ggplot2::theme(legend.position = "none")
@@ -2120,6 +2451,7 @@ plot_data_with_nm <- function(
 #' @returns a ggplot object
 #' @importFrom dplyr mutate filter bind_rows
 #' @importFrom forcats fct_inorder
+#' @importFrom ggplot2 theme
 #' @export
 #-------------------------------------------------------------------------------
 
@@ -2241,16 +2573,21 @@ plot_three_data_with_nm <- function(
   ### Apply log axis if required
   if(log_x_axis) {
     p1<- p1 +
-      ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) #+
-    #annotation_logticks(sides = "bl")
+      ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) +
+      annotation_logticks(sides = "b")
   }
   
   if(log_y_axis) {
     p1<- p1 +
-      ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) #+
-    #annotation_logticks(sides = "bl")
+      ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
+      annotation_logticks(sides = "l")
   }
   
+  # Align legends to be right hand side since plotly always shows right hand side only
+  p1 <- p1 +
+    #ggplot2::theme(legend.justification = c(1, 1), legend.position = c(1, 1), legend.box.just = "right")
+    theme(legend.position = "right")
+
   return(p1)
 }
 
@@ -2271,6 +2608,8 @@ plot_three_data_with_nm <- function(
 #' @param stat_summary_data_option Plots median line of dataset
 #' @param show_ind_profiles    If TRUE, plots individual profiles instead of prediction intervals
 #' @param y_median             Prediction interval median (when show_ind_profiles == FALSE)
+#' @param y_mean               Prediction interval mean (when show_ind_profiles == FALSE)
+#' @param show_y_mean          Show Mean of Y-value in a dashed line
 #' @param y_min                Prediction interval min (when show_ind_profiles == FALSE)
 #' @param y_max                Prediction interval max (when show_ind_profiles == FALSE)
 #' @param line_color_1         Color for Model 1 prediction intervals
@@ -2307,6 +2646,8 @@ plot_iiv_data_with_nm <- function(
     geom_point_data_option = FALSE,
     show_ind_profiles = FALSE,
     y_median = NULL,
+    y_mean = NULL,
+    show_y_mean = FALSE,
     y_min = NULL,
     y_max = NULL,
     line_color_1 = 'black',
@@ -2332,7 +2673,7 @@ plot_iiv_data_with_nm <- function(
       message('dataset provided')
     }
     
-    input_dataset1 <- input_dataset1 %>% dplyr::select(ID, dplyr::all_of(c(xvar, yvar)), median_yvar, lower_yvar, upper_yvar) # Only include relevant columns to be plotted
+    input_dataset1 <- input_dataset1 %>% dplyr::select(ID, dplyr::all_of(c(xvar, yvar)), median_yvar, mean_yvar, lower_yvar, upper_yvar) # Only include relevant columns to be plotted
     
     p1 <- ggplot2::ggplot(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]))
   }
@@ -2341,7 +2682,7 @@ plot_iiv_data_with_nm <- function(
     if(debug) {
       message('dataset provided')
     }
-    input_dataset2 <- input_dataset2 %>% dplyr::select(ID, all_of(c(xvar, yvar_2)), median_yvar, lower_yvar, upper_yvar) # Only include relevant columns to be plotted
+    input_dataset2 <- input_dataset2 %>% dplyr::select(ID, all_of(c(xvar, yvar_2)), median_yvar, mean_yvar, lower_yvar, upper_yvar) # Only include relevant columns to be plotted
     
     p1 <- ggplot2::ggplot(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]))
   }
@@ -2408,6 +2749,10 @@ plot_iiv_data_with_nm <- function(
         message('plot generated')
       }
     }
+    if(show_y_mean) {
+      p1 <- p1 +
+        ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[y_mean]]), color = line_color_1, linewidth = 1.2, linetype = "dashed")
+    }
   } # end of input_dataset1
   
   if(!is.null(input_dataset2)) {
@@ -2431,6 +2776,10 @@ plot_iiv_data_with_nm <- function(
       if(debug) {
         message('plot generated')
       }
+    }
+    if(show_y_mean) {
+      p1 <- p1 +
+        ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[y_mean]]), color = line_color_2, linewidth = 1.2, linetype = "dashed")
     }
   } # end of input_dataset2
   
@@ -3123,6 +3472,69 @@ drawDetails.watermark <- function(x, ...) {
 }
 
 #-------------------------------------------------------------------------------
+#' @name tblNCA_progress
+#' @title Modified NonCompart::tblNCA to support progress bars
+#'
+#' @inheritParams NonCompart::tblNCA
+#' @param show_progress display progress messages
+#' @importFrom NonCompart sNCA tblNCA
+#' @export
+#-------------------------------------------------------------------------------
+
+tblNCA_progress <- function (concData, key = "Subject", colTime = "Time", colConc = "conc", 
+          dose = 0, adm = "Extravascular", dur = 0, doseUnit = "mg", 
+          timeUnit = "h", concUnit = "ug/L", down = "Linear", R2ADJ = 0, 
+          MW = 0, SS = FALSE, iAUC = "", excludeDelta = 1, show_progress = TRUE) 
+{
+  class(concData) = "data.frame"
+  nKey = length(key)
+  for (i in 1:nKey) {
+    if (sum(is.na(concData[, key[i]])) > 0) 
+      stop(paste(key[i], "has NA value, which is not allowed!"))
+  }
+  IDs = unique(as.data.frame(concData[, key], ncol = nKey))
+  nID = nrow(IDs)
+  if (length(dose) == 1) {
+    dose = rep(dose, nID)
+  }
+  else if (length(dose) != nID) {
+    stop("Count of dose does not match with number of NCAs!")
+  }
+  Res = vector()
+  withProgress(message = "Calculating NCA", value = 0, {
+    for (i in 1:nID) {
+      if(show_progress) {setProgress(value = i / nID, detail = paste0("Subject ", i, "/", nID))}
+      strHeader = paste0(key[1], "=", IDs[i, 1])
+      strCond = paste0("concData[concData$", key[1], "=='", 
+                       IDs[i, 1], "'")
+      if (nKey > 1) {
+        for (j in 2:nKey) {
+          strCond = paste0(strCond, " & concData$", key[j], 
+                           "=='", IDs[i, j], "'")
+          strHeader = paste0(strHeader, ", ", key[j], "=", 
+                             IDs[i, j])
+        }
+      }
+      strCond = paste0(strCond, ",]")
+      tData = eval(parse(text = strCond))
+      if (nrow(tData) > 0) {
+        tRes = sNCA(tData[, colTime], tData[, colConc], dose = dose[i], 
+                    adm = adm, dur = dur, doseUnit = doseUnit, timeUnit = timeUnit, 
+                    concUnit = concUnit, R2ADJ = R2ADJ, down = down, 
+                    MW = MW, SS = SS, iAUC = iAUC, Keystring = strHeader, 
+                    excludeDelta = excludeDelta)
+        Res = rbind(Res, tRes)
+      }
+    }
+  })
+  Res = cbind(IDs, Res)
+  rownames(Res) = NULL
+  colnames(Res)[1:nKey] = key
+  attr(Res, "units") = c(rep("", nKey), attr(tRes, "units"))
+  return(Res)
+}
+
+#-------------------------------------------------------------------------------
 #' @name pdfNCA_wm
 #' @title Modified ncar::pdfNCA to support watermarks
 #'
@@ -3130,6 +3542,7 @@ drawDetails.watermark <- function(x, ...) {
 #' @param internal_version changes temp dir pathing as a workaround for cloud hosting
 #' where access rights prevent writing
 #' @param debug_msg show debug messages
+#' @param show_progress display progress messages
 #' @inheritParams ncar::pdfNCA
 #' @importFrom ncar pdfNCA
 #' @importFrom NonCompart sNCA tblNCA
@@ -3140,7 +3553,8 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
                        colTime = "Time", colConc = "conc", dose = 0, adm = "Extravascular",
                        dur = 0, doseUnit = "mg", timeUnit = "h", concUnit = "ug/L",
                        down = "Linear", R2ADJ = 0, MW = 0, SS = FALSE, iAUC = "",
-                       excludeDelta = 1, watermark = TRUE, internal_version = TRUE, debug_msg = TRUE)
+                       excludeDelta = 1, watermark = TRUE, internal_version = TRUE, debug_msg = TRUE,
+                       show_progress = TRUE)
 {
   
   if(debug_msg) {
@@ -3182,6 +3596,9 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
   }
   Res = vector()
   for (i in 1:nID) {
+    if(show_progress) {
+      shiny::incProgress(1/nID, detail = paste("Subject ", i, "/", nID))
+    }
     strHeader = paste0(key[1], "=", IDs[i, 1])
     strCond = paste0("concData[concData$", key[1], "=='",
                      IDs[i, 1], "'")
@@ -3275,6 +3692,11 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
 #-------------------------------------------------------------------------------
 #' @name generate_dosing_regimens
 #' @title Generate Dosing Regimens
+#' 
+#' @description
+#' This is the main function to supply dosing regimens to simulations.
+#' If there are no valid dose amounts from any dosing regimens, a dummy mrgsolve::ev()
+#' object is created to supply a dose of 0 to be used for simulations.
 #'
 #' @param amt1 Dose Amount Regimen 1
 #' @param delay_time1 Delay Time Regimen 1
@@ -3313,7 +3735,7 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
 #' @param debug set to TRUE to show debug messages
 #'
 #' @importFrom mrgsolve ev as.ev
-#' @importFrom dplyr arrange filter
+#' @importFrom dplyr arrange filter if_else
 #' @returns A mrgsolve::ev event object
 
 #' @export
@@ -3330,35 +3752,48 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
                                      debug = FALSE
 ) {
   
-  dosing_scheme_1 <- mrgsolve::ev(amt     =  sanitize_numeric_input(amt1) * mw_conversion * wt_multiplication_value,
+  # Special handling of amt to treat a user-input of dose number 0 to insert a dummy amount of 0,
+  # As mrgsolve::ev does not allow zero doses
+  
+  dosing_scheme_1 <- mrgsolve::ev(amt     =  dplyr::if_else(sanitize_numeric_input(total1, allow_zero = TRUE, as_integer = TRUE) <= 0,
+                                                            0,
+                                                            sanitize_numeric_input(amt1) * mw_conversion * wt_multiplication_value),
                                   time    =  sanitize_numeric_input(delay_time1),
                                   cmt     =  cmt1,
                                   tinf    =  sanitize_numeric_input(tinf1),
                                   total   =  sanitize_numeric_input(total1, allow_zero = FALSE, as_integer = TRUE),
                                   ii      =  sanitize_numeric_input(ii1, allow_zero = FALSE)
   )
-  dosing_scheme_2 <- mrgsolve::ev(amt     =  sanitize_numeric_input(amt2) * mw_conversion * wt_multiplication_value,
+  dosing_scheme_2 <- mrgsolve::ev(amt     =  dplyr::if_else(sanitize_numeric_input(total2, allow_zero = TRUE, as_integer = TRUE) <= 0,
+                                                            0,
+                                                            sanitize_numeric_input(amt2) * mw_conversion * wt_multiplication_value),
                                   time    =  sanitize_numeric_input(delay_time2),
                                   cmt     =  cmt2,
                                   tinf    =  sanitize_numeric_input(tinf2),
                                   total   =  sanitize_numeric_input(total2, allow_zero = FALSE, as_integer = TRUE),
                                   ii      =  sanitize_numeric_input(ii2, allow_zero = FALSE)
   )
-  dosing_scheme_3 <- mrgsolve::ev(amt     =  sanitize_numeric_input(amt3) * mw_conversion * wt_multiplication_value,
+  dosing_scheme_3 <- mrgsolve::ev(amt     =  dplyr::if_else(sanitize_numeric_input(total3, allow_zero = TRUE, as_integer = TRUE) <= 0,
+                                                            0,
+                                                            sanitize_numeric_input(amt3) * mw_conversion * wt_multiplication_value),
                                   time    =  sanitize_numeric_input(delay_time3),
                                   cmt     =  cmt3,
                                   tinf    =  sanitize_numeric_input(tinf3),
                                   total   =  sanitize_numeric_input(total3, allow_zero = FALSE, as_integer = TRUE),
                                   ii      =  sanitize_numeric_input(ii3, allow_zero = FALSE)
   )
-  dosing_scheme_4 <- mrgsolve::ev(amt     =  sanitize_numeric_input(amt4) * mw_conversion * wt_multiplication_value,
+  dosing_scheme_4 <- mrgsolve::ev(amt     =  dplyr::if_else(sanitize_numeric_input(total4, allow_zero = TRUE, as_integer = TRUE) <= 0,
+                                                            0,
+                                                            sanitize_numeric_input(amt4) * mw_conversion * wt_multiplication_value),
                                   time    =  sanitize_numeric_input(delay_time4),
                                   cmt     =  cmt4,
                                   tinf    =  sanitize_numeric_input(tinf4),
                                   total   =  sanitize_numeric_input(total4, allow_zero = FALSE, as_integer = TRUE),
                                   ii      =  sanitize_numeric_input(ii4, allow_zero = FALSE)
   )
-  dosing_scheme_5 <- mrgsolve::ev(amt     =  sanitize_numeric_input(amt5) * mw_conversion * wt_multiplication_value,
+  dosing_scheme_5 <- mrgsolve::ev(amt     =  dplyr::if_else(sanitize_numeric_input(total5, allow_zero = TRUE, as_integer = TRUE) <= 0,
+                                                            0,
+                                                            sanitize_numeric_input(amt5) * mw_conversion * wt_multiplication_value),
                                   time    =  sanitize_numeric_input(delay_time5),
                                   cmt     =  cmt5,
                                   tinf    =  sanitize_numeric_input(tinf5),
@@ -3391,3 +3826,40 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
   
   return(total_doses)
 }
+
+#-------------------------------------------------------------------------------
+#' @name search_id_col
+#' @title Search for Likely ID Columns
+#' 
+#' @description
+#' Searches through several common column names that could be used to create the
+#' "ID" column in the dataset, and push that to the first column of the dataset
+#' 
+#' @param orig_df The dataframe used for searching
+#' @param names_of_id_cols Likely column names, in order of search priority
+#' 
+#' @returns a dataframe
+#' @importFrom dplyr mutate select
+#' @export
+#-------------------------------------------------------------------------------
+
+search_id_col <- function(orig_df,
+                          names_of_id_cols = c("SUBJIDN", "SUBJID", "USUBJID", "PTNO")) {
+  
+  df <- orig_df
+  
+  for(i in seq_along(names_of_id_cols)) {
+    if('ID' %in% names(df)) {
+      return(df)
+    } else {
+      if(names_of_id_cols[i] %in% names(df)) {
+        df <- df %>% dplyr::mutate(ID = !!dplyr::sym(names_of_id_cols[i])) %>%
+          dplyr::select(ID, dplyr::everything())
+        shiny::showNotification(paste0("ID column has been created from '", names_of_id_cols[i], "' column."), type = "message", duration = 10)
+      }
+    }
+  } # end of loop
+  
+  return(orig_df) # if can't find any
+}
+

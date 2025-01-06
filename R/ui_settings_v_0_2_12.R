@@ -78,7 +78,7 @@ insert_lm_eqn_label   <- 'Linear Regression'
 #' @export
 insert_smoother_label <- 'Smoother'
 #' @export
-facet_by_label        <- 'Facet by:'
+facet_by_label        <- 'Facet(s) by:'
 #' @export
 plot_title_placeholder<- "Insert optional plot title"
 #' @export
@@ -89,7 +89,7 @@ bspop_select_label_size<- "Label sizes are only applicable for linear regression
 #' @export
 add_data_stat_sum     <- 'Median line [dataset]'
 #' @export
-bspop_data_stat_sum   <- 'Insert a line connecting median values for grouped observations in equidistant time bins for non-boxplots.'
+bspop_data_stat_sum   <- 'Insert a line connecting median values for grouped observations in equidistant x-axis bins (n=20) for continuous plots.'
 #' @export
 boxplot_label         <- 'Boxplot'
 #' @export
@@ -114,6 +114,32 @@ plotly_height_label   <- "Height (px)"
 bspop_plotly_width_height <- 'Leave empty to use current dimensions.'
 #' @export
 bspop_plotly_width_height_corr <- 'Leave empty to use current dimensions.<br><br>Tip: a larger size (e.g. >5000) is recommended if there are more than a few variables.'
+#' @export
+bspop_data_plot_options <- 'Most options set here (with the exception of "Facet by") will be carried over to the "Ind. Plot" tab.'
+#' @export
+bspop_download_plot_all <- 'Generate and download all individual profiles in a single file (.pdf only). Adjust output settings in the "Download Options" box below.<br><br>Note: It can be time consuming if there are a large number of subjects! (Tip - More plots per page tends to be quicker.)'
+#' @export
+bspop_ind_plot_options  <- 'Most options (with the exception of "Facet by") are carried over from the "General Plot" tab.<br><br>Note: Smoother and median lines are not relevant for individual plots and are not inserted.'
+#' @export
+label_filter_by_id      <- 'Select ID(s):'
+#' @export
+bspop_filter_by_id      <- '(Optional) Page, Row, and Column settings will be ignored when any IDs are selected.'
+#' @export
+label_highlight         <- 'Flag Variable:'
+#' @export
+bspop_highlight_var     <- '(Optional) First select a variable and then choose any of its value(s) to be highlighted in bigger asterisks (only applicable for non-boxplots).'
+#' @export
+label_highlight_values  <- 'Flag Value(s):'
+#' @export
+plotly_filename_all_label <- 'Plot name (all individuals)'
+#' @export
+plotly_format_all_label <- "File format"
+#' @export
+bspop_plotly_file_name_all_label <- 'All individual profiles can be downloaded by clicking the "Generate All Individuals" button.'
+#' @export
+plotly_width_all_label <- 'Width (inches)'
+#' @export
+plotly_height_all_label <- 'Height (inches)'
 
 ## shinyAce placeholder
 #' @export
@@ -126,6 +152,8 @@ bspop_select_model    <- 'Choose a template model, or select "Blank Template" to
 bspop_param_values    <- 'Once a model has been generated, all fixed effects parameters from the model code (i.e. inside $PARAM) will become available to be adjusted dynamically in real-time (however it does not feedback into the model code text).<br><br>Note: Non-sensible / unphysiological values may result in the app crashing and should be avoided.'
 #' @export
 bspop_download_cpp_model <- 'Save current model as a .cpp file including any real-time changes to the parameter values (fixed effects).<br><br>Note: The model must first be generated before the code can be downloaded!'
+#' @export
+bspop_model_code      <- 'Refer to the mrgsolve user guide (provided on the first line in the code editor) on the required syntax. After editing, click on the "Generate Model" button.<br><br>Note: If the model fails to compile, check the "Model Info (Console)" box below for more information.'
 
 ## Dosing Regimen
 #' @export
@@ -264,7 +292,7 @@ add_sim_geom_point    <- 'Show Sampling Points [sims]'
 add_data_geom_point   <- 'Show Sampling Points [dataset]'
 
 #' @export
-unsupported_dataset   <- 'No Dataset imported or ID, DV, and TIME columns in the data not selected'
+unsupported_dataset   <- 'No Dataset imported or ID, DV, and TIME columns are not present.'
 
 #### Page 3 Parameter Sensitivity Analysis
 #' @export
@@ -312,7 +340,7 @@ max_sim_n_error       <- paste0("Maximum number of subjects cannot exceed ", max
 #' @export
 label_db              <- "Select Population (Covariate) Database:"
 #' @export
-bspop_db              <- 'The choice of database is specific to project needs, where:<br><br>"None" - only number of subjects and seed are relevant, all other settings are ignored (unless custom covariates are defined).<br><br><a href="https://wwwn.cdc.gov/nchs/nhanes/Default.aspx" target="_blank">NHANES - All ages</a> (general population [1999 - 2020 pre-pandemic], usually suitable for adults (>18))<br><br><a href="https://www.cdc.gov/growthcharts/percentile_data_files.htm" target="_blank">CDC - Age 0 - 20 yo</a> (general ped use between 2 - <18 yo)<br><br><a href="https://www.who.int/childgrowth/standards/weight_for_age/en/" target="_blank">WHO - Age 0 to 10 yo</a> (better granularity for neonates to toddlers)<br><br>Note: The covariates will replace whatever it is defined in $PARAM'
+bspop_db              <- 'The choice of database is specific to project needs, where:<br><br>"None" - only number of subjects and seed are relevant, other settings are disabled (apart from custom covariates, if defined).<br><br><a href="https://wwwn.cdc.gov/nchs/nhanes/Default.aspx" target="_blank">NHANES - All ages</a> (general population [1999 - 2020 pre-pandemic], usually suitable for adults (>18))<br><br><a href="https://www.cdc.gov/growthcharts/percentile_data_files.htm" target="_blank">CDC - Age 0 - 20 yo</a> (general ped use between 2 - <18 yo)<br><br><a href="https://www.who.int/childgrowth/standards/weight_for_age/en/" target="_blank">WHO - Age 0 to 10 yo</a> (better granularity for neonates to toddlers)<br><br>Note: The covariates will replace whatever it is defined in $PARAM'
 #' @export
 bspop_seed            <- 'Seed number is applicable to both the sampling of databases (including covariates) AND simulations (uses current date as default value).'
 #' @export
@@ -345,6 +373,8 @@ bspop_catvalue1       <- "The percentage slider determines the approximate propo
 bspop_catvalue2       <- "(100 - percentage slider) determines the approximate proportion of subjects with this numeric value."
 #' @export
 bspop_do_iiv_plotly   <- 'Interactive plots using the "plotly" package could take a long time for simulations with more than a few hundred subjects.'#<br><br>Note - "Download Options" do not apply when plots are not interactive.'
+#' @export
+show_mean_iiv_label   <- 'Show Mean Trend'
 
 #infoBox
 #' @export
