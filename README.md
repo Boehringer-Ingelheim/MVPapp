@@ -277,7 +277,7 @@ matrices has reverted to its last known state.
 
 ![](www/varplot.png)
 
-## Extended Features
+## Extended Features and Vignettes
 
 ### Providing external models and changing default settings
 
@@ -286,6 +286,14 @@ Models](https://boehringer-ingelheim.github.io/MVPapp/articles/supply-passwords.
 or access the vignette on this topic in R
 (`vignette("supply-passwords", package = "MVPapp"`) for instructions on
 how to provide external models on App start-up.
+
+### Effective Exploratory Data Analysis (EDA)
+
+Please see the article on [Effective Exploratory Data Analysis
+(EDA)](https://boehringer-ingelheim.github.io/MVPapp/articles/data-exploration.html),
+or access the vignette on this topic in R
+(`vignette("data-exploration", package = "MVPapp"`) for a short guide on
+using MVP to perform quick EDA.
 
 ### Run MVP as a regular Shiny App
 

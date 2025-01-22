@@ -2,6 +2,7 @@
 
 ## Features
 
+* Multiple facets for General Plots (#17)
 * Individual plots for exploring uploaded datasets (#15)  
 * Mean trend toggle for variability plots (#13)  
 * Progress bars for longer computations where a spinner graphic is not feasible (#16)
