@@ -80,8 +80,8 @@ page (e.g. dosing and axis choices).
     - Note that the **entire model code is a string** that is assigned
       to the `model_code` object, and initialized as `model_object`.
       Therefore, if the model code contains quotation marks, the user
-      will have to remove those manually (or escape them using the
-      forward slash, `\`) to avoid compilation errors.  
+      will have to remove those manually (or escape them using the back
+      slash, `\`) to avoid compilation errors.  
 2.  Click on the `Generate Model 1` button. If the model compiles, the
     “Parameter Values” box will be populated, and a plot will show up on
     the right hand side.
