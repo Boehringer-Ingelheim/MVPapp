@@ -1,6 +1,6 @@
 #-------------------------------------------------------------------------------
 #' Reloading packages to enable run_mvp() to work
-#' 
+#'
 #-------------------------------------------------------------------------------
 
 # library(tibble) # 3.2.1
@@ -39,3 +39,4 @@ library(mrgsolve) # 1.5.2 # required for sim code editor
 # library(shinyalert) # 3.0.0
 #library(grid) #required for ggplot watermark # 4.3.1
 #library(gridExtra) #required for ggplot watermark # 2.3
+#library(ggrepel) #required for dosing labels 0.9.5

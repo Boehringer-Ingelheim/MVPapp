@@ -25,12 +25,17 @@ schedules per model
 - Parameter sensitivity analysis to easily evaluate impact of changing
 parameters  
 - Automatic PK/PD metrics using a user-defined time range  
-- Variability assessment using external databases such as the NHANES,
-WHO, and CDC virtual patients  
+- Variability assessment using external databases such as the
+<a href="https://wwwn.cdc.gov/nchs/nhanes/Default.aspx"
+target="_blank">NHANES</a>,
+<a href="https://www.who.int/childgrowth/standards/weight_for_age/en/"
+target="_blank">WHO</a>, and
+<a href="https://www.cdc.gov/growthcharts/percentile_data_files.htm"
+target="_blank">CDC</a> virtual patients  
 - Custom covariate distributions to further assess variability
 
-The goal of MVP is to support initial model development and facilitate
-internal discussions more efficiently.
+**The goal of MVP is to support initial model development and facilitate
+internal discussions more efficiently.**
 
 ## Installation
 
@@ -157,9 +162,12 @@ rename these columns using the code editor.
     each subgroup on/off when the plot is interactive):
 
 General plots are flexible plots that can handle continuous/continuous,
-continuous/discrete, and discrete/discrete types of data. Settings from
-General Plots will be carried over to the “Ind. Plot”, where users can
-explore individual profiles in more detail.
+continuous/discrete (Box plot option), and discrete/discrete (Box plot
+option) types of data. Settings from General Plots will be carried over
+to the “Ind. Plot”, where users can explore individual profiles in more
+detail. Dosing information from the “EVID”, “ADDL”, “II”, “RATE” can be
+inserted on each plot when the Dose Column is provided. LLOQ information
+can also be inserted.
 
 ![](www/facet_plot.png)
 

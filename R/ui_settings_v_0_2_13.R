@@ -84,7 +84,7 @@ plot_title_placeholder<- "Insert optional plot title"
 #' @export
 select_label_size_label<- "Text Label Size"
 #' @export
-bspop_select_label_size<- "Label sizes are only applicable for linear regression formulae or counts (N=x)."
+bspop_select_label_size<- "Label sizes are only applicable for linear regression formulae, counts (N=x), or dosing info."
 
 #' @export
 add_data_stat_sum     <- 'Median line [dataset]'
@@ -96,7 +96,26 @@ boxplot_label         <- 'Boxplot'
 bspop_do_boxplot      <- 'Boxplot figure assumes the X-axis variable is categorical, the Y-axis variable is continuous, and counts (N) represents the number of unique IDs i.e. usually the baseline value.<br><br>Turning off interactive plots may achieve better visual results for Boxplots (Color variable is dodged and boxplot widths are proportional to the square-roots of the number of observations in the groups).'
 #' @export
 bspop_do_data_plotly  <- 'Interactive plots using the "plotly" package could take a longer time for big datasets. Turning it off may achieve better visual results for Boxplots.'# <br><br>Note - "Download Options" do not apply when plots are not interactive.'
-
+#' @export
+label_fixed_scale     <- 'Same Scale'
+#' @export
+bspop_fixed_scale     <- 'Check to ensure the same scale is used for all plots, otherwise uncheck to allow free X- and Y- scaling for each sub-plot.<br><br>Note: For Log axis, the same scale is used for plots on the same page only.'
+#' @export
+label_insert_dosing   <- 'Show Dose Info'
+#' @export
+bspop_insert_dosing   <- 'Shows dosing info as scaled vertical lines in continuous plots, with text labels denoting each unique dose (if "EVID" column is found, and expanded accordingly by "ADDL", "II", and "RATE").<br><br>Note: Scales may be affected due the way dose lines are handled. Turning off interactive plot may achieve better results.'
+#' @export
+label_dose_colname    <- 'Dose Column'
+#' @export
+bspop_dose_colname    <- 'Provide column name that contains the dosing info, usually "AMT" or "DOSE".'
+#' @export
+label_dose_units      <- 'Dose Units'
+#' @export
+bspop_dose_units      <- '(Optional) Provide units to be appended on to the text label.'
+#' @export
+label_lloq_colname    <- 'LLOQ Column'
+#' @export
+bspop_lloq_colname    <- '(Optional) Provide LLOQ/BLQ column to be plotted as dashed horizontal lines.'
 
 #' @export
 bspop_download_plot   <- 'Adjust output settings in the "Download Options" box below.'
@@ -143,7 +162,7 @@ plotly_height_all_label <- 'Height (inches)'
 
 ## shinyAce placeholder
 #' @export
-code_editor_init      <- '# Please apply all filtering and data cleaning directly using dplyr syntax.\n# e.g.: filter(...) %>% mutate(...)\n# Note: Please wait a few seconds after editing code before pressing Apply.\n\nfilter()'
+code_editor_init      <- '# Please apply all filtering and data cleaning directly using dplyr syntax.\n# e.g.: filter(...) %>% mutate(...)\n# Note: Please wait a few seconds after editing code before pressing Apply.\n\nfilter() %>% mutate()'
 
 #### Page 2 Simulation
 #' @export

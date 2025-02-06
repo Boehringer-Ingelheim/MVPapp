@@ -1,3 +1,14 @@
+# MVPapp 0.2.13 (2025-02-04)
+
+## Features
+
+* Dosing information, scaling, and LLOQ plotting options for Individual Plots (#18, #21)
+* More options for dataset built-in cleaning (#20)
+
+## Bugfixes
+
+* Checking for column validity for "Color by" option in General Plots (#19)
+
 # MVPapp 0.2.12 (2025-01-06)
 
 ## Features

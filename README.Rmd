@@ -27,10 +27,10 @@ knitr::opts_chunk$set(
 - Model comparison to visualize differences\
 - Parameter sensitivity analysis to easily evaluate impact of changing parameters\
 - Automatic PK/PD metrics using a user-defined time range\
-- Variability assessment using external databases such as the NHANES, WHO, and CDC virtual patients\
+- Variability assessment using external databases such as the [NHANES](https://wwwn.cdc.gov/nchs/nhanes/Default.aspx){target="_blank"}, [WHO](https://www.who.int/childgrowth/standards/weight_for_age/en/){target="_blank"}, and [CDC](https://www.cdc.gov/growthcharts/percentile_data_files.htm){target="_blank"} virtual patients\
 - Custom covariate distributions to further assess variability
 
-The goal of MVP is to support initial model development and facilitate internal discussions more efficiently.
+**The goal of MVP is to support initial model development and facilitate internal discussions more efficiently.**
 
 ## Installation
 
@@ -94,7 +94,7 @@ Uploading NONMEM-formatted datasets (.csv) and tab-delimited text files (.txt) i
 
 4.  Quick data exploration are provided by the "General Plot", "Ind. Plot", and "Corr. Plot" tabs (tip: clicking on the legend can toggle each subgroup on/off when the plot is interactive):  
 
-General plots are flexible plots that can handle continuous/continuous, continuous/discrete, and discrete/discrete types of data. Settings from General Plots will be carried over to the "Ind. Plot", where users can explore individual profiles in more detail.
+General plots are flexible plots that can handle continuous/continuous, continuous/discrete (Box plot option), and discrete/discrete (Box plot option) types of data. Settings from General Plots will be carried over to the "Ind. Plot", where users can explore individual profiles in more detail. Dosing information from the "EVID", "ADDL", "II", "RATE" can be inserted on each plot when the Dose Column is provided. LLOQ information can also be inserted.
 
 ![](www/facet_plot.png)
 
