@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.13</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,9 +66,9 @@
 - Model comparison to visualize differences<br>
 - Parameter sensitivity analysis to easily evaluate impact of changing parameters<br>
 - Automatic PK/PD metrics using a user-defined time range<br>
-- Variability assessment using external databases such as the NHANES, WHO, and CDC virtual patients<br>
+- Variability assessment using external databases such as the <a href="https://wwwn.cdc.gov/nchs/nhanes/Default.aspx" target="_blank" class="external-link">NHANES</a>, <a href="https://www.who.int/childgrowth/standards/weight_for_age/en/" target="_blank" class="external-link">WHO</a>, and <a href="https://www.cdc.gov/growthcharts/percentile_data_files.htm" target="_blank" class="external-link">CDC</a> virtual patients<br>
 - Custom covariate distributions to further assess variability</p>
-<p>The goal of MVP is to support initial model development and facilitate internal discussions more efficiently.</p>
+<p><strong>The goal of MVP is to support initial model development and facilitate internal discussions more efficiently.</strong></p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -102,7 +102,7 @@
 <li>Once a model is selected or uploaded, you can make further changes in the Code Editor below.<br>
 </li>
 <li>You may also copy across your own model code by selecting the “Blank Template” model. Note that when you switch models, all changes are lost.</li>
-<li>Note that the <strong>entire model code is a string</strong> that is assigned to the <code>model_code</code> object, and initialized as <code>model_object</code>. Therefore, if the model code contains quotation marks, the user will have to remove those manually (or escape them using the forward slash, <code>\</code>) to avoid compilation errors.<br>
+<li>Note that the <strong>entire model code is a string</strong> that is assigned to the <code>model_code</code> object, and initialized as <code>model_object</code>. Therefore, if the model code contains quotation marks, the user will have to remove those manually (or escape them using the back slash, <code>\</code>) to avoid compilation errors.<br>
 </li>
 </ul>
 </li>
@@ -144,7 +144,7 @@
 <ol start="4" style="list-style-type: decimal">
 <li>Quick data exploration are provided by the “General Plot”, “Ind. Plot”, and “Corr. Plot” tabs (tip: clicking on the legend can toggle each subgroup on/off when the plot is interactive):</li>
 </ol>
-<p>General plots are flexible plots that can handle continuous/continuous, continuous/discrete, and discrete/discrete types of data. Settings from General Plots will be carried over to the “Ind. Plot”, where users can explore individual profiles in more detail.</p>
+<p>General plots are flexible plots that can handle continuous/continuous, continuous/discrete (Box plot option), and discrete/discrete (Box plot option) types of data. Settings from General Plots will be carried over to the “Ind. Plot”, where users can explore individual profiles in more detail. Dosing information from the “EVID”, “ADDL”, “II”, “RATE” can be inserted on each plot when the Dose Column is provided. LLOQ information can also be inserted.</p>
 <p><img src="www/facet_plot.png"></p>
 <p>Correlation plots are grouped by ID and are useful to explore potential correlations between covariates.</p>
 <p><img src="www/corr_plot.png"></p>

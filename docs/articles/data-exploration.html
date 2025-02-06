@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.13</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -246,6 +246,17 @@ Page” and “Columns per Page” accordingly to change the number of
 subjects per page. Note that the Page selector will be updated
 dynamically to reflect any changes in rows and columns.<br>
 </li>
+<li>(Optional) Dosing information is enabled by default, which searches
+for the <code>EVID</code>, <code>ADDL</code>, and <code>II</code>
+columns, and inserts dosing lines for each subject. The height of the
+dosing lines are scaled by their relative amount that is given by the
+“Dose Column”, and each unique dose will be labeled as text. If the
+<code>RATE</code> column is present, the dosing lines will be extended
+accordingly to the infusion duration. An optional unit for the dose can
+also be inserted.</li>
+<li>(Optional) BLQ information can be inserted by providing the “LLOQ
+Column”, which will then be shown as horizontal dashed orange
+lines.</li>
 <li>(Optional) Highlight any specific number of subjects to be viewed by
 using the “Select ID(s)” option. When any subjects are selected this
 way, the page, row and column options will be ignored.</li>
