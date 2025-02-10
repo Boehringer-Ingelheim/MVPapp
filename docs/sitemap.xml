@@ -28,6 +28,7 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/draw_correlation_plot.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/eval_parse.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/expand_addl_ii.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/exposures_table.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/extract_matrix.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/extract_model_params.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/general_warning_modal.html</loc></url>
@@ -53,6 +54,7 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/pkpd_adaptive_dosing.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/plot_data_with_nm.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/plot_iiv_data_with_nm.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/plot_iiv_exp_data.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/plot_three_data_with_nm.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/print_cov_plot.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/print_demog_plots.html</loc></url>

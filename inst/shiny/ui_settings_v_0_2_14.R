@@ -118,7 +118,7 @@ label_lloq_colname    <- 'LLOQ Column'
 bspop_lloq_colname    <- '(Optional) Provide LLOQ/BLQ column to be plotted as dashed horizontal lines.'
 
 #' @export
-bspop_download_plot   <- 'Adjust output settings in the "Download Options" box below.'
+bspop_download_plot   <- 'Adjust output settings in the "Download Options" box below.<br><br>This button will be disabled when the plot is interactive, instead please download by using the Camera icon on the top right of the plot.'
 #' @export
 plotly_filename_label <- "Plot name"
 #' @export

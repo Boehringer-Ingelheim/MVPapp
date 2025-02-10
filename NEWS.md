@@ -1,3 +1,13 @@
+# MVPapp 0.2.14 (2025-02-07)
+
+## Features
+
+* Additional tab for Variability plots to display box plots of exposures (#22)
+
+## Bugfixes
+
+* Minor updates to some tooltips and button placements to increase clarity.
+
 # MVPapp 0.2.13 (2025-02-04)
 
 ## Features

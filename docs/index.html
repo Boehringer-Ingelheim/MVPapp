@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -144,7 +144,7 @@
 <ol start="4" style="list-style-type: decimal">
 <li>Quick data exploration are provided by the “General Plot”, “Ind. Plot”, and “Corr. Plot” tabs (tip: clicking on the legend can toggle each subgroup on/off when the plot is interactive):</li>
 </ol>
-<p>General plots are flexible plots that can handle continuous/continuous, continuous/discrete (Box plot option), and discrete/discrete (Box plot option) types of data. Settings from General Plots will be carried over to the “Ind. Plot”, where users can explore individual profiles in more detail. Dosing information from the “EVID”, “ADDL”, “II”, “RATE” can be inserted on each plot when the Dose Column is provided. LLOQ information can also be inserted.</p>
+<p>General plots are flexible plots that can handle continuous/continuous, continuous/discrete (Box plot option), and discrete/discrete (Box plot option) types of data. Settings from General Plots will be carried over to the “Ind. Plot”, where users can explore individual profiles in more detail. Dosing information (“EVID”, “ADDL”, “II”, “RATE” columns) can be inserted on each plot when the Dose Column is provided. LLOQ information can also be inserted.</p>
 <p><img src="www/facet_plot.png"></p>
 <p>Correlation plots are grouped by ID and are useful to explore potential correlations between covariates.</p>
 <p><img src="www/corr_plot.png"></p>
@@ -233,6 +233,19 @@
 </li>
 </ol>
 <p><img src="www/varplot.png"></p>
+</div>
+<div class="section level4">
+<h4 id="comparing-exposure-differences">Comparing Exposure Differences<a class="anchor" aria-label="anchor" href="#comparing-exposure-differences"></a>
+</h4>
+<p>Summary of exposure metrics are readily available to be viewed, which is handy when assessing differences in models, dosing regimens, and/or demographics. </p>
+<ol style="list-style-type: decimal">
+<li>Navigate to the “Exposure Box Plots” on the top right side of the page.<br>
+</li>
+<li>Select the time intervals of interest to derive metrics, which could be relevant when deriving AUCtau,ss, for example. By default the entire time range is used.</li>
+<li>Pick an exposure metric in the “Select Metric” option in the “Plotting Options” box. Currently, Cmax, Cmin, Cavg, AUC, Tmax and Tmin are supported.</li>
+<li>Labels, titles, and the option to insert more summary statistics are available to further customize the plot, allowing great “off-the-shelf” graphics to be downloaded for presentations.</li>
+</ol>
+<p><img src="www/expplot.png"></p>
 </div>
 </div>
 </div>

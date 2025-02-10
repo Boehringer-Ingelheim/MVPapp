@@ -165,7 +165,7 @@ General plots are flexible plots that can handle continuous/continuous,
 continuous/discrete (Box plot option), and discrete/discrete (Box plot
 option) types of data. Settings from General Plots will be carried over
 to the “Ind. Plot”, where users can explore individual profiles in more
-detail. Dosing information from the “EVID”, “ADDL”, “II”, “RATE” can be
+detail. Dosing information (“EVID”, “ADDL”, “II”, “RATE” columns) can be
 inserted on each plot when the Dose Column is provided. LLOQ information
 can also be inserted.
 
@@ -284,6 +284,26 @@ matrices has reverted to its last known state.
       using the “At Time (Original Scale)” option.
 
 ![](www/varplot.png)
+
+#### Comparing Exposure Differences
+
+Summary of exposure metrics are readily available to be viewed, which is
+handy when assessing differences in models, dosing regimens, and/or
+demographics. 
+
+1.  Navigate to the “Exposure Box Plots” on the top right side of the
+    page.  
+2.  Select the time intervals of interest to derive metrics, which could
+    be relevant when deriving AUCtau,ss, for example. By default the
+    entire time range is used.
+3.  Pick an exposure metric in the “Select Metric” option in the
+    “Plotting Options” box. Currently, Cmax, Cmin, Cavg, AUC, Tmax and
+    Tmin are supported.
+4.  Labels, titles, and the option to insert more summary statistics are
+    available to further customize the plot, allowing great
+    “off-the-shelf” graphics to be downloaded for presentations.
+
+![](www/expplot.png)
 
 ## Extended Features and Vignettes
 

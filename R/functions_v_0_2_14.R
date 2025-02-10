@@ -4298,3 +4298,171 @@ trim_columns <- function(data,
   return(data_to_plot)
   
 }
+
+#-------------------------------------------------------------------------------
+#' @name exposures_table
+#'
+#' @title Function to calculate exposures from IIV output
+#'
+#' @param input_simulated_table  a dataframe (usually created from mrgsim)
+#' @param output_conc            y variable of interest to perform summary stats calc 
+#' @param start_time             start time interval for metrics
+#' @param end_time               end time interval for metrics
+#' @param debug                  show debugging messages
+#'
+#' @returns a dataframe with additional columns of summary stats
+#' @importFrom dplyr mutate if_else ungroup select filter rename first group_by distinct summarise
+#' @export
+#-------------------------------------------------------------------------------
+
+exposures_table <- function(input_simulated_table,
+                            output_conc,
+                            start_time = NULL,
+                            end_time   = NULL,
+                            debug      = FALSE
+) {
+
+  input_simulated_table$YVARNAME <- input_simulated_table[[output_conc]]
+  
+  # if (debug) {
+  #   message(start_time)
+  #   message(end_time)
+  #   tmp <- input_simulated_table %>% dplyr::filter(TIME >= start_time)
+  #   message(dplyr::glimpse(tmp))
+  #   tmp2 <- input_simulated_table %>% dplyr::filter(TIME <= start_time)
+  #   message(dplyr::glimpse(tmp2))
+  # }
+
+  metrics_table <- input_simulated_table %>% dplyr::filter(TIME >= start_time, TIME <= end_time) %>%
+    group_by(ID) %>%
+    dplyr::mutate(CMIN = min(YVARNAME, na.rm = TRUE)[1],
+                  CMAX = max(YVARNAME, na.rm = TRUE)[1], ### First element if multiple values found
+                  CAVG = mean(YVARNAME, na.rm = TRUE)
+    ) %>%
+    ungroup()
+  
+  # Calculate CMAX and TMAX in a separate table
+  tmax_table <- metrics_table %>%
+    group_by(ID) %>%
+    summarise(TMIN = TIME[which.min(YVARNAME)[1]],
+              TMAX = TIME[which.max(YVARNAME)[1]]) %>% # First element if multiple values found
+    ungroup()
+  
+  metrics_table <- left_join(metrics_table, tmax_table, by = "ID")
+
+  metrics_table  <- metrics_table %>%
+    group_by(ID) %>%
+    dplyr::mutate(YLAG          = dplyr::lag(YVARNAME),
+                  XLAG          = dplyr::lag(TIME),
+                  dYVAR         = (YVARNAME + YLAG) * (TIME - XLAG) * 0.5, # Area for trapezoid
+                  dYVAR         = dplyr::if_else(is.na(dYVAR), 0, dYVAR),
+                  AUC           = sum(dYVAR)) %>%
+    dplyr::ungroup()
+  
+  metrics_table_id <- metrics_table %>%
+    dplyr::select(ID, CMIN, CMAX, CAVG, AUC, TMAX, TMIN) %>%
+    dplyr::distinct(ID, .keep_all = TRUE)
+  return(metrics_table_id)
+}
+
+#-------------------------------------------------------------------------------
+#' @name plot_iiv_exp_data
+#'
+#' @title Function to plot variability exposure data
+#'
+#' @param input_dataset        Input dataset of Model 1 and/or Model 2 that contains MODEL ID CMIN CAVG CMAX AUC
+#' @param yvar                 Name of Y-variable (exposure metric) to be plotted, string 
+#' @param ylab                 Optional name for yvar
+#' @param model_1_name         Optional name for Model 1
+#' @param model_2_name         Optional name for Model 2
+#' @param model_1_color        Color for Model 1
+#' @param model_2_color        Color for Model 2
+#' @param show_stats           Display texts of stats for each box plot
+#' @param title                Title for plot
+#'
+#' @returns a ggplot object
+#' @importFrom dplyr select mutate all_of summarise
+#' @importFrom ggplot2 theme_bw geom_boxplot scale_fill_manual geom_text
+#' @importFrom forcats fct_inorder
+#' @importFrom ggrepel geom_text_repel
+#' @export
+#-------------------------------------------------------------------------------
+
+plot_iiv_exp_data <- function(input_dataset,
+                              yvar = 'yvar',
+                              ylab = yvar,
+                              model_1_name = '',
+                              model_2_name = '',
+                              model_1_color = "#F8766D",
+                              model_2_color = "#7570B3",
+                              show_stats = TRUE,
+                              xlab = '',
+                              title = "") {
+  
+  input_dataset$MODEL <- gsub("Model 1", model_1_name, input_dataset$MODEL)
+  input_dataset$MODEL <- gsub("Model 2", model_2_name, input_dataset$MODEL)
+  input_dataset$MODEL <- as.factor(input_dataset$MODEL) %>%
+    forcats::fct_inorder()
+  
+  # Define the colors for the models
+  model_colors <- c()
+  
+  # Check if "Model 1" exists in the data
+  if (model_1_name %in% input_dataset$MODEL) {
+    model_colors[model_1_name] <- model_1_color
+  }
+  
+  # Check if "Model 2" exists in the data
+  if (model_2_name %in% input_dataset$MODEL) {
+    model_colors[model_2_name] <- model_2_color
+  }
+  
+  p <- ggplot2::ggplot(data = input_dataset, aes(x = MODEL, y = .data[[yvar]], group = MODEL, fill = MODEL)) +
+    ggplot2::theme_bw() +
+    ggplot2::geom_boxplot(alpha = 0.5) +
+    ggplot2::scale_fill_manual(values = model_colors)
+  
+  if(show_stats) {
+    # Calculate statistics for each group
+    stats_df <- input_dataset %>%
+      dplyr::group_by(MODEL) %>%
+      dplyr::summarise(maximum = max(.data[[yvar]], na.rm = TRUE) %>% round(digits = 2),
+                       upper975 = quantile(.data[[yvar]], probs = 0.975, na.rm = TRUE) %>% round(digits = 2),
+                       upper95  = quantile(.data[[yvar]], probs = 0.95, na.rm = TRUE) %>% round(digits = 2),
+                       mean     = mean(.data[[yvar]], na.rm = TRUE) %>% round(digits = 2),
+                       median   = median(.data[[yvar]], na.rm = TRUE) %>% round(digits = 2),
+                       lower025 = quantile(.data[[yvar]], probs = 0.025, na.rm = TRUE) %>% round(digits = 2),
+                       lower05  = quantile(.data[[yvar]], probs = 0.05, na.rm = TRUE) %>% round(digits = 2),
+                       minimum  = min(.data[[yvar]], na.rm = TRUE) %>% round(digits = 2)) %>%
+      dplyr::ungroup()
+    
+    p <- p +
+      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = maximum, label = paste("Max:", maximum)), vjust = -1) +
+      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = upper95, label = paste("95%:", upper95)), vjust = -1) +
+      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = mean,    label = paste("Mean:", mean)), vjust = -1) +
+      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = median,  label = paste("Median:", median)), vjust = -1) +
+      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = lower05, label = paste("5%:", lower05)), vjust = -1) +
+      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = minimum, label = paste("Min:", minimum)), vjust = 1)
+    
+    # p <- p + 
+    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = maximum, label = paste("Max:", maximum))) +
+    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = upper95, label = paste("95%:", upper95))) +
+    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = mean,    label = paste("Mean:", mean))) +
+    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = median,  label = paste("Median:", median))) +
+    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = lower05, label = paste("5%:", lower05))) +
+    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = minimum, label = paste("Min:", minimum)))      
+    
+  }
+  
+  if(ylab != '') {
+    p <- p + ggplot2::labs(x = "", y = ylab)
+  } else {
+    p <- p + ggplot2::labs(x = "", y = yvar)
+  }
+  
+  p <- p +
+    ggplot2::ggtitle(title) +
+    ggplot2::theme(legend.position = "none")
+  
+  return(p)
+}

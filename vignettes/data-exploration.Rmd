@@ -61,7 +61,7 @@ The General Plot provide a quick way to visualize multiple data types, including
 
 1. By default, the x-axis and y-axis will be updated to select `TIME` and `DV` columns automatically. For non-NONMEM datasets, the user may need to adjust accordingly.  
 2. (Optional) The "color by" setting makes it easy to further categorize and visualize the data. It is recommended (but not required) to use a categorical variable for this option.  
-3. (Optional) The "facet(s) by" setting provides even more flexibility by allowing __multiple columns__ to perform a `facet_wrap()`. To optimize visualization, there currently is a hard limit of up to 25 unique combinations.
+3. (Optional) The "facet(s) by" setting provides even more flexibility by allowing __multiple columns__ to perform a `facet_wrap()`. To optimize visualization, there currently is a hard limit of up to 30 unique combinations.
 4. (Optional) Median lines by variable allows quick assessment of trends by variable. Median lines are derived by connecting the median values of equidistant bins (n=20) across the x-axis.
 5. (Optional) For PKPD models with multiple compartments, a quick shortcut is available to filter to only the compartment of interest to be shown.
 6. (Optional) Plots can be downloaded by clicking on the camera icon (if plots are interactive) on the top right of the plot, or by clicking the "Download Non-Interactive Plot" button (if it is a regular plot). Image settings can be configured in the "Download Options" box, which is collapsed by default (expand by clicking on the "+" icon).
@@ -95,7 +95,7 @@ Most options in the "Ind. Plot" tab are carried over from the "General Plot" tab
 2. (Optional) Dosing information is enabled by default, which searches for the `EVID`, `ADDL`, and `II` columns, and inserts dosing lines for each subject. The height of the dosing lines are scaled by their relative amount that is given by the "Dose Column", and each unique dose will be labeled as text. If the `RATE` column is present, the dosing lines will be extended accordingly to the infusion duration. An optional unit for the dose can also be inserted.
 3. (Optional) BLQ information can be inserted by providing the "LLOQ Column", which will then be shown as horizontal dashed orange lines.
 4. (Optional) Highlight any specific number of subjects to be viewed by using the "Select ID(s)" option. When any subjects are selected this way, the page, row and column options will be ignored.
-5. (Optional) The "Flag Variable" option allows the user to select a variable, and any of its associated values, to be flagged as an asterix (**`*`**) on the plot, for further visualization beyond the "Color by" option.
+5. (Optional) The "Flag Variable" option allows the user to select a variable, and any of its associated values, to be flagged as an red asterix (**`*`**) on the plot, for further visualization beyond the "Color by" option.
 
 `r "\U0001F4A1"` All individual profiles can be downloaded by clicking on the "Generate All Individuals" button which is located directly below the plot. Plot dimensions can be adjusted by expanding the "Download Options" box on the bottom right side of the page.
 
@@ -104,7 +104,7 @@ Most options in the "Ind. Plot" tab are carried over from the "General Plot" tab
 
 Correlation between variables can be quickly assessed in this tab, using the `GGally::ggpairs` function. It is recommended to keep the number of variables <7 as the plot may become too bunched up.  
 
-`r "\U0001F4A1"` Any variables with more than >=10 unique values are assumed to be categorical and converted into a factor for plotting.
+`r "\U0001F4A1"` Any variables with more than <=10 unique values are assumed to be categorical and converted into a factor for plotting.
 
 ## Summary
 

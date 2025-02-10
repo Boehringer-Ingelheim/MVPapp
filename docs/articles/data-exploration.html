@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.13</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -176,7 +176,7 @@ to use a categorical variable for this option.<br>
 <li>(Optional) The “facet(s) by” setting provides even more flexibility
 by allowing <strong>multiple columns</strong> to perform a
 <code>facet_wrap()</code>. To optimize visualization, there currently is
-a hard limit of up to 25 unique combinations.</li>
+a hard limit of up to 30 unique combinations.</li>
 <li>(Optional) Median lines by variable allows quick assessment of
 trends by variable. Median lines are derived by connecting the median
 values of equidistant bins (n=20) across the x-axis.</li>
@@ -261,9 +261,9 @@ lines.</li>
 using the “Select ID(s)” option. When any subjects are selected this
 way, the page, row and column options will be ignored.</li>
 <li>(Optional) The “Flag Variable” option allows the user to select a
-variable, and any of its associated values, to be flagged as an asterix
-(<strong><code>*</code></strong>) on the plot, for further visualization
-beyond the “Color by” option.</li>
+variable, and any of its associated values, to be flagged as an red
+asterix (<strong><code>*</code></strong>) on the plot, for further
+visualization beyond the “Color by” option.</li>
 </ol>
 <p>💡 All individual profiles can be downloaded by clicking on the
 “Generate All Individuals” button which is located directly below the
@@ -277,7 +277,7 @@ Options” box on the bottom right side of the page.</p>
 using the <code><a href="https://ggobi.github.io/ggally/reference/ggpairs.html" class="external-link">GGally::ggpairs</a></code> function. It is recommended to
 keep the number of variables &lt;7 as the plot may become too bunched
 up.</p>
-<p>💡 Any variables with more than &gt;=10 unique values are assumed to
+<p>💡 Any variables with more than &lt;=10 unique values are assumed to
 be categorical and converted into a factor for plotting.</p>
 </div>
 <div class="section level2">
