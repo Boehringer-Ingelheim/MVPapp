@@ -712,7 +712,7 @@ do_data_page_ind_plot <- function(nmd,
   }
   
   
-  if(plot_dosing && 'EVID' %in% names(nmd) & dose_col != "") {
+  if(plot_dosing && 'EVID' %in% names(nmd) & !boxplot & dose_col != "") {
     id_dose_expand <- nmd %>%
       filter(EVID == 1 | EVID == 4)
     
@@ -4244,6 +4244,10 @@ trim_columns <- function(data,
     essential_columns <- c(essential_columns, color)
   }
   
+  if("CMT" %in% colnames(data)) {
+    essential_columns <- c(essential_columns, "CMT")
+  }
+  
   if(type_of_plot == "general_plot" | type_of_plot == "sim_plot") {
     
     if(type_of_plot == "general_plot") {
@@ -4256,9 +4260,6 @@ trim_columns <- function(data,
       essential_columns <- c(essential_columns, med_line_by)
     }
     
-    if("CMT" %in% colnames(data)) {
-      essential_columns <- c(essential_columns, "CMT")
-    }
   } # end of "general_plot" or "sim_plot"
   
   if(type_of_plot == "ind_plot") {

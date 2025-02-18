@@ -1848,7 +1848,7 @@ ui <- shiny::navbarPage(
                                title = 'Changelog', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
                                p('Please visit the ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/releases", "Github release page", target = "_blank"), ' for more information.'),
                                htmltools::br(),
-                               p('v0.2.14 (2025-02-07) - Exposure box plots for Variability plots. Minor updates to tooltips.'),
+                               p('v0.2.14 (2025-02-07) - Exposure box plots for Variability plots. Minor updates to tooltips. Minor bugfixes.'),
                                p('v0.2.13 (2025-02-04) - Expanded features for Individual Plots on Data Input page - dosing info, scaling, and LLOQ. Minor bugfixes for General Plot and Individual Plots.'),
                                p('v0.2.12 (2025-01-03) - Mean value display for Variability Plot. Allows minimum total doses to be 0. Individual Plots for Datasets. Multiple facets for General Plot. Progress bars for long computations.'),
                                p('v0.2.11 (2024-12-04) - Support for uploading tab-delimited .txt files on Data Upload (also option to automatically create ID column). Uses dose column instead of manually entering dose amount for NCA. NCA unit and report bugfixes. Download Options now support non-interactive plots.'),
@@ -1990,6 +1990,22 @@ server <- function(input, output, session) {
   ## built_in_filtered_data() ----
   built_in_filtered_data <- reactive({
     tmp <- uploaded_data()
+
+    if(any(duplicated(names(tmp)))) {
+
+      # Get the column names
+      col_names <- names(tmp)
+
+      # Find the duplicate column names
+      dup_cols <- which(duplicated(col_names) | duplicated(col_names, fromLast = TRUE))
+
+      shiny::showNotification(paste0("WARNING: These column names are duplicated and will be renamed: ", paste(unique(col_names[dup_cols]), collapse = " ")), type = "warning", duration = 10)
+      # Add a suffix to duplicate column names to make them unique
+      col_names[dup_cols] <- paste0(col_names[dup_cols], "_", 1:length(dup_cols))
+
+      # Update the column names in the dataframe
+      names(tmp) <- col_names
+    }
 
     if(input$change_all_to_upper) {
       tmp <- tmp %>% dplyr::rename_all(toupper)
@@ -2281,12 +2297,16 @@ server <- function(input, output, session) {
                          choices = names(nmdataset_for_plot()) %>% sort(),
                          selected = NULL)
 
-    if('DOSE' %in% names(nmdataset_for_plot())) {
-      updateSelectizeInput(session,
-                           "color_corr",
-                           choices = names(nmdataset_for_plot()) %>% sort(),
-                           selected = 'DOSE')
-    }
+    updateSelectizeInput(session,
+                         "color_corr",
+                         choices = names(nmdataset_for_plot()) %>% sort(),
+                         selected = dplyr::case_when("DOSE" %in% names(nmdataset_for_plot()) ~ "DOSE",
+                                                     "DOSEA" %in% names(nmdataset_for_plot()) ~ "DOSEA",
+                                                     "AROUTE" %in% names(nmdataset_for_plot()) ~ "AROUTE",
+                                                     "ATRT" %in% names(nmdataset_for_plot()) ~ "ATRT",
+                                                     TRUE  ~ ''
+                         )
+    )
 
     ## Update selections for NCA
     updateSelectizeInput(session,
