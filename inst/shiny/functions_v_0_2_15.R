@@ -286,7 +286,7 @@ do_data_page_plot <- function(nmd,
   }
   
   if ('EVID' %in% names(nmd)) {
-    nmd <- nmd %>% dplyr::filter(EVID != 1, EVID != 4)
+    nmd <- nmd %>% dplyr::filter(EVID == 0)
     shiny::showNotification(paste0("Dosing rows (EVID >= 1) are excluded from the general plot."), type = "message", duration = 10)
   }
   
@@ -2543,7 +2543,7 @@ plot_data_with_nm <- function(
   if (!is.null(nonmem_dataset)) {
     
     if ('EVID' %in% names(nonmem_dataset)) {
-      nonmem_dataset <- nonmem_dataset %>% dplyr::filter(EVID != 1, EVID != 4)
+      nonmem_dataset <- nonmem_dataset %>% dplyr::filter(EVID == 0)
     }
     
     if(!is.null(color_data_by) & color_data_by %in% names(nonmem_dataset)) {
@@ -2751,7 +2751,7 @@ plot_three_data_with_nm <- function(
   
   if (!is.null(nonmem_dataset)) {
     if ('EVID' %in% names(nonmem_dataset)) {
-      nonmem_dataset <- nonmem_dataset %>% dplyr::filter(EVID != 1, EVID != 4)
+      nonmem_dataset <- nonmem_dataset %>% dplyr::filter(EVID == 0)
     }
     
     p1 <- p1 +
@@ -2944,7 +2944,7 @@ plot_iiv_data_with_nm <- function(
   
   if (!is.null(nonmem_dataset)) {
     if ('EVID' %in% names(nonmem_dataset)) {
-      nonmem_dataset <- nonmem_dataset %>% dplyr::filter(EVID != 1, EVID != 4)
+      nonmem_dataset <- nonmem_dataset %>% dplyr::filter(EVID == 0)
     }
     nonmem_dataset <- nonmem_dataset %>% dplyr::select(ID, dplyr::all_of(c(xvar, nm_yvar))) # Only include relevant columns to be plotted
     p1 <- p1 +
