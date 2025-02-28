@@ -287,7 +287,7 @@ do_data_page_plot <- function(nmd,
   
   if ('EVID' %in% names(nmd)) {
     nmd <- nmd %>% dplyr::filter(EVID != 1, EVID != 4)
-    shiny::showNotification(paste0("Dosing rows (EVID == 1 or EVID == 4) are excluded from the general plot."), type = "message", duration = 10)
+    shiny::showNotification(paste0("Dosing rows (EVID >= 1) are excluded from the general plot."), type = "message", duration = 10)
   }
   
   # Safeguard for blanks ("") since plotly has bugs with handling it
@@ -409,7 +409,7 @@ do_data_page_plot <- function(nmd,
       
       if(label_size > 0) {
         a <- a +
-          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 2, size = label_size) 
+          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 0.5, size = label_size) 
       }
       
     } else {
@@ -640,6 +640,24 @@ do_data_page_ind_plot <- function(nmd,
     }
   }
   
+  # Calculating the entire dataset's limits to ensure consistency across pages for same_scale
+  if(!is.character(nmd[[x_axis]])) {
+    nmdx <- nmd %>%
+      filter(!!dplyr::sym(x_axis) != 0) 
+  } else {
+    nmdx <- nmd
+  }
+  if(!is.character(nmd[[y_axis]])) {
+    nmdy <- nmd %>%
+      filter(!!dplyr::sym(y_axis) != 0) 
+  } else {
+    nmdy <- nmd
+  }
+  min_data_x_all  <- min(as.numeric(as.character(nmdx[[x_axis]])), na.rm = TRUE)
+  max_data_x_all  <- max(as.numeric(as.character(nmdx[[x_axis]])), na.rm = TRUE)
+  min_data_y_all  <- min(as.numeric(as.character(nmdy[[y_axis]])), na.rm = TRUE)
+  max_data_y_all  <- max(as.numeric(as.character(nmdy[[y_axis]])), na.rm = TRUE)
+  
   ## Handling doses
   if(plot_dosing && 'EVID' %in% names(nmd) & !boxplot & dose_col != "") {
     # Creating dummy variables - XVAR, YVAR, NAMT
@@ -647,6 +665,7 @@ do_data_page_ind_plot <- function(nmd,
     nmd$NAMT <- as.numeric(as.character(nmd[[dose_col]]))
     nmd$XVAR <- as.numeric(as.character(nmd[[x_axis]]))
     nmd$YVAR <- as.numeric(as.character(nmd[[y_axis]]))
+    max_dose_all <- max(nmd$NAMT, na.rm = TRUE)
     
     # Scaling the dose such that it is plotted nicely with the maximum dose at height dose_height of the maximum y variable
     # A new column SAMT (Scaled AMT) is created which will be used for plotting the geom_rect
@@ -654,8 +673,8 @@ do_data_page_ind_plot <- function(nmd,
       group_by(ID) %>%
       mutate(
         max_dose       = max(NAMT, na.rm = TRUE),
-        min_xvar       = round(min(XVAR, na.rm = TRUE), digits = 2),
-        max_xvar       = round(max(XVAR, na.rm = TRUE), digits = 2),
+        min_xvar       = round(min(XVAR, na.rm = TRUE), digits = 3),
+        max_xvar       = round(max(XVAR, na.rm = TRUE), digits = 3),
         min_yvar       = min(YVAR, na.rm = TRUE),
         max_yvar       = max(YVAR, na.rm = TRUE)) %>%
       ungroup()
@@ -664,7 +683,7 @@ do_data_page_ind_plot <- function(nmd,
     # Replaces any bad IDs with no observations to NA
     nmd[(nmd==Inf | nmd == -Inf)] <- NA
 
-    dose_height     <- 0.5 # Changing how tall the doses should be in relation to the y variable (0.5 means max dose reaches half max of y variable)
+    dose_height     <- 0.5 # Changing how tall the doses should be in relation to the y variable (0.5 means max dose reaches middle of y_axis range)
     
     nmd <- nmd %>%
       mutate(
@@ -680,24 +699,27 @@ do_data_page_ind_plot <- function(nmd,
         min_xvar     = dplyr::case_when(is.na(min_xvar) ~ min_data_x, # Replace NA values in min_xvar and max_xvar to use the population's values
                                         TRUE            ~ min_xvar),
         max_xvar     = dplyr::case_when(is.na(max_xvar) ~ max_data_x,
-                                        TRUE            ~ max_xvar),
-        scaling_factor = case_when(same_scale  ~ max_data_y / max_dose_all * dose_height,
-                                   !same_scale ~ max_yvar / max_dose_all * dose_height)
-      )
+                                        TRUE            ~ max_xvar)
+        )
+    
+    if(same_scale) {
+      nmd$scaling_factor <- max_data_y_all / max_dose_all * dose_height
+    } else {
+      nmd$scaling_factor <- ((nmd$max_yvar - nmd$min_yvar) * dose_height + nmd$min_yvar) / nmd$max_dose #nmd$max_dose_all doesn't work well
+    }
     
     nmd$SAMT           <- nmd$NAMT * nmd$scaling_factor
     
   }
   
-  if(same_scale) { # Using the entire dataset's limits to ensure consistency across pages
-    nmdx <- nmd %>%
-      filter(!!dplyr::sym(x_axis) != 0) 
-    min_data_x  <- min(as.numeric(as.character(nmdx[[x_axis]])), na.rm = TRUE)
-    max_data_x  <- max(as.numeric(as.character(nmdx[[x_axis]])), na.rm = TRUE)
-    nmdy <- nmd %>%
-      filter(!!dplyr::sym(y_axis) != 0) 
-    min_data_y  <- min(as.numeric(as.character(nmdy[[y_axis]])), na.rm = TRUE)
-    max_data_y  <- max(as.numeric(as.character(nmdy[[y_axis]])), na.rm = TRUE)
+  if(same_scale) { # Replace each subject's max and min values with the entire dataset's
+
+    nmd <- nmd %>%
+      mutate(min_xvar = min_data_x_all,
+             max_xvar = max_data_x_all,
+             min_yvar = min_data_y_all,
+             max_yvar = max_data_y_all
+      )
   }
   
   # Filter the data to be page Z, where each page has X rows * Y cols
@@ -731,9 +753,6 @@ do_data_page_ind_plot <- function(nmd,
     id_dose_unique[[dose_col]] <- as.numeric(as.character(id_dose_unique[[dose_col]])) # in case dose_col is picked for Color by
     id_dose_unique <- id_dose_unique %>% mutate(dosename = paste0(round(.[[dose_col]], digits = 2), dose_units))
 
-    # Y Lower bound of the geom rectangle, cycle line text, scales. Defaults to the LLOQ if it is available
-    y.lowerbound <- 0.1
-    x.lowerbound <- 0.1
   }
   
   # Retain EVID == 0 for plotting
@@ -855,8 +874,7 @@ do_data_page_ind_plot <- function(nmd,
             y = NULL,
             xmin = DOSETIME,
             xmax = INFDUR,
-            ymin = case_when(logy  ~ min_yvar, # Try to have better scales when in log-y axis
-                             !logy ~ y.lowerbound),
+            ymin = min_yvar,
             ymax = SAMT,
             group = ID),
             fill = linecolour,
@@ -936,8 +954,8 @@ do_data_page_ind_plot <- function(nmd,
     data <- ggplot2::ggplot_build(a)$data[[1]]
     
     if(same_scale) {
-      med_x <- (min_data_x + max_data_x) / 2
-      max_y <- max_data_y
+      med_x <- (min_data_x_all + max_data_x_all) / 2
+      max_y <- max_data_y_all
     } else {
       med_x <- (min(data$x, na.rm = TRUE) + max(data$x, na.rm = TRUE))/2 # median works better for plotly, while min is better for ggplot
       max_y <- max(data$y, na.rm = TRUE)
@@ -983,25 +1001,25 @@ do_data_page_ind_plot <- function(nmd,
       ggplot2::annotation_logticks(sides = "b")
   }
   
-  if(same_scale && !logy & !logx) { ## coord_cartesian not well supported with log scales?
+  if(same_scale) { ## coord_cartesian not well supported with log scales?
     
     if(plot_dosing && ("EVID" %in% colnames(nmd)) & dose_col != "" & !boxplot) { # Gets the largest of either doses per individual or last observation time
-      cc_xlim <- c(min(min_data_x, min(id_dose_expand$DOSETIME)),
-                   max(max_data_x, max(id_dose_expand$DOSETIME)))
+      cc_xlim <- c(min(min_data_x_all, min(id_dose_expand$DOSETIME)),
+                   max(max_data_x_all, max(id_dose_expand$DOSETIME)))
     } else {
-      cc_xlim <- c(min_data_x, max_data_x)
+      cc_xlim <- c(min_data_x_all, max_data_x_all)
     }
     
-    cc_ylim <- c(min_data_y, # lower bound of y is not 0 to avoid log scale issues
-                 max_data_y) 
+    cc_ylim <- c(min_data_y_all, # lower bound of y is not 0 to avoid log scale issues
+                 max_data_y_all) 
     
-    if(logy & is.numeric(nmd[[y_axis]])) {
-      cc_ylim <- log10(cc_ylim)
-    }
-    
-    if(logx & is.numeric(nmd[[x_axis]])) {
-      cc_xlim <- log10(cc_xlim)
-    }
+    # if(logy & is.numeric(nmd[[y_axis]])) {
+    #   cc_ylim <- log10(cc_ylim)
+    # }
+    # 
+    # if(logx & is.numeric(nmd[[x_axis]])) {
+    #   cc_xlim <- log10(cc_xlim)
+    # }
     
     if(debug) {
       message(paste0("cc_ylim: ", cc_ylim))

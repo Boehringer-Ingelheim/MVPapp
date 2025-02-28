@@ -1,3 +1,18 @@
+# MVPapp 0.2.15 (2025-02-26)
+
+## Features
+
+* Filter per column in Data Page (#26)
+
+## Bugfixes
+
+* Handle duplicated column names in an uploaded dataset (#23)
+* Properly display log y-axis with same scale when dosing info is displayed for Individual Plots (#25)
+
+## Other
+
+* The built-in filter for removing EVID rows now uses `EVID >= 1`, instead of `EVID == 1 | EVID == 4` 
+
 # MVPapp 0.2.14 (2025-02-07)
 
 ## Features

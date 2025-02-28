@@ -315,7 +315,7 @@ unsupported_dataset   <- 'No Dataset imported or ID, DV, and TIME columns are no
 
 #### Page 3 Parameter Sensitivity Analysis
 #' @export
-bspop_select_psa      <- 'Select any parameter from the model (i.e. inside $PARAM) carried over from the Simulation tab to perform sensitivity analysis.'
+bspop_select_psa      <- 'Select any structural parameter from the model (i.e. inside $PARAM) carried over from the Simulation tab to perform sensitivity analysis.'
 #' @export
 add_geom_vline        <- 'Show Time Intervals'
 #' @export

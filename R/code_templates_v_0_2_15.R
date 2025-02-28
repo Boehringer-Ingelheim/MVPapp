@@ -8,7 +8,7 @@ code_preamble  <- "## Notes: mrgsolve [v1.5.2] (https://mrgsolve.org/user-guide/
 #' @export
 cpp_preamble   <- "## Notes: mrgsolve [v1.5.2] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n##      :\n##      : MAKE SURE THAT NO SINGLE / DOUBLE QUOTATION MARKS EXIST IN .CPP FILE!!\n\nmodel_code <- "
 #' @export
-code_postamble <- "\n## IMPORTANT: Model 1 and Model 2 must have different model object names!\n"
+code_postamble <- "\n## IMPORTANT: Model 1 and Model 2 must have different 'model_object' names!\n"
 
 #-------------------------------------------------------------------------------
 #' List of template models available for all users
