@@ -25,7 +25,7 @@ if(debug_mode) {
   # Pre-loads external patient databases ('cdc.expand', 'who.expand', 'nhanes.filtered')
   # The raw data used to create .rda is available on Github inside 'data-raw' folder
   source("databases_v_0_2_1.R")
-  source("ui_settings_v_0_2_15.R")       # List of UI settings e.g. labels and descriptions
+  source("ui_settings_v_0_2_16.R")       # List of UI settings e.g. labels and descriptions
   source("code_templates_v_0_2_15.R")    # List of example mrgsolve models
   source("functions_v_0_2_15.R")         # List of helper functions required for the app
 
@@ -1755,7 +1755,7 @@ ui <- shiny::navbarPage(
                                                           ),
                                                           column(width = 2,
                                                                  div(style = "height: 20px;"),  # Empty div to add space
-                                                                 checkboxInput('exp_display_stats', 'Display Stats', value = TRUE)
+                                                                 checkboxInput('exp_display_stats', 'Display Stats', value = FALSE)
                                                           ),
                                                           column(width = 4,
                                                                  div(style = "height: 20px;"),  # Empty div to add space
@@ -1848,6 +1848,7 @@ ui <- shiny::navbarPage(
                                title = 'Changelog', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
                                p('Please visit the ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/releases", "Github release page", target = "_blank"), ' for more information.'),
                                htmltools::br(),
+                               p('v0.2.16 (2025-03-04) - Insert delay for some inputs to avoid re-performing computations as frequently.'),
                                p('v0.2.15 (2025-02-26) - Minor bugfix to properly display log y-axis with same scale when dosing info is displayed for Individual Plots. Filter per column in Data Page.'),
                                p('v0.2.14 (2025-02-07) - Exposure box plots for Variability plots. Minor updates to tooltips. Minor bugfixes.'),
                                p('v0.2.13 (2025-02-04) - Expanded features for Individual Plots on Data Input page - dosing info, scaling, and LLOQ. Minor bugfixes for General Plot and Individual Plots.'),
@@ -1969,6 +1970,11 @@ server <- function(input, output, session) {
   } # end authentication
   
   # Page 1 Data Input ----
+  # Using debounce to wait for inactivity on textInput
+  d_plot_title_data      <- debounce(reactive({ input$plot_title_data }), debounce_timer_slow)
+  d_filter_by_id         <- debounce(reactive({ input$filter_by_id }), debounce_timer_slow)
+  d_highlight_var_values <- debounce(reactive({ input$highlight_var_values }), debounce_timer_slow)
+  
   ## uploaded_data() ----
   # Disable the checkboxes
   shinyjs::disable("change_all_to_upper") # Always required and not changeable by the user
@@ -2669,7 +2675,6 @@ server <- function(input, output, session) {
   
   # Data output plotting 
   ## UI: output$dataset_page_plot ----
-  
   dataset_page_plot <- reactive({
     if (show_debugging_msg) {
       message('Creating dataset_page_plot')
@@ -2709,7 +2714,7 @@ server <- function(input, output, session) {
                              logx        = input$log_x_axis_data,
                              lby         = logbreaks_y,
                              lbx         = logbreaks_x,
-                             plot_title  = input$plot_title_data,
+                             plot_title  = d_plot_title_data(),
                              label_size  = as.numeric(input$select_label_size),
                              debug       = show_debugging_msg)
       
@@ -2850,7 +2855,7 @@ server <- function(input, output, session) {
                                  rownums     = as.numeric(input$number_of_rows),
                                  colnums     = as.numeric(input$number_of_cols),
                                  pagenum     = as.numeric(input$page_number),
-                                 filter_id   = input$filter_by_id,
+                                 filter_id   = d_filter_by_id(),
                                  filter_cmt  = input$filter_cmt_data,
                                  x_axis      = input$x_axis,
                                  y_axis      = input$y_axis,
@@ -2868,7 +2873,7 @@ server <- function(input, output, session) {
                                  plot_title  = input$plot_title_data,
                                  label_size  = as.numeric(input$select_label_size),
                                  highlight_var = input$highlight_var,
-                                 highlight_var_values = input$highlight_var_values,
+                                 highlight_var_values = d_highlight_var_values(),
                                  plot_dosing = input$insert_dosing,
                                  dose_col    = input$ind_dose_colname,
                                  dose_units  = input$dose_units,
@@ -3013,6 +3018,13 @@ server <- function(input, output, session) {
   )
   
   # Page 2 Simulation ----
+  d_x_axis_label   <- debounce(reactive({ input$x_axis_label }), debounce_timer_slow)
+  d_y_axis_label   <- debounce(reactive({ input$y_axis_label }), debounce_timer_slow)
+  d_plot_title_sim <- debounce(reactive({ input$plot_title_sim }), debounce_timer_slow)
+  d_tgrid_max      <- debounce(reactive({ input$tgrid_max }), debounce_timer_fast)
+  d_delta          <- debounce(reactive({ input$delta }), debounce_timer_fast)
+  d_custom_sampling_time_text <- debounce(reactive({ input$custom_sampling_time_text }), debounce_timer_slow)
+  
   mcode_model_1  <- paste0("\nmodel_object <- mcode('Model-1-", runif(min = 1, max = 9999999, n = 1) %>% round(), "', model_code, recover = TRUE)") # Insert random number as part of name to avoid global object namespace clash
   mcode_model_2  <- paste0("\nmodel_object <- mcode('Model-2-", runif(min = 1, max = 9999999, n = 1) %>% round(), "', model_code, recover = TRUE)")
   
@@ -3206,7 +3218,7 @@ server <- function(input, output, session) {
     param_columns_generated_model_1()
   })
   
-  ### Update param and imply into model ----
+  ### Update param and insert into model ----
   # Create a reactive value to store the updated input values
   param_input_model_1 <- reactiveVal()
   
@@ -3238,7 +3250,7 @@ server <- function(input, output, session) {
     }
   }, label = 'param_input_model_1()')
   
-  # Imply modification on params into the model
+  # Insert modification on params into the model
   ## changed_reacted_param_model_1() ----
   changed_reacted_param_model_1 <- reactiveVal()
   
@@ -3568,7 +3580,7 @@ server <- function(input, output, session) {
     param_columns_generated_model_2()
   })
   
-  ### Update param and imply into model ----
+  ### Update param and imsert into model ----
   # Create a reactive value to store the updated input values
   param_input_model_2 <- reactiveVal()
   
@@ -3600,7 +3612,7 @@ server <- function(input, output, session) {
     }
   }, label = 'param_input_model_2()')
   
-  # Imply modification on params into the model
+  # Insert modification on params into the model
   ## changed_reacted_param_model_2() ----
   changed_reacted_param_model_2 <- reactiveVal()
   
@@ -3829,19 +3841,19 @@ server <- function(input, output, session) {
   # End of model 1 and model 2 ##################################################
   ## Create a new variable that sanitizes Max Sampling time
   tend <- reactive({
-    tmp <- sanitize_numeric_input(input$tgrid_max, allow_zero = FALSE, return_value = 24, display_error = TRUE)
+    tmp <- sanitize_numeric_input(d_tgrid_max(), allow_zero = FALSE, return_value = 24, display_error = TRUE)
     return(tmp)
   }, label = 'tend: tgrid_max')
   
   ## Create a new variable that sanitizes Frequency
   tdelta <- reactive({
-    tmp <- sanitize_numeric_input(input$delta, allow_zero = FALSE, legal_maximum = tend(), display_error = TRUE)
+    tmp <- sanitize_numeric_input(d_delta(), allow_zero = FALSE, legal_maximum = tend(), display_error = TRUE)
     return(tmp)
   }, label = 'tdelta')
   
   # checking if user provided custom sampling is valid
   eval_custom_time <- reactive({
-    tmp <- try(eval(parse(text=paste0("c(",input$custom_sampling_time_text,")"))), silent=TRUE)
+    tmp <- try(eval(parse(text=paste0("c(", d_custom_sampling_time_text(), ")"))), silent=TRUE)
     return(tmp)
   }, label = 'eval_custom_time')
   
@@ -3849,7 +3861,7 @@ server <- function(input, output, session) {
   custom_time <- NULL
   custom_time <- reactive({
     if(!is(eval_custom_time(),"try-error")) {
-      sanitized_times <- eval(parse(text=paste0("c(", input$custom_sampling_time_text, ")")))
+      sanitized_times <- eval(parse(text=paste0("c(", d_custom_sampling_time_text(), ")")))
       if(is.numeric(sanitized_times)) {
         return(sanitized_times)
       } else {
@@ -4002,8 +4014,9 @@ server <- function(input, output, session) {
     }
     return(tmp)
   }, label = 'nonmem_dataset_arg')
-  
+
   ## simulation_page_plot() ----
+  
   simulation_page_plot <- reactive({
     
     if (!is.null(sim_1_dataset_arg()) || !is.null(sim_2_dataset_arg())) {
@@ -4025,9 +4038,9 @@ server <- function(input, output, session) {
                                     geom_point_data_option = input$geom_point_data_option,
                                     stat_summary_data_option = input$stat_sum_data_option,
                                     stat_summary_data_by     = input$stat_sum_data_by,
-                                    xlabel = input$x_axis_label,
-                                    ylabel = input$y_axis_label,
-                                    title = input$plot_title_sim,
+                                    xlabel = d_x_axis_label(),
+                                    ylabel = d_y_axis_label(),
+                                    title = d_plot_title_sim(),
                                     line_color_1 = model_1_color,
                                     line_color_2 = model_2_color,
                                     debug  = show_debugging_msg
@@ -4137,6 +4150,9 @@ server <- function(input, output, session) {
   )  
   
   # Page 3 Parameter Sensitivity Analysis ----
+  d_plot_title_psa_model_1 <- debounce(reactive({ input$plot_title_psa_model_1 }), debounce_timer_slow)
+  d_plot_title_psa_model_2 <- debounce(reactive({ input$plot_title_psa_model_2 }), debounce_timer_slow)
+  
   ## Outline ----
   ### Update input$auc_time_range ----
   observe({
@@ -4498,7 +4514,7 @@ server <- function(input, output, session) {
     title <- if (input$combine_nmdata_1_model_1 && is.null(nonmem_dataset)) {
       unsupported_dataset
     } else {
-      if (!is.null(input$plot_title_psa_model_1)) {input$plot_title_psa_model_1} else {
+      if (!is.null(d_plot_title_psa_model_1())) {d_plot_title_psa_model_1()} else {
         NULL
       }
     }
@@ -4946,7 +4962,7 @@ server <- function(input, output, session) {
     title <- if (input$combine_nmdata_1_model_2 && is.null(nonmem_dataset)) {
       unsupported_dataset
     } else {
-      if (!is.null(input$plot_title_psa_model_2)) {input$plot_title_psa_model_2} else {
+      if (!is.null(d_plot_title_psa_model_2())) {d_plot_title_psa_model_2()} else {
         NULL
       }
     }
@@ -5079,17 +5095,39 @@ server <- function(input, output, session) {
   )
   
   # Page 5 IIV ----
+  d_lower_quartile      <- debounce(reactive({ input$lower_quartile }), debounce_timer_fast)
+  d_upper_quartile      <- debounce(reactive({ input$upper_quartile }), debounce_timer_fast)
+  d_plot_title_iiv      <- debounce(reactive({ input$plot_title_iiv }), debounce_timer_slow)
+  d_y_value_threshold   <- debounce(reactive({ input$y_value_threshold }), debounce_timer_fast)
+  
+  d_n_subj_model_1      <- debounce(reactive({ input$n_subj_model_1 }), debounce_timer_fast)  
+  d_age_db_model_1      <- debounce(reactive({ input$age_db_model_1 }), debounce_timer_slow)
+  d_wt_db_model_1       <- debounce(reactive({ input$wt_db_model_1 }), debounce_timer_slow)
+  d_males_db_model_1    <- debounce(reactive({ input$males_db_model_1 }), debounce_timer_slow)
+  d_seed_number_model_1 <- debounce(reactive({ input$seed_number_model_1 }), debounce_timer_slow)
+  
+  d_n_subj_model_2      <- debounce(reactive({ input$n_subj_model_2 }), debounce_timer_fast)
+  d_age_db_model_2      <- debounce(reactive({ input$age_db_model_2 }), debounce_timer_slow)
+  d_wt_db_model_2       <- debounce(reactive({ input$wt_db_model_2 }), debounce_timer_slow)
+  d_males_db_model_2    <- debounce(reactive({ input$males_db_model_2 }), debounce_timer_slow)
+  d_seed_number_model_2 <- debounce(reactive({ input$seed_number_model_2 }), debounce_timer_slow)
+  
+  d_exp_yaxis_label     <- debounce(reactive({ input$exp_yaxis_label }), debounce_timer_slow)
+  d_exp_model_1_name    <- debounce(reactive({ input$exp_model_1_name }), debounce_timer_slow)
+  d_exp_model_2_name    <- debounce(reactive({ input$exp_model_2_name }), debounce_timer_slow)
+  d_plot_title_exp_model<- debounce(reactive({ input$plot_title_exp_model }), debounce_timer_slow)
+  
   ## MODEL 1 ----
   extracted_omega_model_1 <- reactiveVal()
   extracted_sigma_model_1 <- reactiveVal()
-  
+
   n_subj_model_1_clean <- reactive({
-    if(sanitize_numeric_input(input$n_subj_model_1, allow_zero = FALSE, as_integer = TRUE) > max_sim_n) {
+    if(sanitize_numeric_input(d_n_subj_model_1(), allow_zero = FALSE, as_integer = TRUE) > max_sim_n) {
       general_warning_modal(title = "Error", text_description = max_sim_n_error)
       updateNumericInput(session, "n_subj_model_1", value = 20)
       return(20)
     } else {
-      return(sanitize_numeric_input(input$n_subj_model_1, allow_zero = FALSE, as_integer = TRUE))
+      return(sanitize_numeric_input(d_n_subj_model_1(), allow_zero = FALSE, as_integer = TRUE))
     }
   })
   
@@ -5479,12 +5517,12 @@ server <- function(input, output, session) {
   database_model_1 <- reactive({
     dbm1 <- sample_age_wt(df_name     = input$db_model_1,
                           nsubj       = n_subj_model_1_clean(),
-                          lower.agemo = input$age_db_model_1[1] * 12,
-                          upper.agemo = input$age_db_model_1[2] * 12,
-                          lower.wt    = input$wt_db_model_1[1],
-                          upper.wt    = input$wt_db_model_1[2],
-                          prop.male   = input$males_db_model_1/100, # convert % into proportion (0 - 1)
-                          seed.number = input$seed_number_model_1
+                          lower.agemo = d_age_db_model_1()[1] * 12,  #input$age_db_model_1[1] * 12,
+                          upper.agemo = d_age_db_model_1()[2] * 12,  #input$age_db_model_1[2] * 12,
+                          lower.wt    = d_wt_db_model_1()[1],
+                          upper.wt    = d_wt_db_model_1()[2],
+                          prop.male   = d_males_db_model_1()/100, # convert % into proportion (0 - 1)
+                          seed.number = d_seed_number_model_1()
     )
     
     # Get the column names of all dataframes, excluding the common column ("ID")
@@ -5759,7 +5797,7 @@ server <- function(input, output, session) {
           model_dur          = model_duration_argument_model_1(),
           model_rate         = model_rate_argument_model_1(),
           sampling_times     = sampling_options(),
-          seed               = input$seed_number_model_1,
+          seed               = d_seed_number_model_1(),
           debug              = show_debugging_msg,
           divide_by          = time_value(),
           nsubj              = n_subj_model_1_clean(),
@@ -5770,8 +5808,8 @@ server <- function(input, output, session) {
       
       iiv_sim_output_model_1 <- quantile_output(iiv_sim_output_model_1, 
                                                 yvar = input$yaxis_name,
-                                                lower_quartile = sanitize_numeric_input(input$lower_quartile, legal_minimum = 0, display_error = TRUE)/100,
-                                                upper_quartile = sanitize_numeric_input(input$upper_quartile, legal_maximum = 100, display_error = TRUE)/100
+                                                lower_quartile = sanitize_numeric_input(d_lower_quartile(), legal_minimum = 0, display_error = TRUE)/100,
+                                                upper_quartile = sanitize_numeric_input(d_upper_quartile(), legal_maximum = 100, display_error = TRUE)/100
       )
       
       iiv_sim_output_model_1$yvar <- iiv_sim_output_model_1[[input$yaxis_name]]
@@ -5819,14 +5857,14 @@ server <- function(input, output, session) {
   ## MODEL 2 ----
   extracted_omega_model_2 <- reactiveVal()
   extracted_sigma_model_2 <- reactiveVal()
-  
+
   n_subj_model_2_clean <- reactive({
-    if(sanitize_numeric_input(input$n_subj_model_2, allow_zero = FALSE, as_integer = TRUE) > 5000) {
+    if(sanitize_numeric_input(d_n_subj_model_2(), allow_zero = FALSE, as_integer = TRUE) > 5000) {
       general_warning_modal(title = "Error", text_description = "Maximum number of subjects cannot exceed 5000. Reverting to using 20.")
       updateNumericInput(session, "n_subj_model_2", value = 20)
       return(20)
     } else {
-      return(sanitize_numeric_input(input$n_subj_model_2, allow_zero = FALSE, as_integer = TRUE))
+      return(sanitize_numeric_input(d_n_subj_model_2(), allow_zero = FALSE, as_integer = TRUE))
     }
   })
   
@@ -6216,12 +6254,12 @@ server <- function(input, output, session) {
   database_model_2 <- reactive({
     dbm2 <- sample_age_wt(df_name     = input$db_model_2,
                           nsubj       = n_subj_model_2_clean(),
-                          lower.agemo = input$age_db_model_2[1] * 12,
-                          upper.agemo = input$age_db_model_2[2] * 12,
-                          lower.wt    = input$wt_db_model_2[1],
-                          upper.wt    = input$wt_db_model_2[2],
-                          prop.male   = input$males_db_model_2/100, # convert % into proportion (0 - 1)
-                          seed.number = input$seed_number_model_2
+                          lower.agemo = d_age_db_model_2()[1] * 12,
+                          upper.agemo = d_age_db_model_2()[2] * 12,
+                          lower.wt    = d_wt_db_model_2()[1],
+                          upper.wt    = d_wt_db_model_2()[2],
+                          prop.male   = d_males_db_model_2()/100, # convert % into proportion (0 - 1)
+                          seed.number = d_seed_number_model_2()
     )
     
     # Get the column names of all dataframes, excluding the common column ("ID")
@@ -6495,7 +6533,7 @@ server <- function(input, output, session) {
           model_dur          = model_duration_argument_model_2(),
           model_rate         = model_rate_argument_model_2(),
           sampling_times     = sampling_options(),
-          seed               = input$seed_number_model_2,
+          seed               = d_seed_number_model_2(),
           debug              = show_debugging_msg,
           divide_by          = time_value(),
           nsubj              = n_subj_model_2_clean(),
@@ -6507,8 +6545,8 @@ server <- function(input, output, session) {
       
       iiv_sim_output_model_2 <- quantile_output(iiv_sim_output_model_2, 
                                                 yvar = input$yaxis_name_2,
-                                                lower_quartile = sanitize_numeric_input(input$lower_quartile, legal_minimum = 0, display_error = TRUE)/100,
-                                                upper_quartile = sanitize_numeric_input(input$upper_quartile, legal_maximum = 100, display_error = TRUE)/100
+                                                lower_quartile = sanitize_numeric_input(d_lower_quartile(), legal_minimum = 0, display_error = TRUE)/100,
+                                                upper_quartile = sanitize_numeric_input(d_upper_quartile(), legal_maximum = 100, display_error = TRUE)/100
       )
       
       iiv_sim_output_model_2$yvar <- iiv_sim_output_model_2[[input$yaxis_name_2]]
@@ -6549,8 +6587,7 @@ server <- function(input, output, session) {
     } 
     return(tmp2)
   }, label = 'sim_2_iiv_dataset_arg')
-  
-  
+
   iiv_page_plot <- reactive({
     nonmem_dataset <- if (input$combine_nmdata_iiv && final_output_executed()) {
       nmdata_cmt_filtered()
@@ -6584,7 +6621,7 @@ server <- function(input, output, session) {
                                         show_y_mean = input$show_mean_iiv,
                                         y_min = 'lower_yvar',
                                         y_max = 'upper_yvar',
-                                        title = input$plot_title_iiv,
+                                        title = d_plot_title_iiv(),
                                         stat_summary_data_option = input$stat_sum_data_option_iiv,
                                         xlabel = input$x_axis_label,
                                         ylabel = input$y_axis_label,
@@ -6592,7 +6629,7 @@ server <- function(input, output, session) {
                                         show_x_intercept = input$show_x_intercept_threshold,
                                         x_intercept_value = sanitize_numeric_input(input$x_value_threshold)/time_value(),
                                         show_y_intercept = input$show_y_intercept_threshold,
-                                        y_intercept_value = input$y_value_threshold
+                                        y_intercept_value = d_y_value_threshold()
       )
       
       
@@ -6863,13 +6900,13 @@ server <- function(input, output, session) {
         
         exp_plot <- plot_iiv_exp_data(input_dataset = both_model_exp,
                                       yvar          = input$select_exp,
-                                      ylab          = input$exp_yaxis_label,
-                                      model_1_name  = input$exp_model_1_name,
-                                      model_2_name  = input$exp_model_2_name,
+                                      ylab          = d_exp_yaxis_label(),
+                                      model_1_name  = d_exp_model_1_name(),
+                                      model_2_name  = d_exp_model_2_name(),
                                       model_1_color = model_1_color,
                                       model_2_color = model_2_color,
                                       show_stats    = input$exp_display_stats,
-                                      title         = input$plot_title_exp_model)
+                                      title         = d_plot_title_exp_model())
       } else {
         exp_plot <- NULL
       }

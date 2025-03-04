@@ -1,3 +1,13 @@
+# MVPapp 0.2.16 (2025-03-04)
+
+## Features
+
+* Implement a short delay for some inputs to avoid frequent computations (#28)
+
+## Bugfixes
+
+* Corrected code for Michaelis-Menten example (#27)
+
 # MVPapp 0.2.15 (2025-02-26)
 
 ## Features

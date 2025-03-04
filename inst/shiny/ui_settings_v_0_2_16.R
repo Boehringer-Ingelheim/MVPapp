@@ -7,6 +7,10 @@ page_title            <- 'Model Visualization Platform (MVP)'
 sidebar_width         <- 5  
 #' @export
 mainbar_width         <- 12 - sidebar_width
+#' @export
+debounce_timer_fast   <- 500
+#' @export
+debounce_timer_slow   <- 800
 
 # Colours
 #' @export
