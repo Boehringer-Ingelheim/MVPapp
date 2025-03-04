@@ -491,7 +491,7 @@ double MM      = Vmax/(KmVAR + CENT/VC);
  
 $ODE
 dxdt_EV = -KAVAR*EV;
-dxdt_CENT = KAVAR*EV + K32*PERI - MM*CENT*VCVAR - K23*CENT;
+dxdt_CENT = KAVAR*EV + K32*PERI - MM*CENT/VCVAR - K23*CENT;
 dxdt_PERI = K23*CENT - K32*PERI;
 
 $OMEGA @annotated 
