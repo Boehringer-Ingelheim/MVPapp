@@ -27,7 +27,7 @@ Imports: bslib (>= 0.5.1),
          gridExtra,
          htmltools (>= 0.5.5),
          magrittr,
-         mrgsolve (>= 1.0.0),
+         mrgsolve (>= 1.5.2),
          ncar,
          NonCompart (>= 0.7.0),
          plotly (>= 4.10.1),
@@ -46,15 +46,14 @@ Imports: bslib (>= 0.5.1),
          tidyr
 Suggests: readr,
           foreign,
-          mrgsolve (>= 1.5.2),
           knitr,
           rmarkdown
 Depends: R (>= 3.5.0)
 LazyData: true
 Collate: "utils-pipe.R"
          "ui_settings_v_0_2_16.R"
-         "code_templates_v_0_2_15.R"
-         "functions_v_0_2_15.R"
+         "code_templates_v_0_2_16.R"
+         "functions_v_0_2_16.R"
          "config.R"
          "run_mvp.R"
          "data.R"

@@ -476,23 +476,23 @@ VP   : 20 : Peripheral volume (volume)
 Q    :  2 : Intercompartmental clearance (volume/time)
 KA1  :  1 : Absorption rate constant (1/time)
 Km   :  1 : Michaelis constant (mass/volume) 
-Vmax :  1 : Maximum rate of reaction (mass/time)
+Vmax :  3 : Maximum rate of metabolism (mass/time)
 
 $MAIN
-double KAVAR   = KA1 * exp(EKA1);
+double KA      = KA1 * exp(EKA1);
 double QVAR    = Q  * exp(EQ);
 double VCVAR   = VC * exp(EVC);
 double VPVAR   = VP * exp(EVP);
-double KmVAR   = Km * exp(EKm);
 double K23     = QVAR/VCVAR;
 double K32     = QVAR/VPVAR;
-double VmaxVAR = Vmax * exp(EVmax) ;
-double MM      = Vmax/(KmVAR + CENT/VC);
+double VmaxVAR = Vmax * exp(EVmax);
+double KmVAR   = Km * exp(EKm);
+double C2      = CENT/VCVAR;
  
 $ODE
-dxdt_EV = -KAVAR*EV;
-dxdt_CENT = KAVAR*EV + K32*PERI - MM*CENT/VCVAR - K23*CENT;
-dxdt_PERI = K23*CENT - K32*PERI;
+dxdt_EV   = -KA*EV;
+dxdt_CENT =  KA*EV + K32*PERI - (VmaxVAR * C2)/(KmVAR + C2) - K23*CENT;
+dxdt_PERI =  K23*CENT - K32*PERI;
 
 $OMEGA @annotated 
 EKA1 :  0.09  : ETA on KA1
@@ -500,21 +500,21 @@ EVC  :  0.09  : ETA on VC
 EVP  :  0     : ETA on VP
 EQ   :  0     : ETA on Q
 EKm  :  0.09  : ETA on Km
-EVmax:  0     : ETA on Vmax
+EVmax:  0.09  : ETA on Vmax
 
 $SIGMA @annotated
 PROP: 0.1 : Proportional residual error
 ADD : 0   : Additive residual error
 
 $TABLE
-double CP = (CENT/VC) * (1 + PROP) + ADD;
-double CT = (PERI/VP);
+double CP = (CENT/VCVAR) * (1 + PROP) + ADD;
+double CT = (PERI/VPVAR);
 
 //prevent simulation of negative concentrations
 int i = 0;
 while(CP <0 && i < 100){
     simeps();
-    CP = (CENT/VC) * (1 + PROP) + ADD;
+    CP = (CENT/VCVAR) * (1 + PROP) + ADD;
     ++i;
 }
 

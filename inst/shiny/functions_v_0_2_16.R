@@ -3972,7 +3972,7 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
 #' @param tinf5 Infusion Time Regimen 5
 #' @param total5 Total Doses Regimen 5
 #' @param ii5 Interdose Interval Regimen 5
-#' @param mw_conversion MW conversion
+#' @param mw_conversion MW conversion value
 #' @param wt_multiplication_value Weight multiplication value
 #' @param create_dummy_ev Default TRUE, to create dummy ev if there are no valid
 #' dose amounts, set to FALSE to not create one
@@ -3990,7 +3990,7 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
                                      amt3, delay_time3, cmt3, tinf3, total3, ii3,
                                      amt4, delay_time4, cmt4, tinf4, total4, ii4,
                                      amt5, delay_time5, cmt5, tinf5, total5, ii5,
-                                     mw_conversion = FALSE,
+                                     mw_conversion = 1,
                                      wt_multiplication_value = 1,
                                      create_dummy_ev = TRUE,
                                      debug = FALSE
