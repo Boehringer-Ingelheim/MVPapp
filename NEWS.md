@@ -1,3 +1,15 @@
+# MVPapp 0.2.17 (2025-03-13)
+
+## Features
+
+* New option to split X-axis into quantiles for Data Page General Plots (#30)
+* More template models (QS TMDD, MM TMDD).
+
+## Bugfixes
+
+* Allows age and/or weight range sliders in Variability page to be the same value (#29)
+* Re-worded some tooltips to improve clarity.
+
 # MVPapp 0.2.16 (2025-03-04)
 
 ## Features

@@ -12,6 +12,8 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/binary_cat_dist.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/calc_summary_stats.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/calc_summary_stats_as_list.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/calculate_quantiles.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/categorize_xvar.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/cdc.expand.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/check_and_combine_df.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/check_cov_name.html</loc></url>
@@ -41,6 +43,8 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/lm_eqn_old.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/lowerFn.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/ls_all.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/model_code_2cmt_MM_TMDD.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/model_code_2cmt_QE_TMDD.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/model_examples_list.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/model_switch_conditions.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/nhanes.filtered.html</loc></url>
@@ -59,6 +63,7 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/print_cov_plot.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/print_demog_plots.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/quantile_output.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/quantile_ranges_name.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/quantize.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/reconstruct_matrices.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/run_mvp.html</loc></url>

@@ -11,7 +11,7 @@ object is created to supply a dose of 0 to be used for simulations."></head><bod
 
     <a class="navbar-brand me-2" href="../index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.16</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,7 +38,7 @@ object is created to supply a dose of 0 to be used for simulations."></head><bod
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Generate Dosing Regimens</h1>
-      <small class="dont-index">Source: <a href="https://github.com/Boehringer-Ingelheim/MVP/blob/HEAD/R/functions_v_0_2_15.R" class="external-link"><code>R/functions_v_0_2_15.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/Boehringer-Ingelheim/MVP/blob/HEAD/R/functions.R" class="external-link"><code>R/functions.R</code></a></small>
       <div class="d-none name"><code>generate_dosing_regimens.Rd</code></div>
     </div>
 
@@ -81,7 +81,7 @@ object is created to supply a dose of 0 to be used for simulations.</p>
 <span>  <span class="va">tinf5</span>,</span>
 <span>  <span class="va">total5</span>,</span>
 <span>  <span class="va">ii5</span>,</span>
-<span>  mw_conversion <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  mw_conversion <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  wt_multiplication_value <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  create_dummy_ev <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  debug <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -213,7 +213,7 @@ object is created to supply a dose of 0 to be used for simulations.</p>
 
 
 <dt id="arg-mw-conversion">mw_conversion<a class="anchor" aria-label="anchor" href="#arg-mw-conversion"></a></dt>
-<dd><p>MW conversion</p></dd>
+<dd><p>MW conversion value</p></dd>
 
 
 <dt id="arg-wt-multiplication-value">wt_multiplication_value<a class="anchor" aria-label="anchor" href="#arg-wt-multiplication-value"></a></dt>

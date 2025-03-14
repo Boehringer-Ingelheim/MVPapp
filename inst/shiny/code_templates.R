@@ -6,7 +6,7 @@
 #' @export
 code_preamble  <- "## Notes: mrgsolve [v1.5.2] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n\nmodel_code <- "
 #' @export
-cpp_preamble   <- "## Notes: mrgsolve [v1.5.2] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n##      :\n##      : MAKE SURE THAT NO SINGLE / DOUBLE QUOTATION MARKS EXIST IN .CPP FILE!!\n\nmodel_code <- "
+cpp_preamble   <- "## Notes: mrgsolve [v1.5.2] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n##      :\n##      : ESCAPE (\\) OR REMOVE ALL SINGLE / DOUBLE QUOTATION MARKS IN .CPP FILE!!\n\nmodel_code <- "
 #' @export
 code_postamble <- "\n## IMPORTANT: Model 1 and Model 2 must have different 'model_object' names!\n"
 
@@ -24,6 +24,8 @@ model_examples_list <- c('1 Compartment PK',
                          '2 Compartment PK with Absorption Compartment',
                          '2 Compartment PK (Michaelis-Menten)',
                          '2 Compartment PK (Target Mediated Drug Disposition)',
+                         '2 Compartment PK (Quasi Equilibrium TMDD)',
+                         '2 Compartment PK (Michaelis-Menten TMDD)',
                          '2 Compartment PK/PD (Indirect Effect)',
                          'PK Tumor Growth Inhibition Model',
                          'KPD Tumor Growth Inhibition Model',
@@ -65,6 +67,8 @@ model_switch_conditions <- function(input_model_select, mcode_model_choice) {
     '2 Compartment PK with Absorption Compartment'        = paste0(two_cmt_abs, mcode_model_choice),
     '2 Compartment PK (Michaelis-Menten)'                 = paste0(model_code_2cmt_depot_MM, mcode_model_choice),
     '2 Compartment PK (Target Mediated Drug Disposition)' = paste0(model_code_2cmt_TMDD, mcode_model_choice),
+    '2 Compartment PK (Quasi Equilibrium TMDD)'           = paste0(model_code_2cmt_QE_TMDD, mcode_model_choice),
+    '2 Compartment PK (Michaelis-Menten TMDD)'            = paste0(model_code_2cmt_MM_TMDD, mcode_model_choice),
     '2 Compartment PK/PD (Indirect Effect)'               = paste0(pkpd_te, mcode_model_choice),
     'PK Tumor Growth Inhibition Model'                    = paste0(pk_tgi, mcode_model_choice),
     'KPD Tumor Growth Inhibition Model'                   = paste0(pd_gompertz_effect, mcode_model_choice),
@@ -530,86 +534,90 @@ model_code_2cmt_TMDD <- paste0(code_preamble, '
 $Global
 
 $Prob
-- 2 Compartment model with Target Mediated Drug Disposition
+- 2 Compartment model with Target Mediated Drug Disposition (TMDD)
 
-$CMT 
-A1
-A2
-A3
-A4
-A5
+$CMT @annotated
+DEPOT     : Subcutaneous adminstration compartment (nmol)
+L         : Free drug in central compartment (nmol/L)
+LPERI     : Drug in peripheral compartment (nmol/L)
+FreeR     : Free target (nmol/L)
+RL        : Drug-target complex (nmol/L)
 
 $PARAM @annotated
 // PK parameters;
-TVV    :   3      :  Central Volume (L)  
-TVV2   :   10     :  Peripheral Volume (L) Not used
-TVKA   :   0.02   :  Absorption rate constant (1/h) 
-TVF    :   0.7    :  Fraction Bioavailability
-TVK20  :   0.01   :  Elimination rate constant (1/h) 
-TVK23  :   0.01   :  Central-peripheral rate constant (1/h) 
-TVK32  :   0.02   :  Peripheral-central rate constant (1/h)
+TVV     :   3.5      :  Central Volume (L) 
+TVCL    :   0.07     :  Clearance (L/h)
+TVV2    :   7        :  Peripheral Volume (L) Not used
+TVQ     :   0.01     :  Intercompartmental clearance (L/h)
+TVKA    :   0.01     :  Absorption rate constant (1/h) 
+TVF     :   0.7      :  Fraction Relative Bioavailability
 
 // Receptor parameters;
-TVBASE :   1      :  Free Receptor at Baseline (nM)
-TVKDEG :   2.5    :  Degradation rate constant of Receptor (1/h) 
+TVBASE  :  10        :  Target baseline (nmol/L)
+TVKDEG  :   0.01     :  Elimination rate constant of free target (1/h)
 
 // Drug-Receptor Complex parameters;
-TVKON  :   1      :  Kon Drug-Receptor Complex (1/nM*h) exp observed 
-TVKOFF :   0.1    :  Koff Drug-Receptor Complex (1/h)  exp observed
-TVKINT :   0.02   :  Integration rate constant (1/h) 
+TVKON   :   1        :  Binding rate constant (L/(nmol*h))
+TVKOFF  :   0.1      :  Dissociation rate constant (1/h)
+TVKINT  :   0.01     :  Elimination/internalization rate constant of complex (1/h)
 
 $MAIN
 double V     =  TVV * exp(EV);
+double CL    =  TVCL * exp(ECL);
 double V2    =  TVV2;
 double KA    =  TVKA * exp(EKA);
 double F     =  TVF;
-double K23   =  TVK23;
-double K32   =  TVK32;
-double K20   =  TVK20;
+double Q     =  TVQ;
 double BASE  =  TVBASE * exp(EBASE);
-double KDEG  =  TVKDEG;
+double KDEG  =  TVKDEG * exp(EKDEG);
 double KSYN  =  KDEG * BASE;
-double KON   =  TVKON;
-double KOFF  =  TVKOFF;
-double KINT  =  TVKINT;
-A4_0         =  TVBASE; 
+double KON   =  TVKON * exp(EKON);
+double KOFF  =  TVKOFF * exp(EKOFF);
+double KINT  =  TVKINT * exp(EKINT);
+
+FreeR_0      =  BASE; 
+F_L          =  1/V;
+F_DEPOT      =  F;
 
 $ODE
-double C2  = A2/V ; // Plasma Drug Conc (nM)
-double C3  = A3/V2 ;
-double C4  = A4 ; // Receptor concentration (nM)
-double C5  = A5 ; // Complex concentration
 
-dxdt_A1    = -KA*A1              ; // Depot SC
-dxdt_A2    =  KA*A1*F - (K20+K23)*A2 + K32*A3 - KON*A2/V*A4 + KOFF*A5 ; // D amount
-dxdt_A3    =  K23*A2 - K32*A3; // DP Amount
-dxdt_A4    =  KSYN - KDEG*A4 - KON*A2/V*A4 + KOFF*A5 ; // Receptor concentration
-dxdt_A5    =  KON*A2/V*A4 - (KINT+KOFF)*A5 ; // P concentration
+dxdt_DEPOT   = -KA*DEPOT              ; // Depot SC (nmol)
+dxdt_L       =  KA*DEPOT/V - (CL/V)*L - (Q/V)*(L-LPERI) - KON*FreeR*L + KOFF*RL ; // Free drug in central compartment (nmol/L)
+dxdt_LPERI   =                            (Q/V2)*(L-LPERI) ; // Drug in peripheral compartment (nmol/L)
+dxdt_FreeR   =  KSYN - KDEG*FreeR - KON*FreeR*L + KOFF*RL ; // Free target (nmol/L)
+dxdt_RL      =  KON*FreeR*L - (KINT+KOFF)*RL ; // Drug-target complex (nmol/L)
 
 $OMEGA @annotated
-EKA   : 0.09 : ETA on KA
 EV    : 0.09 : ETA on V
+ECL   : 0.09 : ETA on CL
+EKA   : 0.09 : ETA on KA
 EBASE : 0.09 : ETA on BASE
+EKDEG : 0.09 : ETA on KDEG
+EKON  : 0.09 : ETA on KON
+EKOFF : 0.09 : ETA on KOFF
+EKINT : 0.09 : ETA on KINT
 
 $SIGMA @annotated
 PROP : 0.1 : Prop RUV
 ADD  : 0   : Add RUV
 
 $TABLE
-double PK        = C2 * (1 + PROP) + ADD;
-double FreeR     = C4; // (nM)
-double Complex   = C5; 
+double PK        = L * (1 + PROP) + ADD;
 
 //prevent simulation of negative concentrations
 int i = 0;
 while(PK <0 && i < 100){
     simeps();
-    PK = C2 * (1 + PROP) + ADD;
+    PK = L * (1 + PROP) + ADD;
     ++i;
 }
 
+double LTOT = L + RL; // Total drug in central compartment (nmol/L)
+double RTOT = FreeR + RL; // Total target (nmol/L)
+double RO   = (RL / RTOT) * 100;   // Receptor occupancy (%)
+
 $CAPTURE
-PK FreeR Complex
+PK LTOT RTOT RO 
 "
 ', code_postamble)
 
@@ -1371,5 +1379,176 @@ $TABLE
 capture ICONC         = CP*(1+EPS(1)) + EPS(2);
 "
 ', code_postamble)
+
+#-------------------------------------------------------------------------------
+#' QE approximation of TMDD, see Dua et al (2015)
+#' https://doi.org/10.1002/psp4.41
+#-------------------------------------------------------------------------------
+
+#' @export
+model_code_2cmt_QE_TMDD <- paste0(code_preamble, '
+
+"
+$Global
+
+$Prob
+- 2 Compartment model with Quasi-equilibrium / rapid binding (QE/RB) model for TMDD
+- Mathematically equivalent to quasi-steady state (QSS) approximation
+
+$CMT @annotated 
+DEPOT   : depot administration compartment (nmol)
+LTOT    : total drug in central compartment (nM)
+LPERI   : drug in peripheral compartment (nM)
+RTOT    : total receptor conc (nM)
+
+$PARAM @annotated
+// PK parameters;
+TVV    :   3.5     :  Central Volume (L)  
+TVV2   :   7       :  Peripheral Volume (L)
+TVCL   :   0.07    :  Clearance (L/h) 
+TVQ    :   0.01    :  Intercompartmental clearance (L/h)
+TVKA   :   0.01    :  Absorption rate constant (1/h) 
+TVF    :   0.7     :  Fraction Bioavailability
+
+// Receptor parameters;
+TVBASET:   10      :  Total Receptor at Baseline (nM)
+TVKDEG :   0.01    :  Degradation rate constant of free receptor (1/h) 
+
+// Drug-Receptor Complex parameters;
+TVKD   :   0.1     :  Equilibrium dissociation rate constant (1/h)
+TVKINT :   0.01    :  Internalization rate constant of complex (1/h) 
+
+$MAIN
+double V     =  TVV * exp(EV);
+double V2    =  TVV2; 
+double KA    =  TVKA * exp(EKA);
+double F     =  TVF;
+double CL    =  TVCL * exp(ECL);
+double Q     =  TVQ;
+double BASET =  TVBASET * exp(EBASET);
+double KDEG  =  TVKDEG;
+double KSYN  =  KDEG * BASET;
+double KD    =  TVKD * exp(EKD);
+double KINT  =  TVKINT * exp(EKINT);
+RTOT_0       =  BASET;
+F_LTOT       =  1/V;
+
+$ODE
+double L     = 0.5 * ((LTOT-RTOT-KD) + sqrt(pow(LTOT-RTOT-KD, 2) + 4*KD*LTOT)); // free drug conc (nM)
+double RC    = (RTOT*L)/(KD+L);
+
+dxdt_DEPOT   = -KA*DEPOT              ; // Depot SC (nmol)
+dxdt_LTOT    = (KA*DEPOT/V)*F - (CL/V)*L - (Q/V)*(L-LPERI) - KINT*RC ;  // Total drug conc (nM)
+dxdt_LPERI   =                            (Q/V2)*(L-LPERI); // DP conc (nM)
+dxdt_RTOT    =  KSYN - KDEG*RTOT - (KINT-KDEG)*RC; // Total receptor conc
+
+$OMEGA @annotated
+EV    : 0.09 : ETA on V
+ECL   : 0.09 : ETA on CL
+EKA   : 0.09 : ETA on KA
+EBASET: 0.09 : ETA on BASET
+EKD   : 0.09 : ETA on KD
+EKINT : 0.09 : ETA on KINT
+
+$SIGMA @annotated
+PROP : 0.1 : Prop RUV
+ADD  : 0   : Add RUV
+
+$TABLE
+double PK        = L * (1 + PROP) + ADD;
+
+//prevent simulation of negative concentrations
+int i = 0;
+while(PK <0 && i < 100){
+    simeps();
+    PK = L * (1 + PROP) + ADD;
+    ++i;
+}
+
+double Complex   = RC ; // Concentration of complex (nM)
+double FreeR     = RTOT*KD/(KD+L); // Concentration of free receptor (nM)
+double RO        = Complex/RTOT * 100 ; // Receptor occupancy (%)
+double Lfrac     = L / LTOT * 100 ; 
+
+$CAPTURE
+PK FreeR Complex RO Lfrac
+"
+', code_postamble)
+
+#-------------------------------------------------------------------------------
+#' MM approximation of TMDD, see Dua et al (2015)
+#' https://doi.org/10.1002/psp4.41
+#-------------------------------------------------------------------------------
+
+#' @export
+model_code_2cmt_MM_TMDD <- paste0(code_preamble, '
+
+"
+$Global
+
+$Prob
+- 2 Compartment model with Michaelis-Menten approximation for TMDD
+
+$CMT @annotated 
+DEPOT   : depot administration compartment (nmol)
+L       : free drug in central compartment (nM)
+LPERI   : drug in peripheral compartment (nM)
+
+$PARAM @annotated
+// PK parameters;
+TVV    :   3.5     :  Central Volume (L)  
+TVV2   :   7       :  Peripheral Volume (L)
+TVCL   :   0.07    :  Clearance (L/h) 
+TVQ    :   0.01    :  Intercompartmental clearance (L/h)
+TVKA   :   0.01    :  Absorption rate constant (1/h) 
+TVF    :   0.7     :  Fraction Bioavailability
+TVKM   :   0.1     :  Michaelis-Menten constant (nM)
+TVVMAX :   0.1     :  Maximal nonlinear elimination rate (nmol/(L*h))
+
+$MAIN
+double V     =  TVV * exp(EV);
+double V2    =  TVV2; 
+double KA    =  TVKA * exp(EKA);
+double F     =  TVF;
+double CL    =  TVCL * exp(ECL);
+double Q     =  TVQ;
+double KM    =  TVKM * exp(EKM);
+double VMAX  =  TVVMAX * exp(EVMAX);
+
+F_L          =  1/V;
+
+$ODE
+
+dxdt_DEPOT   = -KA*DEPOT              ; // Depot SC (nmol)
+dxdt_L       = (KA*DEPOT/V)*F - (CL/V)*L - (Q/V)*(L-LPERI) - VMAX*L/(L+KM) ;  // free drug conc (nM)
+dxdt_LPERI   =                            (Q/V2)*(L-LPERI); // DP conc (nM)
+
+$OMEGA @annotated
+EV    : 0.09 : ETA on V
+ECL   : 0.09 : ETA on CL
+EKA   : 0.09 : ETA on KA
+EKM   : 0.09 : ETA on KM
+EVMAX : 0.09 : ETA on VMAX
+
+$SIGMA @annotated
+PROP : 0.1 : Prop RUV
+ADD  : 0   : Add RUV
+
+$TABLE
+double PK        = L * (1 + PROP) + ADD;
+
+//prevent simulation of negative concentrations
+int i = 0;
+while(PK <0 && i < 100){
+    simeps();
+    PK = L * (1 + PROP) + ADD;
+    ++i;
+}
+
+$CAPTURE
+PK 
+"
+', code_postamble)
+
 
 ##### End of Normal Code Template #####

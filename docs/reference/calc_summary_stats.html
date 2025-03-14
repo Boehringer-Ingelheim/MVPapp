@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.16</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.17</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Calculate summary stats with optional rounding</h1>
-      <small class="dont-index">Source: <a href="https://github.com/Boehringer-Ingelheim/MVP/blob/HEAD/R/functions_v_0_2_15.R" class="external-link"><code>R/functions_v_0_2_15.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/Boehringer-Ingelheim/MVP/blob/HEAD/R/functions.R" class="external-link"><code>R/functions.R</code></a></small>
       <div class="d-none name"><code>calc_summary_stats.Rd</code></div>
     </div>
 
@@ -52,7 +52,8 @@
 <span>  transpose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  check_empty_rows <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  id_colname <span class="op">=</span> <span class="st">"ID"</span>,</span>
-<span>  comma_format <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  comma_format <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  replace_non_numeric_to_NA <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -91,6 +92,10 @@
 
 <dt id="arg-comma-format">comma_format<a class="anchor" aria-label="anchor" href="#arg-comma-format"></a></dt>
 <dd><p>Set to TRUE to use big mark formatting</p></dd>
+
+
+<dt id="arg-replace-non-numeric-to-na">replace_non_numeric_to_NA<a class="anchor" aria-label="anchor" href="#arg-replace-non-numeric-to-na"></a></dt>
+<dd><p>Set to TRUE to replace non-numeric characters with NA</p></dd>
 
 </dl></div>
     <div class="section level2">

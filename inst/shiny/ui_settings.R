@@ -89,6 +89,10 @@ plot_title_placeholder<- "Insert optional plot title"
 select_label_size_label<- "Text Label Size"
 #' @export
 bspop_select_label_size<- "Label sizes are only applicable for linear regression formulae, counts (N=x), or dosing info."
+#' @export
+quantize_x_label       <- "Quantize X-axis"
+#' @export
+bspop_quantize_x       <- "(Optional) Split a continuous (i.e. numeric) X-variable into a number of discrete quantiles with approximately equal number of observations in each quantile.<br><br>Note: the plot will be converted into a boxplot automatically (not grouped by ID, unlike the normal boxplot option)."
 
 #' @export
 add_data_stat_sum     <- 'Median line [dataset]'
@@ -138,7 +142,7 @@ bspop_plotly_width_height <- 'Leave empty to use current dimensions.'
 #' @export
 bspop_plotly_width_height_corr <- 'Leave empty to use current dimensions.<br><br>Tip: a larger size (e.g. >5000) is recommended if there are more than a few variables.'
 #' @export
-bspop_data_plot_options <- 'Most options set here (with the exception of "Facet by") will be carried over to the "Ind. Plot" tab.'
+bspop_data_plot_options <- 'Most options set here (with the exception of "Facet by" and "Quantize X-axis") will be carried over to the "Ind. Plot" tab.'
 #' @export
 bspop_download_plot_all <- 'Generate and download all individual profiles in a single file (.pdf only). Adjust output settings in the "Download Options" box below.<br><br>Note: It can be time consuming if there are a large number of subjects! (Tip - More plots per page tends to be quicker.)'
 #' @export
@@ -199,6 +203,8 @@ bspop_para            <- 'Simulation in parallel is only relevant for multiple s
 #' @export
 label_para_n          <- 'Subjects Threshold for Parallelization'
 
+#' @export
+bspop_dosing_options  <- 'Up to 5 completely independent dosing regimens per Model are supported (e.g. loading dose + maintenance doses), which will be combined to form an overall dosing scenario.<br><br>Dosing amounts can be scaled i.e. molar doses or weight-based dosing in the "Transform Dose" sub-tab.'
 #' @export
 label_first_dose_time <- 'First Dose Time'
 #' @export

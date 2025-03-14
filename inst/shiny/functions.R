@@ -229,6 +229,7 @@ log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks
 #' @param med_line When TRUE, will draw median line by equidistant X-axis bins
 #' @param med_line_by Column name to draw median line by
 #' @param boxplot Draws a geom_boxplot instead of geom_point and geom_line
+#' @param num_quantiles Converts a continuous x-axis into discrete number of quantiles
 #' @param dolm Insert linear regression with formula on top of plot
 #' @param smoother Insert smoother
 #' @param facet_name variable(s) to facet by
@@ -262,6 +263,7 @@ do_data_page_plot <- function(nmd,
                               med_line,
                               med_line_by,
                               boxplot,
+                              num_quantiles,
                               dolm,
                               smoother,
                               facet_name,
@@ -280,6 +282,28 @@ do_data_page_plot <- function(nmd,
   }
   
   nmd <- nmd %>% dplyr::ungroup() # Safeguard to always ungroup() the data
+  
+  x_label     <- x_axis
+  x_axis_orig <- x_axis
+  can_quantize<- FALSE
+  
+  if(num_quantiles > 0) {
+    if(is.numeric(nmd[[x_axis_orig]])) {
+      boxplot <- TRUE # all conditions met to quantize and use box plot
+      can_quantize <- TRUE
+      nmd_q  <- calculate_quantiles(df = nmd, xvar = x_axis_orig, num_quantiles = num_quantiles)
+      if(debug) {print(knitr::kable(nmd_q))}
+      nmd    <- categorize_xvar(df = nmd, quantiles_df = nmd_q, xvar = x_axis_orig)
+      if(debug) {print(knitr::kable(nmd %>% count(Quantile)))}
+      
+      # Replace x_axis argument with the newly created "QUANTILES"
+      x_label  <- paste0(x_axis, " Quantiles")
+      x_axis   <- "Quantile" # Replaced original x_axis
+      
+    } else {
+      shiny::showNotification(paste0("ERROR: Cannot quantize ", x_axis_orig, " as it is not a continuous variable"), type = "error", duration = 10)
+    }
+  } # Automatically convert plot into a box plot
   
   if(filter_cmt != 'NULL') {
     nmd <- nmd %>% dplyr::filter(CMT %in% filter_cmt)
@@ -317,6 +341,11 @@ do_data_page_plot <- function(nmd,
   }
   
   if(color_by != "") {
+    
+    if(can_quantize & color_by == x_axis_orig) {
+      color_by <- "Quantile" # Replaced original color_by
+    }
+    
     if(all(is.na(nmd[[color_by]]))) {
       shiny::showNotification(paste0("WARNING: All values are NA in ", color_by, ". No coloring performed."), type = "warning", duration = 10)
     } else {
@@ -346,12 +375,14 @@ do_data_page_plot <- function(nmd,
   if(boxplot) {
     if(length(unique(nmd[[x_axis]])) > boxplot_x_threshold) {
       a <- ggplot2::ggplot() +
-        ggplot2::labs(title = paste0('ERROR: There are too many X-axis categories (>', boxplot_x_threshold, ') for boxplots.')) +
+        ggplot2::labs(title = paste0('ERROR: There are too many X-axis categories (>', boxplot_x_threshold, ') for boxplots. Try the "Quantize X-axis" option instead.')) +
         ggplot2::theme(panel.background = ggplot2::element_blank(),
                        plot.title = ggplot2::element_text(color = error_text_color))
       return(a)
     }
-    nmd[[x_axis]] <- as.factor(nmd[[x_axis]])
+    if(num_quantiles == 0) {
+      nmd[[x_axis]] <- as.factor(nmd[[x_axis]])
+    }
     
     if(is.character(nmd[[y_axis]]) || length(unique(nmd[[y_axis]])) <= discrete_threshold ) { # ... or if there are <= discrete_threshold unique values of y-axis
       shiny::showNotification(paste0("WARNING: Treating Y-axis as discrete as it is a character type, or there are <=", discrete_threshold ," unique Y values."), type = "warning", duration = 10)
@@ -362,16 +393,20 @@ do_data_page_plot <- function(nmd,
       nmd[[y_axis]] <- as.numeric(nmd[[y_axis]])
     }
     
-    if(color_by != "" && !all(is.na(nmd[[color_by]]))) {
-      a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], color = !!dplyr::sym(color_by))) +
-        ggplot2::scale_color_manual(values = named_color_vector)
-    } else {
-      a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]]))
+    ### Trim data to retain unique IDs or not, dependent on quantize
+    if(!can_quantize) {
+      nmd <- nmd %>% dplyr::distinct(ID, .keep_all = TRUE)
     }
     
+    if(color_by != "" && !all(is.na(nmd[[color_by]]))) {
+      a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], color = !!dplyr::sym(color_by))) +
+        ggplot2::scale_color_manual(values = named_color_vector)
+    } else {
+      a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]]))
+    }
+
     # Calculate the number of observations for each category
-    df_count <- nmd %>%
-      dplyr::distinct(ID, .keep_all = TRUE)
+    df_count <- nmd 
     
     if(!is.null(facet_name[1]) && facet_name[1] != "") {
       if(!(x_axis %in% facet_name)) {
@@ -416,8 +451,13 @@ do_data_page_plot <- function(nmd,
       a <- a + 
         ggplot2::geom_boxplot(varwidth = TRUE)
       if(label_size > 0) {
+        if(can_quantize) { # For quantized plots, we are plotting all observations, not unique IDs
+          a <- a +
+            ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]]) * 1.02, label = paste0("Nobs=", n),  group = NULL), color = "black", vjust = 2, size = label_size)          
+        } else {
         a <- a +
           ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]]) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+        }
       }
     }
     
@@ -426,7 +466,7 @@ do_data_page_plot <- function(nmd,
       ggplot2::geom_line(alpha = 0.2)
   }
   
-  a <- a + ggplot2::xlab(x_axis) +
+  a <- a + ggplot2::xlab(x_label) + # Using x_label to adapt name when Quantize
     ggplot2::ylab(y_axis) +
     ggplot2::theme_bw() +
     ggplot2::labs(color = color_by)
@@ -682,7 +722,7 @@ do_data_page_ind_plot <- function(nmd,
     # Safeguard for when a subject has no valid Y- or X-values
     # Replaces any bad IDs with no observations to NA
     nmd[(nmd==Inf | nmd == -Inf)] <- NA
-
+    
     dose_height     <- 0.5 # Changing how tall the doses should be in relation to the y variable (0.5 means max dose reaches middle of y_axis range)
     
     nmd <- nmd %>%
@@ -700,7 +740,7 @@ do_data_page_ind_plot <- function(nmd,
                                         TRUE            ~ min_xvar),
         max_xvar     = dplyr::case_when(is.na(max_xvar) ~ max_data_x,
                                         TRUE            ~ max_xvar)
-        )
+      )
     
     if(same_scale) {
       nmd$scaling_factor <- max_data_y_all / max_dose_all * dose_height
@@ -713,7 +753,7 @@ do_data_page_ind_plot <- function(nmd,
   }
   
   if(same_scale) { # Replace each subject's max and min values with the entire dataset's
-
+    
     nmd <- nmd %>%
       mutate(min_xvar = min_data_x_all,
              max_xvar = max_data_x_all,
@@ -740,7 +780,7 @@ do_data_page_ind_plot <- function(nmd,
     
     if(nrow(id_dose_expand) >= 1) { # Create "DOSETIME" column if there are any valid dosing rows, which will be used for plotting dose lines
       id_dose_expand <- id_dose_expand %>%
-      expand_addl_ii(., x_axis = x_axis, dose_col = dose_col) 
+        expand_addl_ii(., x_axis = x_axis, dose_col = dose_col) 
     }
     
     if(debug) {
@@ -752,7 +792,7 @@ do_data_page_ind_plot <- function(nmd,
     id_dose_unique <- id_dose_expand %>% distinct(ID, !!dplyr::sym(dose_col), .keep_all = TRUE)
     id_dose_unique[[dose_col]] <- as.numeric(as.character(id_dose_unique[[dose_col]])) # in case dose_col is picked for Color by
     id_dose_unique <- id_dose_unique %>% mutate(dosename = paste0(round(.[[dose_col]], digits = 2), dose_units))
-
+    
   }
   
   # Retain EVID == 0 for plotting
@@ -884,12 +924,12 @@ do_data_page_ind_plot <- function(nmd,
         
         ## Dosing text
         if(require(ggrepel)) {
-        a <- a + ggrepel::geom_text_repel(data = id_dose_unique, aes(x = .data[[x_axis]], y = SAMT, label = dosename, color = NULL),
-                                          alpha = 0.8,
-                                          size = label_size)
+          a <- a + ggrepel::geom_text_repel(data = id_dose_unique, aes(x = .data[[x_axis]], y = SAMT, label = dosename, color = NULL),
+                                            alpha = 0.8,
+                                            size = label_size)
         } else {
-        a <- a + ggplot2::geom_text(data = id_dose_unique, aes(x = .data[[x_axis]], y = SAMT, label = dosename, group = NULL, color = NULL),
-                           hjust = 1, vjust = 1, show.legend = FALSE, size = label_size, alpha = 0.8)
+          a <- a + ggplot2::geom_text(data = id_dose_unique, aes(x = .data[[x_axis]], y = SAMT, label = dosename, group = NULL, color = NULL),
+                                      hjust = 1, vjust = 1, show.legend = FALSE, size = label_size, alpha = 0.8)
         }
       } # End of DOSETIME column check
     } # End of dosing lines
@@ -1343,11 +1383,26 @@ sample_age_wt <- function(df_name     = "None",
     stop("Requested lower bound of age exceeds what's available in the database.")
   }
   
-  df.sexes <- df %>%
-    dplyr::filter(AGEMO >= lower.agemo,
-                  AGEMO <  upper.agemo,
-                  WT    >= lower.wt,
-                  WT    <  upper.wt)
+  if(lower.agemo == upper.agemo) { # Allows singular age
+    df.sexes <- df %>%
+      dplyr::filter(AGEMO == lower.agemo)
+    
+    if(nrow(df.sexes) == 0) { # CDC does not have exact whole months available
+      df.sexes <- df %>% # Note we're using inclusive both ends to be more accurate of what the user wants
+        dplyr::filter(AGEMO >= (lower.agemo - 0.5), AGEMO <= (upper.agemo + 0.5)) 
+    }
+  } else {
+    df.sexes <- df %>%
+      dplyr::filter(AGEMO >= lower.agemo, AGEMO < upper.agemo)
+  }
+  
+  if(lower.wt == upper.wt) { # Allows singular weight
+    df.sexes <- df.sexes %>%
+      dplyr::filter(WT == lower.wt)
+  } else {
+    df.sexes <- df.sexes %>%
+      dplyr::filter(WT >= lower.wt, WT < upper.wt)
+  }
   
   df.boys <- df.sexes %>%
     dplyr::filter(SEX == 0) %>%
@@ -1381,6 +1436,7 @@ sample_age_wt <- function(df_name     = "None",
 #' @param check_empty_rows    Default TRUE, will not perform summary stats if there are no rows in df
 #' @param id_colname          The ID column to distinct by and then removed before summary calcs are done
 #' @param comma_format        Set to TRUE to use big mark formatting
+#' @param replace_non_numeric_to_NA Set to TRUE to replace non-numeric characters with NA
 #'
 #' @returns a dataframe with summary stats
 #' @importFrom dplyr mutate mutate_all distinct select sym summarise across
@@ -1396,7 +1452,8 @@ calc_summary_stats <- function(orig_data,
                                transpose = FALSE,
                                check_empty_rows = TRUE,
                                id_colname = "ID",
-                               comma_format = TRUE) {
+                               comma_format = TRUE,
+                               replace_non_numeric_to_NA = TRUE) {
   
   data <- orig_data
   
@@ -1406,7 +1463,9 @@ calc_summary_stats <- function(orig_data,
       dplyr::mutate_all(function(x) as.numeric(as.character(x)))
     
     # Replace non-numeric values with NA
-    data[orig_data != data] <- NA
+    if(replace_non_numeric_to_NA) {
+      data[orig_data != data] <- NA # numbers with long decimals are being recognized as NA?
+    }
   }
   
   if(id_colname %in% names(data)) {
@@ -1417,30 +1476,6 @@ calc_summary_stats <- function(orig_data,
   if(check_empty_rows & nrow(data) == 0) {
     tmp <- data
   } else {
-    
-    # # Define list of metrics to summarise over
-    # stats_list <- list(
-    #   "Min"       = ~ min(., na.rm = TRUE),
-    #   "5%"        = ~ quantile(., probs = 0.05, na.rm = TRUE),
-    #   "1st Qu."   = ~ quantile(., probs = 0.25, na.rm = TRUE),
-    #   "Median"    = ~ median(., na.rm = TRUE),
-    #   "Mean"      = ~ mean(., na.rm = TRUE),
-    #   "3rd Qu."   = ~ quantile(., probs = 0.75, na.rm = TRUE),
-    #   "95%"       = ~ quantile(., probs = 0.95, na.rm = TRUE),
-    #   "Max"       = ~ max(., na.rm = TRUE),
-    #   "CV%"       = ~ sd(., na.rm = TRUE)/mean(., na.rm = TRUE) * 100,
-    #   "gMean"     = ~ gm_mean(.),
-    #   "gMean CV%" = ~ gm_mean_cv(.)
-    # )
-    #
-    # # Apply each operation to each column, and placing Statistic column at the front
-    # tmp <- lapply(names(stats_list), function(name) {
-    #   data %>%
-    #     dplyr::summarise(dplyr::across(tidyr::everything(), stats_list[[name]])) %>%
-    #     dplyr::mutate(Statistic = name)
-    # }) %>%
-    #   dplyr::bind_rows() %>%
-    #   dplyr::select(Statistic, tidyr::everything())
     
     # Using data.table which is much quicker
     # Convert the data to a data.table
@@ -1474,7 +1509,6 @@ calc_summary_stats <- function(orig_data,
     } else {
       tmp <- tmp %>% purrr::modify_if(is.numeric, ~round(., dp))
     }
-    
   }
   
   if("AGEMO" %in% names(tmp)) {
@@ -2828,7 +2862,7 @@ plot_three_data_with_nm <- function(
   p1 <- p1 +
     #ggplot2::theme(legend.justification = c(1, 1), legend.position = c(1, 1), legend.box.just = "right")
     theme(legend.position = "right")
-
+  
   return(p1)
 }
 
@@ -3726,9 +3760,9 @@ drawDetails.watermark <- function(x, ...) {
 #-------------------------------------------------------------------------------
 
 tblNCA_progress <- function (concData, key = "Subject", colTime = "Time", colConc = "conc", 
-          dose = 0, adm = "Extravascular", dur = 0, doseUnit = "mg", 
-          timeUnit = "h", concUnit = "ug/L", down = "Linear", R2ADJ = 0, 
-          MW = 0, SS = FALSE, iAUC = "", excludeDelta = 1, show_progress = TRUE) 
+                             dose = 0, adm = "Extravascular", dur = 0, doseUnit = "mg", 
+                             timeUnit = "h", concUnit = "ug/L", down = "Linear", R2ADJ = 0, 
+                             MW = 0, SS = FALSE, iAUC = "", excludeDelta = 1, show_progress = TRUE) 
 {
   class(concData) = "data.frame"
   nKey = length(key)
@@ -4124,7 +4158,7 @@ search_id_col <- function(orig_df,
 #-------------------------------------------------------------------------------
 
 search_time_col <- function(orig_df,
-                          names_of_time_cols = c("TAFD", "TSFD", "ATFD", "ATSD")) {
+                            names_of_time_cols = c("TAFD", "TSFD", "ATFD", "ATSD")) {
   
   df <- orig_df
   
@@ -4134,7 +4168,7 @@ search_time_col <- function(orig_df,
     } else {
       if(names_of_time_cols[i] %in% names(df)) {
         df <- df %>% dplyr::mutate(TIME = !!dplyr::sym(names_of_time_cols[i])) #%>%
-          #dplyr::select(ID, dplyr::everything())
+        #dplyr::select(ID, dplyr::everything())
         shiny::showNotification(paste0("TIME column has been created from '", names_of_time_cols[i], "' column."), type = "message", duration = 10)
       }
     }
@@ -4309,7 +4343,7 @@ trim_columns <- function(data,
       essential_columns <- c(essential_columns, lloq_colname)
     }
   } # End of "ind_plot" check
-
+  
   # Creates dataset used to plot and dropping any non-unique columns
   data_to_plot <- data %>% 
     dplyr::select(dplyr::all_of(unique(essential_columns)))
@@ -4340,7 +4374,7 @@ exposures_table <- function(input_simulated_table,
                             end_time   = NULL,
                             debug      = FALSE
 ) {
-
+  
   input_simulated_table$YVARNAME <- input_simulated_table[[output_conc]]
   
   # if (debug) {
@@ -4351,7 +4385,7 @@ exposures_table <- function(input_simulated_table,
   #   tmp2 <- input_simulated_table %>% dplyr::filter(TIME <= start_time)
   #   message(dplyr::glimpse(tmp2))
   # }
-
+  
   metrics_table <- input_simulated_table %>% dplyr::filter(TIME >= start_time, TIME <= end_time) %>%
     group_by(ID) %>%
     dplyr::mutate(CMIN = min(YVARNAME, na.rm = TRUE)[1],
@@ -4368,7 +4402,7 @@ exposures_table <- function(input_simulated_table,
     ungroup()
   
   metrics_table <- left_join(metrics_table, tmax_table, by = "ID")
-
+  
   metrics_table  <- metrics_table %>%
     group_by(ID) %>%
     dplyr::mutate(YLAG          = dplyr::lag(YVARNAME),
@@ -4485,3 +4519,110 @@ plot_iiv_exp_data <- function(input_dataset,
   
   return(p)
 }
+
+#-------------------------------------------------------------------------------
+#' @name calculate_quantiles
+#'
+#' @title Function to split a continuous X-variable for a number of quantiles 
+#'
+#' @param df              Name of dataframe
+#' @param xvar            Name of x-axis variable to split by
+#' @param num_quantiles   Number of discrete quantiles
+#'
+#' @returns a dataframe containing the quantile limits
+#' @importFrom dplyr select mutate distinct starts_with
+#' @export
+#-------------------------------------------------------------------------------
+
+calculate_quantiles <- function(df, xvar, num_quantiles) {
+  
+  probs <- seq(1/as.numeric(num_quantiles), 1, length.out = as.numeric(num_quantiles))
+  
+  for (i in seq_along(probs)) {
+    df <- df %>%
+      dplyr::mutate(!!paste0("Q", i) := quantile(.data[[xvar]], probs = probs[i], na.rm = TRUE))
+  }
+  
+  df %>%
+    dplyr::select(starts_with("Q")) %>%
+    dplyr::distinct()
+}
+
+#-------------------------------------------------------------------------------
+#' @name quantile_ranges_name
+#'
+#' @title Function that stores the names and ranges of quantiles as a 
+#' character string to be used in Figure footnotes etc (Not used)
+#'
+#' @param quantiles_df    Name of dataframe containing columns corresponding to number of quantiles
+#' @param df_orig         Name of original dataframe containing the continuous x-axis variable
+#' @param xvar            Name of x-axis variable to split by
+#'
+#' @returns a character string containing the quantile limits
+#' @export
+#-------------------------------------------------------------------------------
+
+quantile_ranges_name <- function(quantiles_df, df_orig, xvar) {
+  range_name <- ""
+  for(i in seq_along(quantiles_df)) {
+    if(i == 1) { # Special case for first quantile
+      range_name <- paste0(range_name, "Q", i, " = [", round(min(df_orig[[xvar]], na.rm = TRUE)), " - ", round(quantiles_df[[names(quantiles_df)[i]]]), "]")
+    } else {
+      range_name <- paste0(range_name, ", Q", i, " = (", round(quantiles_df[[names(quantiles_df)[i-1]]]), " - ", round(quantiles_df[[names(quantiles_df)[i]]]), "]")
+    }
+  }
+  return(range_name)
+}
+
+#-------------------------------------------------------------------------------
+#' @name categorize_xvar
+#'
+#' @title Function that categorizes X-axis variable according to the quantile df
+#'
+#' @param df              Name of dataframe containing columns corresponding to number of quantiles
+#' @param quantiles_df    Name of dataframe containing the quantiles limits
+#' @param xvar            Name of x-axis variable to split by
+#'
+#' @importFrom purrr map2
+#' @importFrom dplyr case_when filter mutate sym syms summarise
+#' @importFrom forcats fct_relevel
+#' @returns a character string containing the quantile limits
+#' @export
+#-------------------------------------------------------------------------------
+
+categorize_xvar <- function(df, quantiles_df, xvar) {
+  
+  # Rename the quantile df to have limits inserted as part of the column name
+  for(i in seq_along(quantiles_df)) {
+    ending_bracket   <- "]" # Note that [ ] means inclusive intervals, ( ) means exclusive intervals
+    if(i == 1) { # Special case for first quantile
+      starting_bracket <- "\n["
+      names(quantiles_df)[i] <- paste0(names(quantiles_df)[i], starting_bracket, round(min(df[[xvar]], na.rm = TRUE)), "-", round(quantiles_df[,1]), ending_bracket)
+    } else {
+      starting_bracket <- "\n("
+      names(quantiles_df)[i] <- paste0(names(quantiles_df)[i], starting_bracket, round(quantiles_df[,..i-1]), "-", round(quantiles_df[,..i]), ending_bracket)
+    }
+  }
+  
+  conditions <- purrr::map2(
+    quantiles_df,
+    names(quantiles_df),
+    ~rlang::expr(!!dplyr::sym(xvar) <= !!.x ~ !!.y)
+  )
+
+  conditions <- c(rlang::expr(is.na(!!dplyr::sym(xvar)) ~ "NA"), conditions)
+
+  df <- df %>%
+    dplyr::mutate(Quantile = dplyr::case_when(!!!conditions)) # triple-bang for list
+  
+  # Rename NAs
+  df <- df %>%
+    dplyr::mutate(Quantile = dplyr::case_when(is.na(Quantile) ~ "NA", TRUE ~ Quantile))
+
+  # Reorder factor levels to place "NA" first
+  df <- df %>%
+   dplyr::mutate(Quantile = forcats::fct_relevel(Quantile, "NA", names(quantiles_df)))
+
+  return(df)
+}
+

@@ -53,6 +53,8 @@ model_switch_conditions <- function(input_model_select, mcode_model_choice) {
     '2 Compartment PK with Absorption Compartment'        = paste0(two_cmt_abs, mcode_model_choice),
     '2 Compartment PK (Michaelis-Menten)'                 = paste0(model_code_2cmt_depot_MM, mcode_model_choice),
     '2 Compartment PK (Target Mediated Drug Disposition)' = paste0(model_code_2cmt_TMDD, mcode_model_choice),
+    '2 Compartment PK (Quasi Equilibrium TMDD)'           = paste0(model_code_2cmt_QE_TMDD, mcode_model_choice),
+    '2 Compartment PK (Michaelis-Menten TMDD)'            = paste0(model_code_2cmt_MM_TMDD, mcode_model_choice),
     '2 Compartment PK/PD (Indirect Effect)'               = paste0(pkpd_te, mcode_model_choice),
     'PK Tumor Growth Inhibition Model'                    = paste0(pk_tgi, mcode_model_choice),
     'KPD Tumor Growth Inhibition Model'                   = paste0(pd_gompertz_effect, mcode_model_choice),
