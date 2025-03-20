@@ -33,7 +33,7 @@
 #' If the user wishes to run the App outside of the function (e.g. preparing for
 #' deployment on Posit Connect), this can be done by accessing inst/shiny/app.R,
 #' which is located inside the folder of where the package was installed, and set
-#' debug_mode = TRUE (and settings these options there as required).
+#' debug_mode = TRUE (and setting these options there as required).
 #'
 #' @param appDir the directory of the application to run.
 ## @param ui the Shiny ui object.

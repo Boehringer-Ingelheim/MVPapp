@@ -1,7 +1,8 @@
 bibentry(
-  bibtype  = "Manual",
-  title    = "MVPapp: Model Visualization Platform",
-  author   = "Steve Choy, Jin Gyu Kim",
-  year     = 2024,
-  url      = "https://github.com/Boehringer-Ingelheim/MVPapp"
+  bibtype  = "article",
+  title    = "Less Is More: Design Considerations for Interactive Pharmacometrics Tools - A Case Study Using the Model Visualization Platform (MVP) App",
+  author   = "Steve Choy, Jin Gyu Kim, Julia Korell",
+  year     = 2025,
+  url      = "https://github.com/Boehringer-Ingelheim/MVPapp",
+  doi      = "10.1002/psp4.70023"
 )

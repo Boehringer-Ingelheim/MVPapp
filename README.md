@@ -336,3 +336,9 @@ Change back to `debug_mode <- FALSE` to allow passing of options via
 The raw data and code used for deriving the populations used in MVP for
 the NHANES, CDC, and WHO databases are available inside the `data-raw`
 folder on Github (note: not included as part of the R-package).
+
+## Related Publication
+
+The design aspects of MVP are further discussed in this [publication in
+CPT:PSP](https://ascpt.onlinelibrary.wiley.com/doi/10.1002/psp4.70023),
+which you may use for citation purposes.

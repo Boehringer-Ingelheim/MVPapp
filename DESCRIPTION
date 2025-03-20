@@ -9,7 +9,7 @@ Description: Model Visualization Platform (MVP) is an intuitive and interactive 
     The goal of MVP is to support initial model development and facilitate internal discussions more efficiently.
     Additional features include parameter sensitivity analysis, displaying NCA metrics using a time range defined by users, basic data exploration, variability assessment, and more.
 License: GPL (>= 3)
-URL: https://github.com/Boehringer-Ingelheim/MVP, https://boehringer-ingelheim.github.io/MVPapp/
+URL: https://github.com/Boehringer-Ingelheim/MVP, https://boehringer-ingelheim.github.io/MVPapp/, https://ascpt.onlinelibrary.wiley.com/doi/10.1002/psp4.70023
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
