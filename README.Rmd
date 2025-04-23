@@ -94,9 +94,13 @@ Uploading NONMEM-formatted datasets (.csv) and tab-delimited text files (.txt) i
 
 4.  Quick data exploration are provided by the "General Plot", "Ind. Plot", and "Corr. Plot" tabs (tip: clicking on the legend can toggle each subgroup on/off when the plot is interactive):  
 
-General plots are flexible plots that can handle continuous/continuous, continuous/discrete (Box plot option), and discrete/discrete (Box plot option) types of data. Settings from General Plots will be carried over to the "Ind. Plot", where users can explore individual profiles in more detail. Dosing information ("EVID", "ADDL", "II", "RATE" columns) can be inserted on each plot when the Dose Column is provided. LLOQ information can also be inserted.
+General plots are flexible plots that can handle continuous/continuous, continuous/discrete (Box plot option), and discrete/discrete (Box plot option) types of data.
 
 ![](www/facet_plot.png)
+
+Settings from General Plots will be carried over to the "Ind. Plot", where users can explore individual profiles in more detail. Dosing information ("EVID", "ADDL", "II", "RATE" columns) can be inserted on each plot when the Dose Column is provided. There are also options to highlight values and automatically identify potential outliers according to a stratification group. LLOQ information can also be inserted.
+
+![](www/ind_plot.png)
 
 Correlation plots are grouped by ID and are useful to explore potential correlations between covariates.  
 

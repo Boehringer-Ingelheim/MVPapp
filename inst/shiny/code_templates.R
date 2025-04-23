@@ -34,6 +34,7 @@ model_examples_list <- c('1 Compartment PK',
                          'Time To Event Model (Log-logistic)',
                          'PKPD with Adaptive Dosing Regimen',
                          'PK with Adaptive Dosing Interval',
+                         'PK with Parallel Zero and First-order Absorption',
                          'PK with Sequential Zero and First-order Absorption',
                          '--------------------------------------------',
                          'Mrgsolve internal model library (modlib())',
@@ -77,6 +78,7 @@ model_switch_conditions <- function(input_model_select, mcode_model_choice) {
     'Time To Event Model (Log-logistic)'                  = paste0(pk_tte_loglogistic, mcode_model_choice),
     'PKPD with Adaptive Dosing Regimen'                   = paste0(pkpd_adaptive_dosing, mcode_model_choice),
     'PK with Adaptive Dosing Interval'                    = paste0(pk_adaptive_dosing_int, mcode_model_choice),
+    'PK with Parallel Zero and First-order Absorption'    = paste0(pk_par_first_order, mcode_model_choice),
     'PK with Sequential Zero and First-order Absorption'  = paste0(pk_seq_first_order, mcode_model_choice),
     #####--------------------------------------------',
     'Mrgsolve internal model library (modlib())'          = modlib_examples,    
@@ -1344,7 +1346,7 @@ TVV2      : 80    : Central volume Vc (L)
 TVV3      : 60    : Peripheral volume Vp (L)
 TVQ       : 4     : Intercompartmental clearance Q (L/h)
 F1        : 1     : Bioavailability (proportion)
-TVDUR     : 4     : Duration of zero order supply
+TVDUR     : 4     : Duration of zero order supply to GUT
 
 $MAIN
 double KA = TVKA*exp(EKA)  ;
@@ -1357,7 +1359,8 @@ double K23 = Q/VC ;
 double K32 = Q/VP ;
 double DUR = TVDUR*exp(EDUR); 
 
-D_GUT = DUR;
+D_GUT  = DUR;
+D_CENT = 0.00001 ; // Workaround to avoid error in MVP
 
 $ODE
 dxdt_GUT     = -KA*GUT;
@@ -1547,6 +1550,78 @@ while(PK <0 && i < 100){
 
 $CAPTURE
 PK 
+"
+', code_postamble)
+
+#-------------------------------------------------------------------------------
+#' Parallel zero and first order absorption model
+#' Adapted from https://github.com/mrgsolve/gallery/blob/master/absorption/parallel.md
+#-------------------------------------------------------------------------------
+
+#' @export
+pk_par_first_order <- paste0(code_preamble, '
+
+"
+$GLOBAL
+  
+$PROB 
+- Parallel zero and first-order absorption 2-cmt PK model
+- Note that dosing regimen must be duplicated i.e. full dose on Regimen 1 & 2,
+- where one input goes to GUT, and the other goes to CENT, i.e. splitting the dose
+
+$CMT 
+GUT
+CENT
+PERI
+AUCx
+
+
+$PARAM @annotated
+TVKA      : 1.2   : Absorption rate constant Ka (1/h) from GUT
+TVCL      : 8     : Clearance CL (L/h)
+TVV2      : 80    : Central volume Vc (L)
+TVV3      : 60    : Peripheral volume Vp (L)
+TVQ       : 4     : Intercompartmental clearance Q (L/h)
+F1        : 1     : Bioavailability (proportion)
+TVDUR     : 4     : Duration of zero order infusion to CENT
+TVFRAC    : 0.4   : Fraction of dose via zero order infusion to CENT
+
+
+$MAIN
+double KA = TVKA*exp(EKA)  ;
+double CL = TVCL  ;
+double VC = TVV2  ;
+double VP = TVV3  ;
+double Q  = TVQ   ;
+double K20 = CL/VC;
+double K23 = Q/VC ;
+double K32 = Q/VP ;
+double DUR = TVDUR*exp(EDUR); 
+
+D_GUT  = 0.00001 ; // Workaround to avoid error in MVP
+D_CENT = DUR;
+F_CENT = TVFRAC;
+F_GUT  = 1 - TVFRAC;
+
+
+$ODE
+dxdt_GUT     = -KA*GUT;
+dxdt_CENT    =  KA*GUT*F1 - K20*CENT - K23*CENT + K32*PERI;
+dxdt_PERI    =  K23*CENT - K32*PERI;
+dxdt_AUCx    = (CENT/VC);
+
+double CP    = CENT/VC;
+
+$OMEGA @labels EKA EDUR
+0.09 
+0.09
+
+$SIGMA @labels  EPSP   EPSA     
+0.01
+0
+
+$TABLE
+capture ICONC         = CP*(1+EPS(1)) + EPS(2);
 "
 ', code_postamble)
 

@@ -11,6 +11,9 @@ do_data_page_ind_plot(
   pagenum = 1,
   filter_id,
   filter_cmt,
+  sort_by,
+  strat_by,
+  highlight_range,
   x_axis,
   y_axis,
   color_by,
@@ -49,6 +52,12 @@ do_data_page_ind_plot(
 \item{filter_id}{Filter by these IDs}
 
 \item{filter_cmt}{Filter by this CMT}
+
+\item{sort_by}{Sort by one or more variables (a list)}
+
+\item{strat_by}{Stratify by 1 variable and highlight outliers}
+
+\item{highlight_range}{Flag potential outliers when they are higher or below this mean value of the group, a string}
 
 \item{x_axis}{X-axis for plot}
 

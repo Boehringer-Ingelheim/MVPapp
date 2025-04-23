@@ -9,6 +9,8 @@ trim_columns(
   x_axis,
   y_axis,
   color = "",
+  sort_by = NULL,
+  strat_by = "",
   type_of_plot,
   facet_name = NULL,
   insert_med_line = FALSE,
@@ -26,6 +28,10 @@ trim_columns(
 \item{y_axis}{Y-axis column name used for plotting}
 
 \item{color}{(optional) Color by column}
+
+\item{sort_by}{(optional) A list of columns to sort by}
+
+\item{strat_by}{(optional) A variable to flag outliers by}
 
 \item{type_of_plot}{"general_plot", "ind_plot", "sim_plot"}
 

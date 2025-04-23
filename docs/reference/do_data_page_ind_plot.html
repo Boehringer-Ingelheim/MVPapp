@@ -11,7 +11,7 @@ discrete/discrete type of data to cover most use cases."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.17</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.18</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,6 +57,9 @@ discrete/discrete type of data to cover most use cases.</p>
 <span>  pagenum <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="va">filter_id</span>,</span>
 <span>  <span class="va">filter_cmt</span>,</span>
+<span>  <span class="va">sort_by</span>,</span>
+<span>  <span class="va">strat_by</span>,</span>
+<span>  <span class="va">highlight_range</span>,</span>
 <span>  <span class="va">x_axis</span>,</span>
 <span>  <span class="va">y_axis</span>,</span>
 <span>  <span class="va">color_by</span>,</span>
@@ -108,6 +111,18 @@ discrete/discrete type of data to cover most use cases.</p>
 
 <dt id="arg-filter-cmt">filter_cmt<a class="anchor" aria-label="anchor" href="#arg-filter-cmt"></a></dt>
 <dd><p>Filter by this CMT</p></dd>
+
+
+<dt id="arg-sort-by">sort_by<a class="anchor" aria-label="anchor" href="#arg-sort-by"></a></dt>
+<dd><p>Sort by one or more variables (a list)</p></dd>
+
+
+<dt id="arg-strat-by">strat_by<a class="anchor" aria-label="anchor" href="#arg-strat-by"></a></dt>
+<dd><p>Stratify by 1 variable and highlight outliers</p></dd>
+
+
+<dt id="arg-highlight-range">highlight_range<a class="anchor" aria-label="anchor" href="#arg-highlight-range"></a></dt>
+<dd><p>Flag potential outliers when they are higher or below this mean value of the group, a string</p></dd>
 
 
 <dt id="arg-x-axis">x_axis<a class="anchor" aria-label="anchor" href="#arg-x-axis"></a></dt>

@@ -44,7 +44,7 @@ as an object - see examples below for its correct usage.
 If the user wishes to run the App outside of the function (e.g. preparing for
 deployment on Posit Connect), this can be done by accessing inst/shiny/app.R,
 which is located inside the folder of where the package was installed, and set
-debug_mode = TRUE (and settings these options there as required).
+debug_mode = TRUE (and setting these options there as required).
 }
 \note{
 Adapted from https://github.com/jbryer/ShinyDemo/blob/master/R/run_shiny_app.R

@@ -13,6 +13,7 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/calc_summary_stats.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/calc_summary_stats_as_list.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/calculate_quantiles.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/categorize_outliers.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/categorize_xvar.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/cdc.expand.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/check_and_combine_df.html</loc></url>
@@ -23,6 +24,7 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/compare_dist_histogram.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/convert_to_plotly_watermark.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/create_alert.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/create_facet_label.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/create_value_box.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/do_data_page_ind_plot.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/do_data_page_plot.html</loc></url>
@@ -53,6 +55,7 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/pdfNCA_wm.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/pipe.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/pk_adaptive_dosing_int.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/pk_par_first_order.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/pk_seq_first_order.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/pknca_table.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/pkpd_adaptive_dosing.html</loc></url>

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.17</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.18</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -136,8 +136,8 @@ visualization of the results for datasets with a lot of columns.</p>
 </h2>
 <p><em>Note: NCA functionality is currently only applicable for single
 ascending dose (SAD) studies or its equivalent where each subject will
-only receive one dose. If that’s not the case, skip this
-section.</em></p>
+only receive one dose in a single compartment. If that’s not the case,
+skip this section.</em></p>
 <ol style="list-style-type: decimal">
 <li>Column names for Time, Concentration, Dose will be pre-filled after
 a dataset is uploaded (user can adjust as they see fit).<br>
@@ -257,14 +257,26 @@ also be inserted.</li>
 <li>(Optional) BLQ information can be inserted by providing the “LLOQ
 Column”, which will then be shown as horizontal dashed orange
 lines.</li>
-<li>(Optional) Highlight any specific number of subjects to be viewed by
+<li>(Optional) Select any specific number of subjects to be viewed by
 using the “Select ID(s)” option. When any subjects are selected this
 way, the page, row and column options will be ignored.</li>
 <li>(Optional) The “Flag Variable” option allows the user to select a
 variable, and any of its associated values, to be flagged as an red
 asterix (<strong><code>*</code></strong>) on the plot, for further
 visualization beyond the “Color by” option.</li>
+<li>(Optional) The “Flag Outliers” option allows the user to select a
+stratification group, and combined with the “Outlier Threshold” option,
+<strong>potential outliers will be automatically highlighted in their
+subplot ID label</strong>. The method of determining whether a subject
+is an outlier is done by deriving the arithmetic mean of all Y-axis
+values, and compare it to the entire group’s arithmetic mean. If the
+subject’s mean value is above/below X% of the group, the subject will be
+considered an outlier.</li>
 </ol>
+<p>💡 To visualize and/or highlight BLQ values, make sure the built-in
+filter option to remove BLQ values on the left hand side of the page is
+<strong>unchecked</strong> (“Built-in Dataset Cleaning Options” box -
+click on the “+” icon to expand the box)!</p>
 <p>💡 All individual profiles can be downloaded by clicking on the
 “Generate All Individuals” button which is located directly below the
 plot. Plot dimensions can be adjusted by expanding the “Download
@@ -287,7 +299,7 @@ be categorical and converted into a factor for plotting.</p>
 the data, assisting sanity checks and easily pinpoint outliers or
 potential errors. While this does not replace a more rigorous
 (i.e. scripted) EDA, the provided features serves as a great
-“first-pass” and could massively reduce turnaround time of queries back
+“first-pass” and should massively reduce turnaround time of queries back
 to data programmers.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

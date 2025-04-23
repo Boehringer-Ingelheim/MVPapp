@@ -44,7 +44,7 @@ Quick summary statistics are now available on the "Summary Statistics" tab on th
 
 ## Descriptive Statistics (NCA)
 
-_Note: NCA functionality is currently only applicable for single ascending dose (SAD) studies or its equivalent where each subject will only receive one dose. If that's not the case, skip this section._
+_Note: NCA functionality is currently only applicable for single ascending dose (SAD) studies or its equivalent where each subject will only receive one dose in a single compartment. If that's not the case, skip this section._
 
 1. Column names for Time, Concentration, Dose will be pre-filled after a dataset is uploaded (user can adjust as they see fit).  
 2. Provide a "Group by Additional Column" variable to sort by the defined grouping in the table output.  
@@ -84,7 +84,7 @@ Count plots are considered a special case of box plot where the y-axis variable 
 
 __This will be triggered automatically when any of these two conditions are met__. The size of the circle reflects the number of unique subjects belonging to that subset, which is also displayed in a text label.  
 
-`r "\U0001F4A1"` Currently if the "Color by" option is used, a known issue is that the circles would be stacked on top of each other. A workaround is to use the Interactive Plot option and hover over the circle to obtain count sizes of the "hidden" circles.
+`r "\U0001F4A1"` Currently if the "Color by" option is used, a known issue is that the circles would be stacked on top of each other. A workaround is to use the Interactive Plot option and hover over the circle to obtain count sizes of the "hidden" circles.  
 
 
 ## Individual Plots
@@ -94,8 +94,11 @@ Most options in the "Ind. Plot" tab are carried over from the "General Plot" tab
 1. By default, 9 subjects are displayed per page. Adjust the "Rows per Page" and "Columns per Page" accordingly to change the number of subjects per page. Note that the Page selector will be updated dynamically to reflect any changes in rows and columns.  
 2. (Optional) Dosing information is enabled by default, which searches for the `EVID`, `ADDL`, and `II` columns, and inserts dosing lines for each subject. The height of the dosing lines are scaled by their relative amount that is given by the "Dose Column", and each unique dose will be labeled as text. If the `RATE` column is present, the dosing lines will be extended accordingly to the infusion duration. An optional unit for the dose can also be inserted.
 3. (Optional) BLQ information can be inserted by providing the "LLOQ Column", which will then be shown as horizontal dashed orange lines.
-4. (Optional) Highlight any specific number of subjects to be viewed by using the "Select ID(s)" option. When any subjects are selected this way, the page, row and column options will be ignored.
+4. (Optional) Select any specific number of subjects to be viewed by using the "Select ID(s)" option. When any subjects are selected this way, the page, row and column options will be ignored.
 5. (Optional) The "Flag Variable" option allows the user to select a variable, and any of its associated values, to be flagged as an red asterix (**`*`**) on the plot, for further visualization beyond the "Color by" option.
+6. (Optional) The "Flag Outliers" option allows the user to select a stratification group, and combined with the "Outlier Threshold" option, __potential outliers will be automatically highlighted in their subplot ID label__. The method of determining whether a subject is an outlier is done by deriving the arithmetic mean of all Y-axis values, and compare it to the entire group's arithmetic mean. If the subject's mean value is above/below X% of the group, the subject will be considered an outlier.
+
+`r "\U0001F4A1"` To visualize and/or highlight BLQ values, make sure the built-in filter option to remove BLQ values on the left hand side of the page is __unchecked__ ("Built-in Dataset Cleaning Options" box - click on the "+" icon to expand the box)!  
 
 `r "\U0001F4A1"` All individual profiles can be downloaded by clicking on the "Generate All Individuals" button which is located directly below the plot. Plot dimensions can be adjusted by expanding the "Download Options" box on the bottom right side of the page.
 
@@ -108,4 +111,4 @@ Correlation between variables can be quickly assessed in this tab, using the `GG
 
 ## Summary
 
-The Data Input page of MVP offers the ability to effortlessly review the data, assisting sanity checks and easily pinpoint outliers or potential errors. While this does not replace a more rigorous (i.e. scripted) EDA, the provided features serves as a great "first-pass" and could massively reduce turnaround time of queries back to data programmers.
+The Data Input page of MVP offers the ability to effortlessly review the data, assisting sanity checks and easily pinpoint outliers or potential errors. While this does not replace a more rigorous (i.e. scripted) EDA, the provided features serves as a great "first-pass" and should massively reduce turnaround time of queries back to data programmers.

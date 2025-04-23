@@ -5,7 +5,7 @@
 \alias{model_examples_list}
 \title{List of template models available for all users}
 \format{
-An object of class \code{character} of length 23.
+An object of class \code{character} of length 24.
 }
 \usage{
 model_examples_list

@@ -1,3 +1,19 @@
+# MVPapp 0.2.18 (2025-04-21)
+
+## Features
+
+* New option for individual plots to identify outliers (#36)
+* New option for individual plots to sort by one or more variables (#35)
+* Additional tooltips for several options
+* Separate plot titles for general and individual plots
+* New template model (Parallel zero/first-order absorption model)
+
+## Bugfixes
+
+* Fixed a bug where NCA would fail if dosing rows are not excluded by default (#33)
+* Safeguard for simulating too many samples, with a default value of max 20000 samples (#32)
+* NCA is now sorted by the grouping variable, followed by the dose column (#34)
+
 # MVPapp 0.2.17 (2025-03-13)
 
 ## Features

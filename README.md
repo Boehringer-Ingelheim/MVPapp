@@ -163,13 +163,18 @@ rename these columns using the code editor.
 
 General plots are flexible plots that can handle continuous/continuous,
 continuous/discrete (Box plot option), and discrete/discrete (Box plot
-option) types of data. Settings from General Plots will be carried over
-to the “Ind. Plot”, where users can explore individual profiles in more
-detail. Dosing information (“EVID”, “ADDL”, “II”, “RATE” columns) can be
-inserted on each plot when the Dose Column is provided. LLOQ information
-can also be inserted.
+option) types of data.
 
 ![](www/facet_plot.png)
+
+Settings from General Plots will be carried over to the “Ind. Plot”,
+where users can explore individual profiles in more detail. Dosing
+information (“EVID”, “ADDL”, “II”, “RATE” columns) can be inserted on
+each plot when the Dose Column is provided. There are also options to
+highlight values and automatically identify potential outliers according
+to a stratification group. LLOQ information can also be inserted.
+
+![](www/ind_plot.png)
 
 Correlation plots are grouped by ID and are useful to explore potential
 correlations between covariates.

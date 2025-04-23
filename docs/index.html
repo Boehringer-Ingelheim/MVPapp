@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.17</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.18</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -144,8 +144,10 @@
 <ol start="4" style="list-style-type: decimal">
 <li>Quick data exploration are provided by the “General Plot”, “Ind. Plot”, and “Corr. Plot” tabs (tip: clicking on the legend can toggle each subgroup on/off when the plot is interactive):</li>
 </ol>
-<p>General plots are flexible plots that can handle continuous/continuous, continuous/discrete (Box plot option), and discrete/discrete (Box plot option) types of data. Settings from General Plots will be carried over to the “Ind. Plot”, where users can explore individual profiles in more detail. Dosing information (“EVID”, “ADDL”, “II”, “RATE” columns) can be inserted on each plot when the Dose Column is provided. LLOQ information can also be inserted.</p>
+<p>General plots are flexible plots that can handle continuous/continuous, continuous/discrete (Box plot option), and discrete/discrete (Box plot option) types of data.</p>
 <p><img src="www/facet_plot.png"></p>
+<p>Settings from General Plots will be carried over to the “Ind. Plot”, where users can explore individual profiles in more detail. Dosing information (“EVID”, “ADDL”, “II”, “RATE” columns) can be inserted on each plot when the Dose Column is provided. There are also options to highlight values and automatically identify potential outliers according to a stratification group. LLOQ information can also be inserted.</p>
+<p><img src="www/ind_plot.png"></p>
 <p>Correlation plots are grouped by ID and are useful to explore potential correlations between covariates.</p>
 <p><img src="www/corr_plot.png"></p>
 <p><strong>Note: once a dataset is uploaded, its display can be toggled on other pages by checking the “Overlay Dataset” checkbox in the “Plotting Options” in each respective page!</strong></p>
@@ -272,6 +274,11 @@
 </h3>
 <p>The raw data and code used for deriving the populations used in MVP for the NHANES, CDC, and WHO databases are available inside the <code>data-raw</code> folder on Github (note: not included as part of the R-package).</p>
 </div>
+</div>
+<div class="section level2">
+<h2 id="related-publication">Related Publication<a class="anchor" aria-label="anchor" href="#related-publication"></a>
+</h2>
+<p>The design aspects of MVP are further discussed in this <a href="https://ascpt.onlinelibrary.wiley.com/doi/10.1002/psp4.70023" class="external-link">publication in CPT:PSP</a>, which you may use for citation purposes.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

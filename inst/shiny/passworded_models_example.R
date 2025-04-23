@@ -62,6 +62,7 @@ model_switch_conditions <- function(input_model_select, mcode_model_choice) {
     'Time To Event Model (Weibull)'                       = paste0(pk_tte_weibull, mcode_model_choice),
     'Time To Event Model (Log-logistic)'                  = paste0(pk_tte_loglogistic, mcode_model_choice),
     'PKPD with Adaptive Dosing Regimen'                   = paste0(pkpd_adaptive_dosing, mcode_model_choice),
+    'PK with Parallel Zero and First-order Absorption'    = paste0(pk_par_first_order, mcode_model_choice),
     'PK with Adaptive Dosing Interval'                    = paste0(pk_adaptive_dosing_int, mcode_model_choice),
     'PK with Sequential Zero and First-order Absorption'  = paste0(pk_seq_first_order, mcode_model_choice),
     #'------------------------------------------'

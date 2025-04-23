@@ -560,6 +560,9 @@ do_data_page_plot <- function(nmd,
 #' @param colnums How many cols per page
 #' @param filter_id Filter by these IDs
 #' @param filter_cmt Filter by this CMT
+#' @param sort_by Sort by one or more variables (a list)
+#' @param strat_by Stratify by 1 variable and highlight outliers
+#' @param highlight_range Flag potential outliers when they are higher or below this mean value of the group, a string
 #' @param x_axis X-axis for plot
 #' @param y_axis Y-axis for plot
 #' @param color_by Color by this column
@@ -591,12 +594,13 @@ do_data_page_plot <- function(nmd,
 #' @importFrom ggplot2 ggplot aes geom_point geom_line xlab ylab theme_bw labs scale_size_area
 #' @importFrom ggplot2 stat_summary stat_smooth scale_y_log10 scale_x_log10 after_stat geom_count
 #' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap geom_boxplot label_both
-#' @importFrom ggplot2 scale_color_manual geom_rect coord_cartesian
+#' @importFrom ggplot2 scale_color_manual geom_rect coord_cartesian scale_fill_manual
 #' @importFrom scales hue_pal
-#' @importFrom dplyr filter distinct sym group_by summarise across all_of count ungroup mutate any_of case_when
+#' @importFrom dplyr filter distinct sym syms group_by summarise across all_of count ungroup mutate any_of case_when rowwise
 #' @importFrom tibble glimpse
 #' @importFrom forcats fct_inorder
 #' @importFrom ggrepel geom_text_repel
+#' @importFrom purrr map_chr
 #' @export
 #-------------------------------------------------------------------------------
 
@@ -606,6 +610,9 @@ do_data_page_ind_plot <- function(nmd,
                                   pagenum = 1,
                                   filter_id,
                                   filter_cmt,
+                                  sort_by,
+                                  strat_by,
+                                  highlight_range,
                                   x_axis,
                                   y_axis,
                                   color_by,
@@ -641,6 +648,27 @@ do_data_page_ind_plot <- function(nmd,
   if(filter_cmt != 'NULL') {
     nmd <- nmd %>% dplyr::filter(CMT %in% filter_cmt)
   }
+  
+  # Check if any columns are selected for sorting, otherwise uses ID as default
+  if (length(sort_by) > 0) {
+    # Dynamically create the labeling column (facet_label) based on sort_by
+    nmd <- create_facet_label(df = nmd, sort_by = sort_by)
+  } else {
+    nmd <- nmd %>% dplyr::arrange(ID) %>%
+      mutate(facet_label = paste0("ID: ", ID))
+  }
+
+  # Calculate outliers
+  if(!is.null(strat_by) && strat_by != '' && !boxplot) {
+    nmd <- categorize_outliers(df              = nmd,
+                               highlight_range = highlight_range,
+                               y_axis          = y_axis,
+                               strat_by        = strat_by,
+                               debug           = debug)
+  } # end of calculate outliers
+  
+  # Create a new factor for ID with levels in the order they appear in the sorted data frame
+  nmd$facet_label <- factor(nmd$facet_label, levels = unique(nmd$facet_label))
   
   if(color_by != "") {
     if(all(is.na(nmd[[color_by]]))) {
@@ -710,7 +738,7 @@ do_data_page_ind_plot <- function(nmd,
     # Scaling the dose such that it is plotted nicely with the maximum dose at height dose_height of the maximum y variable
     # A new column SAMT (Scaled AMT) is created which will be used for plotting the geom_rect
     nmd <- nmd %>%
-      group_by(ID) %>%
+      group_by(facet_label) %>% # group_by(ID)
       mutate(
         max_dose       = max(NAMT, na.rm = TRUE),
         min_xvar       = round(min(XVAR, na.rm = TRUE), digits = 3),
@@ -789,7 +817,8 @@ do_data_page_ind_plot <- function(nmd,
     }
     
     # Gets unique dose amount rows
-    id_dose_unique <- id_dose_expand %>% distinct(ID, !!dplyr::sym(dose_col), .keep_all = TRUE)
+    #id_dose_unique <- id_dose_expand %>% distinct(ID, !!dplyr::sym(dose_col), .keep_all = TRUE)
+    id_dose_unique <- id_dose_expand %>% distinct(facet_label, !!dplyr::sym(dose_col), .keep_all = TRUE)
     id_dose_unique[[dose_col]] <- as.numeric(as.character(id_dose_unique[[dose_col]])) # in case dose_col is picked for Color by
     id_dose_unique <- id_dose_unique %>% mutate(dosename = paste0(round(.[[dose_col]], digits = 2), dose_units))
     
@@ -800,11 +829,14 @@ do_data_page_ind_plot <- function(nmd,
     nmd <- nmd %>% filter(EVID == 0)
   }
   
+  # Start of ggplot initialization
   if(color_by != "" && !boxplot & !all(is.na(nmd[[color_by]]))) {
     a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID, color = !!dplyr::sym(color_by))) +
       ggplot2::scale_color_manual(values = named_color_vector)
+    
   } else {
     a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID))
+    
   }
   
   if(boxplot) {
@@ -1012,18 +1044,18 @@ do_data_page_ind_plot <- function(nmd,
     if(facet_name == x_axis) {
       shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
     } else {
-      facet_formula <- as.formula(paste0("~", facet_name))
+      #facet_formula <- as.formula(paste0("~", facet_name)) # not used after replaced by "facet_label" column
       if(is.null(filter_id[1]) || filter_id[1] == "") {
         if(same_scale) {
-          a <- a + ggplot2::facet_wrap(facet_formula, labeller = ggplot2::label_both, nrow = rownums, ncol = colnums, scales = "fixed")
+          a <- a + ggplot2::facet_wrap(~facet_label, nrow = rownums, ncol = colnums, scales = "fixed") # labeller = ggplot2::label_both
         } else {
-          a <- a + ggplot2::facet_wrap(facet_formula, labeller = ggplot2::label_both, nrow = rownums, ncol = colnums, scales = "free")
+          a <- a + ggplot2::facet_wrap(~facet_label, nrow = rownums, ncol = colnums, scales = "free") # labeller = ggplot2::label_both
         }
       } else {
         if(same_scale) {
-          a <- a + ggplot2::facet_wrap(facet_formula, labeller = ggplot2::label_both, scales = "fixed") 
+          a <- a + ggplot2::facet_wrap(~facet_label, scales = "fixed") # labeller = ggplot2::label_both
         } else {
-          a <- a + ggplot2::facet_wrap(facet_formula, labeller = ggplot2::label_both, scales = "free")   
+          a <- a + ggplot2::facet_wrap(~facet_label, scales = "free") # labeller = ggplot2::label_both  
         }
       }
     }
@@ -1068,7 +1100,7 @@ do_data_page_ind_plot <- function(nmd,
     
     a <- a + ggplot2::coord_cartesian(xlim = cc_xlim ,
                                       ylim = cc_ylim)
-  }
+  } # end of same_scale
   
   if (!is.null(plot_title)) {
     a <- a +
@@ -1254,9 +1286,9 @@ run_single_sim <- function(input_model_object,
     ### If reading in Databases:
     if(nsubj > 1 & !is.null(ext_db)) { # Note that ext_db is not NULL even for "None" option
       
-      # Extract list of columns in ext_db to be carried out
-      carry_out_cols <- names(ext_db)
-      carry_out_cols <- carry_out_cols[carry_out_cols != "ID"]
+      # Extract list of columns in ext_db to be carried out (not used any more)
+      #carry_out_cols <- names(ext_db)
+      #carry_out_cols <- carry_out_cols[carry_out_cols != "ID"]
       
       # Joining ext_db with ev_df
       ev_df2 <- ev_df %>%
@@ -2314,7 +2346,7 @@ pknca_table <- function(input_simulated_table,
     message(dplyr::glimpse(tmp2))
   }
   
-  ### Repeat metrics for time range
+  ### Repeat metrics for time range # note that the time range is inclusive on both ends
   metrics_table_time <- input_simulated_table %>% dplyr::filter(TIME >= start_time, TIME <= end_time) %>%
     dplyr::mutate(CMIN = min(YVARNAME, na.rm = TRUE)[1],
                   CMAX = max(YVARNAME, na.rm = TRUE)[1], ### First element if multiple values found
@@ -4241,10 +4273,10 @@ expand_addl_ii <- function(data, x_axis, dose_col, debug = FALSE) {
     df$RATE <- as.numeric(as.character(data$RATE))
     
     df <- df %>% 
-      select(ID, DOSETIME, !!dplyr::sym(x_axis), !!dplyr::sym(dose_col), NAMT, SAMT, min_yvar, RATE)
+      select(ID, facet_label, DOSETIME, !!dplyr::sym(x_axis), !!dplyr::sym(dose_col), NAMT, SAMT, min_yvar, RATE)
   } else {
     df <- df %>%
-      select(ID, DOSETIME, !!dplyr::sym(x_axis), !!dplyr::sym(dose_col), NAMT, SAMT, min_yvar)
+      select(ID, facet_label, DOSETIME, !!dplyr::sym(x_axis), !!dplyr::sym(dose_col), NAMT, SAMT, min_yvar)
   }
   
   return(df)
@@ -4261,6 +4293,8 @@ expand_addl_ii <- function(data, x_axis, dose_col, debug = FALSE) {
 #' @param x_axis X-axis column name used for plotting
 #' @param y_axis Y-axis column name used for plotting
 #' @param color (optional) Color by column
+#' @param sort_by (optional) A list of columns to sort by
+#' @param strat_by (optional) A variable to flag outliers by
 #' @param type_of_plot "general_plot", "ind_plot", "sim_plot"
 #' @param facet_name (optional) column(s) to facet by
 #' @param insert_med_line (optional) insert median line
@@ -4278,6 +4312,8 @@ trim_columns <- function(data,
                          x_axis,
                          y_axis,
                          color = "",
+                         sort_by = NULL,
+                         strat_by = "",
                          type_of_plot,
                          facet_name = NULL,
                          insert_med_line = FALSE,
@@ -4321,6 +4357,14 @@ trim_columns <- function(data,
     
     if(ind_dose_colname != "") {
       essential_columns <- c(essential_columns, ind_dose_colname)
+    }
+    
+    if(length(sort_by) > 0) {
+      essential_columns <- c(essential_columns, unlist(sort_by))
+    }
+    
+    if(!is.na(strat_by) && strat_by != '') {
+      essential_columns <- c(essential_columns, strat_by)
     }
     
     if(all(c("ADDL", "II") %in% colnames(data))) {
@@ -4626,3 +4670,120 @@ categorize_xvar <- function(df, quantiles_df, xvar) {
   return(df)
 }
 
+#-------------------------------------------------------------------------------
+#' @name create_facet_label
+#'
+#' @title Function that combines multiple columns to create a new one that contains
+#' the facet labels
+#'
+#' @param df              Name of input dataframe
+#' @param sort_by         A list containing columns to create label by. Uses first row only
+#'
+#' @importFrom dplyr group_by slice arrange syms rowwise mutate c_across all_of ungroup select
+#' @importFrom dplyr left_join filter
+#' @returns a dataframe with the new column called "facet_label"
+#' @export
+#-------------------------------------------------------------------------------
+
+create_facet_label <- function(df, sort_by) {
+  
+  if(length(sort_by) == 1 && sort_by == "ID") { # Edge case
+    df <- df %>%
+      dplyr::mutate(facet_label = paste0("ID: ", ID))
+  } else {
+    
+    # Remove "ID" from sort_by if it exists
+    sort_by <- setdiff(sort_by, "ID")
+    
+    df <- df %>% dplyr::arrange(!!!dplyr::syms(sort_by))
+    
+    # Group by ID, then slice to keep only the first row of each group
+    df_first <- df %>%
+      dplyr::distinct(ID, .keep_all = TRUE)
+    
+    # Create the facet_label using the first row values of each ID group
+    df_first <- df_first %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(
+        facet_label = paste0("ID: ", ID, ", ", sapply(unlist(sort_by), function(col_name) {
+          col_value <- dplyr::c_across(dplyr::all_of(col_name))
+          paste0(col_name, ": ", col_value)
+        }) 
+        %>% paste(collapse = ", ")
+        )
+      ) %>%
+      dplyr::ungroup() %>%
+      dplyr::select(ID, facet_label)
+    
+    df <- dplyr::left_join(df, df_first, by = "ID")
+  }
+  return(df)
+}
+
+#-------------------------------------------------------------------------------
+#' @name categorize_outliers
+#'
+#' @title Function that categorizes outliers relative to a supplied stratification
+#' group
+#'
+#' @param df              Name of input dataframe
+#' @param highlight_range A character string in percentage e.g. "80%" to define outlier threshold
+#' @param y_axis          Y-axis to derive the arithmetic mean for ID and group
+#' @param strat_by        Column name to be used as a stratification variable for group
+#' @param debug           Show debugging messages
+#'
+#' @importFrom dplyr group_by sym summarise ungroup left_join mutate case_when
+#' @returns a dataframe with the new column called "outlier_status", with three categories: "Above", "Below", "Within"
+#' @export
+#-------------------------------------------------------------------------------
+
+categorize_outliers <- function(df,
+                                highlight_range,
+                                y_axis,
+                                strat_by,
+                                debug = FALSE) {
+  
+  # Remove the percentage sign and convert to numeric
+  highlight_numeric <- as.numeric(gsub("%", "", highlight_range)) / 100
+  
+  if(!is.character(df[[y_axis]])) {
+    group_means <- df %>%
+      dplyr::group_by(!!dplyr::sym(strat_by)) %>%
+      dplyr::summarise(meanYVARGRP = mean(!!dplyr::sym(y_axis))) %>%
+      dplyr::ungroup()
+    
+    id_means <- df %>%
+      dplyr::group_by(ID) %>%
+      dplyr::summarise(meanYVARID = mean(!!dplyr::sym(y_axis))) %>%
+      dplyr::ungroup()
+    
+    # Join it back to main df
+    df <- dplyr::left_join(df, group_means, by = strat_by)
+    df <- dplyr::left_join(df, id_means,    by = "ID")
+    
+    df <- df %>%
+      dplyr::mutate(outlier_status = dplyr::case_when(
+        meanYVARID > (meanYVARGRP * (1 + highlight_numeric)) ~ "Above",
+        meanYVARID < (meanYVARGRP * (1 - highlight_numeric)) ~ "Below",
+        TRUE                                                 ~ "Within")
+      )
+  } else { # Do nothing if Y-axis is of character type
+    df <- df %>%
+      dplyr::mutate(outlier_status = "Within")
+  }
+  
+  df <- df %>%
+    dplyr::mutate(facet_label = dplyr::case_when(
+      outlier_status == "Above" ~ paste0("**>", highlight_numeric * 100,"%** ", facet_label), # paste0(facet_label, " [>", highlight_numeric * 100, "%]")
+      outlier_status == "Below" ~ paste0("**<", (1 - highlight_numeric) * 100,"%** ", facet_label), # paste0(facet_label, " [<", (1 - highlight_numeric) * 100, "%]")
+      outlier_status == "Within"~ facet_label
+    ))
+  
+  if(debug) {
+    message("categorize_outliers done")
+    # Check levels in the data
+    #print(levels(nmd$outlier_status))
+  }
+  
+  return(df)
+}

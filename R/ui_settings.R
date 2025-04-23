@@ -10,7 +10,11 @@ mainbar_width         <- 12 - sidebar_width
 #' @export
 debounce_timer_fast   <- 500
 #' @export
-debounce_timer_slow   <- 800
+debounce_timer_slow   <- 900
+#' @export
+max_samples           <- 25000 # Max samples = max sampling time * frequency of samples
+#' @export
+highlight_range       <- 0.8 # Determines the threshold of highlight in fraction. 0.5 means 50% above/below strat mean
 
 # Colours
 #' @export
@@ -107,7 +111,7 @@ bspop_do_data_plotly  <- 'Interactive plots using the "plotly" package could tak
 #' @export
 label_fixed_scale     <- 'Same Scale'
 #' @export
-bspop_fixed_scale     <- 'Check to ensure the same scale is used for all plots, otherwise uncheck to allow free X- and Y- scaling for each sub-plot.<br><br>Note: For Log axis, the same scale is used for plots on the same page only.'
+bspop_fixed_scale     <- 'Check to ensure the same scale is used for all plots, otherwise uncheck to allow free X- and Y- scaling for each sub-plot.' # <br><br>Note: For Log axis, the same scale is used for plots on the same page only.'
 #' @export
 label_insert_dosing   <- 'Show Dose Info'
 #' @export
@@ -121,7 +125,7 @@ label_dose_units      <- 'Dose Units'
 #' @export
 bspop_dose_units      <- '(Optional) Provide units to be appended on to the text label.'
 #' @export
-label_lloq_colname    <- 'LLOQ Column'
+label_lloq_colname    <- 'LLOQ Column' # shiny::HTML(paste0("LLOQ Column <i class='fa fa-question-circle' title='(Optional) Provide LLOQ/BLQ column to be plotted as a dashed horizontal line. Not applicable for boxplots.' style='margin-left: 3px;'></i>"))
 #' @export
 bspop_lloq_colname    <- '(Optional) Provide LLOQ/BLQ column to be plotted as dashed horizontal lines.'
 
@@ -152,7 +156,19 @@ label_filter_by_id      <- 'Select ID(s):'
 #' @export
 bspop_filter_by_id      <- '(Optional) Page, Row, and Column settings will be ignored when any IDs are selected.'
 #' @export
-label_highlight         <- 'Flag Variable:'
+label_sort_by_ind       <- shiny::HTML(paste0("Sort by: <i class='fa fa-question-circle' title='(Optional) Arrange the order of plots by one or more variables (default is ID only). Note: First value of each ID is used (not time-varying).' style='margin-left: 3px;'></i>"))
+#' @export
+bspop_sort_by_ind       <- '(Optional) Arrange the order of plots by one or more variables (default is ID only).<br><br>Note: First value of each ID is used (not time-varying).'
+#' @export
+label_strat_by_ind      <- shiny::HTML(paste0("Flag Outliers by: <i class='fa fa-question-circle' title='(Optional) Try to stratify by a group where potential outliers (more than X% above/below the arithmetic mean of the group) will be appended to the ID label. Not applicable for box plots.' style='margin-left: 3px;'></i>"))
+#' @export
+bspop_strat_by_ind      <- '(Optional) Stratify by a grouping variable (usually a dose group).<br><br>Note: First value of each ID is used for stratifying (not time-varying).'
+#' @export
+label_outlier_threshold <- 'Outlier Threshold:'
+#' @export
+bspop_outlier_threshold <- '(Optional) Define a threshold (%) where if the arithmetic mean of the Y-axis of an ID is above/below the corresponding stratification group by this %, that ID will be flagged as a potential outlier. Only applicable when Flag Outliers is used.'
+#' @export
+label_highlight         <- shiny::HTML(paste0("Flag Variable: <i class='fa fa-question-circle' title='(Optional) First select a variable and then choose any of its value(s) to be highlighted in bigger asterisks. Not applicable for boxplots.' style='margin-left: 3px;'></i>"))
 #' @export
 bspop_highlight_var     <- '(Optional) First select a variable and then choose any of its value(s) to be highlighted in bigger asterisks (only applicable for non-boxplots).'
 #' @export
@@ -215,6 +231,8 @@ label_total_doses     <- 'Total Doses'
 label_ii              <- 'Dosing Interval'
 #' @export
 bspop_time_units      <- 'Time units are dependent on model code, which are typically in hours'
+#' @export
+bspop_time_sampling   <- paste0('Time units are dependent on model code, which are typically in hours.<br><br>Note: Total samples (i.e. Max Sampling Time * Sampling Frequency) should not exceed ', max_samples, ' to avoid memory issues.')
 
 #' @export
 label_infdur          <- 'Inf. Duration'
@@ -349,6 +367,9 @@ dp_checkbox_name      <- "Use decimal places"
 #' @export
 bspop_dp_checkbox     <- "By default the rounding uses significant digits. Check this box to use rounding by decimal places instead."
 
+#' @export
+bspop_select_time_interval <- "(Optional) Select the desired time intervals to derive metrics shown on the left hand side of the page (e.g. for partial AUC). The original time scale is provided for selection, independent of whether any scaling of the x-axis from the Simulation page was performed.<br><br>Note: The time interval is inclusive on both ends (i.e. start time <= time interval <= end time)."
+
 #### Page 5 Variability
 #' @export
 bspop_varmat          <- 'Initial values are carried over from the Simulation Tab. For the first model in the session, click on "Update Model" to initialize the plot.<br><br>As long as it is the same model, the plot will be refreshed whenever fixed effects ($PARAM), dosing, or demographics are updated (either from this page or from the Simulation Tab). Any changes to the variability values below require clicking on "Update Model" to refresh the plot.'
@@ -404,6 +425,8 @@ bspop_catvalue2       <- "(100 - percentage slider) determines the approximate p
 bspop_do_iiv_plotly   <- 'Interactive plots using the "plotly" package could take a long time for simulations with more than a few hundred subjects.'#<br><br>Note - "Download Options" do not apply when plots are not interactive.'
 #' @export
 show_mean_iiv_label   <- 'Show Mean Trend'
+#' @export
+bspop_select_time_interval_exp <- "(Optional) Select the desired time intervals to derive metrics to be plotted above. The original time scale is provided for selection, independent of whether any scaling of the x-axis from the Simulation page was performed.<br><br>Note: The time interval is inclusive on both ends (i.e. start time <= time interval <= end time)."
 
 #infoBox
 #' @export
