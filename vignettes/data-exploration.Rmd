@@ -62,15 +62,17 @@ The General Plot provide a quick way to visualize multiple data types, including
 1. By default, the x-axis and y-axis will be updated to select `TIME` and `DV` columns automatically. For non-NONMEM datasets, the user may need to adjust accordingly.  
 2. (Optional) The "color by" setting makes it easy to further categorize and visualize the data. It is recommended (but not required) to use a categorical variable for this option.  
 3. (Optional) The "facet(s) by" setting provides even more flexibility by allowing __multiple columns__ to perform a `facet_wrap()`. To optimize visualization, there currently is a hard limit of up to 30 unique combinations.
-4. (Optional) Median lines by variable allows quick assessment of trends by variable. Median lines are derived by connecting the median values of equidistant bins (n=20) across the x-axis.
+4. (Optional) Median lines by variable allows quick assessment of trends by variable. Median lines are derived by connecting the median values of quantiles (n=20) across the x-axis.
 5. (Optional) For PKPD models with multiple compartments, a quick shortcut is available to filter to only the compartment of interest to be shown.
 6. (Optional) Plots can be downloaded by clicking on the camera icon (if plots are interactive) on the top right of the plot, or by clicking the "Download Non-Interactive Plot" button (if it is a regular plot). Image settings can be configured in the "Download Options" box, which is collapsed by default (expand by clicking on the "+" icon).
+
+`r "\U0001F4A1"` The "Quantize X-axis" option converts a continuous X-axis into discrete quantiles, and displays the results in a box plot with the quantile limits shown at the bottom. __Note that this option retains all observations, as opposed to the "Box plot" option that only retains unique IDs__.
 
 `r "\U0001F4A1"` by default interactive plots are switched off for speed. __Toggle the checkbox to allow interactive plotting, where hovering on each individual observation will display extra information__, along with other useful features.
 
 ### Box plots 
 
-1. __Assuming that the x-axis is a categorical variable__, one can toggle the box plot icon to change the visualization to display a box plot, with the number of subjects displayed on top of each boxplot. There currently is a hard limit of up to 20 categories for box plots (i.e. must have <= 20 unique x-axis values).
+1. __Assuming that the x-axis is a categorical variable__, one can toggle the box plot icon to change the visualization to display a box plot (by unique IDs), with the number of subjects displayed on top of each boxplot. There currently is a hard limit of up to 20 categories for box plots (i.e. must have <= 20 unique x-axis values).
 2. (Optional) "Color by" and "facet(s) by" settings apply accordingly.  Use the "Text Label Size" to adjust the text size that displayed the number of subjects.
 
 `r "\U0001F4A1"` Switch off Interactive Plot when using the "Color by" option to ensure the box plots are dodged properly, as the `plotly` package currently do not offer full support during conversion of a ggplot object.
@@ -82,7 +84,7 @@ Count plots are considered a special case of box plot where the y-axis variable 
 * A character type, or
 * There are <=7 unique values
 
-__This will be triggered automatically when any of these two conditions are met__. The size of the circle reflects the number of unique subjects belonging to that subset, which is also displayed in a text label.  
+__Count plots are triggered automatically when any of these two conditions are met when the Box Plot option is toggled.__ The size of the circle reflects the number of unique subjects belonging to that subset, which is also displayed in a text label.  
 
 `r "\U0001F4A1"` Currently if the "Color by" option is used, a known issue is that the circles would be stacked on top of each other. A workaround is to use the Interactive Plot option and hover over the circle to obtain count sizes of the "hidden" circles.  
 
@@ -92,7 +94,7 @@ __This will be triggered automatically when any of these two conditions are met_
 Most options in the "Ind. Plot" tab are carried over from the "General Plot" tab, with the exception of the "Facet by" option, since individual plots are always faceted by the `ID` column. Note that smoothers and median lines are not relevant for individual plots so they will also not be inserted. 
 
 1. By default, 9 subjects are displayed per page. Adjust the "Rows per Page" and "Columns per Page" accordingly to change the number of subjects per page. Note that the Page selector will be updated dynamically to reflect any changes in rows and columns.  
-2. (Optional) Dosing information is enabled by default, which searches for the `EVID`, `ADDL`, and `II` columns, and inserts dosing lines for each subject. The height of the dosing lines are scaled by their relative amount that is given by the "Dose Column", and each unique dose will be labeled as text. If the `RATE` column is present, the dosing lines will be extended accordingly to the infusion duration. An optional unit for the dose can also be inserted.
+2. (Optional) Dosing information is enabled by default, which searches for the `EVID`, `ADDL`, and `II` columns, and inserts dosing lines for each subject. The height of the dosing lines are scaled by their relative amount that is given by the "Dose Column", and each unique dose will be labeled as text. If the `RATE` column is present, the dosing lines will be extended accordingly to the infusion duration. An optional unit for the dose can also be inserted. __Dosing records (i.e. EVID == 1) must be present in the filtered data for this option to work!__
 3. (Optional) BLQ information can be inserted by providing the "LLOQ Column", which will then be shown as horizontal dashed orange lines.
 4. (Optional) Select any specific number of subjects to be viewed by using the "Select ID(s)" option. When any subjects are selected this way, the page, row and column options will be ignored.
 5. (Optional) The "Flag Variable" option allows the user to select a variable, and any of its associated values, to be flagged as an red asterix (**`*`**) on the plot, for further visualization beyond the "Color by" option.

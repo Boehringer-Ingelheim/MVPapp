@@ -95,6 +95,8 @@ update_model_choices <- function(input_password, session, model_list = model_exa
   new_choices <- model_list
   list_of_valid_passwords <- c("test")
 
+  ## Begin passworded model settings, insert new model settings below
+
   ### Example model
   if (input_password == "test") {
     create_alert("FirstName LastName", "first.last@xxx.com")
@@ -119,14 +121,10 @@ update_model_choices <- function(input_password, session, model_list = model_exa
     updateSelectizeInput(session, "time_unit", selected = '168', options = list(create = TRUE))
   }
 
-  if(input_password %in% list_of_valid_passwords) {
-    password_is_valid <- TRUE
-  } else {
-    password_is_valid <- FALSE
-  }
+  ## End of passworded model settings
 
   # Update the selectInput with the new choices
-  if(password_is_valid) {
+  if(input_password %in% list_of_valid_passwords) {
     updateSelectInput(session, "model_select",  choices = new_choices)
     updateSelectInput(session, "model_select2", choices = new_choices)
   } else {
@@ -134,7 +132,7 @@ update_model_choices <- function(input_password, session, model_list = model_exa
     updateSelectInput(session, "model_select2", choices = model_list)
   }
 
-  return(password_is_valid)
+  return(input_password %in% list_of_valid_passwords)
 }
 
 ### Password models ###

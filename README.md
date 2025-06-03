@@ -122,11 +122,13 @@ page (e.g. dosing and axis choices).
 
 ![](www/2models1.png)
 
-7.  In general, most plots are interactive (using the `plotly` package),
-    which allows zooming, panning, drawing etc, controlled from the top
-    right of the plot. The camera icon downloads the current plot, based
-    on the options set by the “Download Options” box on the bottom right
-    of the page.
+7.  In general, most plots can be interactive (using the `plotly`
+    package), which allows zooming, panning, drawing etc, controlled
+    from the top right of the plot. The camera icon downloads the
+    current plot, based on the options set by the “Download Options” box
+    on the bottom right of the page. Tip: if plots take a long time to
+    load, turning **off** interactive plots may help with speeding
+    things up.
 
 ![](www/plotlytoolbar.png)
 

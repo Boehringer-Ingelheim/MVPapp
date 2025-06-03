@@ -12,9 +12,7 @@ debounce_timer_fast   <- 500
 #' @export
 debounce_timer_slow   <- 900
 #' @export
-max_samples           <- 25000 # Max samples = max sampling time * frequency of samples
-#' @export
-highlight_range       <- 0.8 # Determines the threshold of highlight in fraction. 0.5 means 50% above/below strat mean
+max_samples           <- 20000 # Max samples = max sampling time * frequency of samples
 
 # Colours
 #' @export
@@ -96,18 +94,18 @@ bspop_select_label_size<- "Label sizes are only applicable for linear regression
 #' @export
 quantize_x_label       <- "Quantize X-axis"
 #' @export
-bspop_quantize_x       <- "(Optional) Split a continuous (i.e. numeric) X-variable into a number of discrete quantiles with approximately equal number of observations in each quantile.<br><br>Note: the plot will be converted into a boxplot automatically (not grouped by ID, unlike the normal boxplot option)."
+bspop_quantize_x       <- "(Optional) Split a continuous (i.e. numeric) X-variable into a number of discrete quantiles with approximately equal number of observations in each quantile.<br><br>Note: the plot will be converted into a box plot automatically (not grouped by ID, unlike the normal box plot option)."
 
 #' @export
 add_data_stat_sum     <- 'Median line [dataset]'
 #' @export
-bspop_data_stat_sum   <- 'Insert a line connecting median values for grouped observations in equidistant x-axis bins (n=20) for continuous plots.'
+bspop_data_stat_sum   <- 'Insert a line connecting median values for grouped observations (up to 20 quantiled bins) for continuous plots. Bins that are within 5% to each other will be merged.'
 #' @export
-boxplot_label         <- 'Boxplot'
+boxplot_label         <- 'Box Plot (by unique ID)'
 #' @export
-bspop_do_boxplot      <- 'Boxplot figure assumes the X-axis variable is categorical, the Y-axis variable is continuous, and counts (N) represents the number of unique IDs i.e. usually the baseline value.<br><br>Turning off interactive plots may achieve better visual results for Boxplots (Color variable is dodged and boxplot widths are proportional to the square-roots of the number of observations in the groups).'
+bspop_do_boxplot      <- 'Box plot figure assumes the X-axis variable is categorical, the Y-axis variable is continuous, and counts (N) represents the number of unique IDs i.e. usually the baseline value.<br><br>Turning off interactive plots may achieve better visual results for box plots (Color variable is dodged and box plot widths are proportional to the square-roots of the number of observations in the groups).'
 #' @export
-bspop_do_data_plotly  <- 'Interactive plots using the "plotly" package could take a longer time for big datasets. Turning it off may achieve better visual results for Boxplots.'# <br><br>Note - "Download Options" do not apply when plots are not interactive.'
+bspop_do_data_plotly  <- 'Interactive plots using the "plotly" package could take a longer time for big datasets. Turning it off may achieve better visual results for box plots.'# <br><br>Note - "Download Options" do not apply when plots are not interactive.'
 #' @export
 label_fixed_scale     <- 'Same Scale'
 #' @export
@@ -125,7 +123,7 @@ label_dose_units      <- 'Dose Units'
 #' @export
 bspop_dose_units      <- '(Optional) Provide units to be appended on to the text label.'
 #' @export
-label_lloq_colname    <- 'LLOQ Column' # shiny::HTML(paste0("LLOQ Column <i class='fa fa-question-circle' title='(Optional) Provide LLOQ/BLQ column to be plotted as a dashed horizontal line. Not applicable for boxplots.' style='margin-left: 3px;'></i>"))
+label_lloq_colname    <- 'LLOQ Column' # shiny::HTML(paste0("LLOQ Column <i class='fa fa-question-circle' title='(Optional) Provide LLOQ/BLQ column to be plotted as a dashed horizontal line. Not applicable for box plots.' style='margin-left: 3px;'></i>"))
 #' @export
 bspop_lloq_colname    <- '(Optional) Provide LLOQ/BLQ column to be plotted as dashed horizontal lines.'
 
@@ -168,9 +166,9 @@ label_outlier_threshold <- 'Outlier Threshold:'
 #' @export
 bspop_outlier_threshold <- '(Optional) Define a threshold (%) where if the arithmetic mean of the Y-axis of an ID is above/below the corresponding stratification group by this %, that ID will be flagged as a potential outlier. Only applicable when Flag Outliers is used.'
 #' @export
-label_highlight         <- shiny::HTML(paste0("Flag Variable: <i class='fa fa-question-circle' title='(Optional) First select a variable and then choose any of its value(s) to be highlighted in bigger asterisks. Not applicable for boxplots.' style='margin-left: 3px;'></i>"))
+label_highlight         <- shiny::HTML(paste0("Flag Variable: <i class='fa fa-question-circle' title='(Optional) First select a variable and then choose any of its value(s) to be highlighted in bigger asterisks. Not applicable for box plots.' style='margin-left: 3px;'></i>"))
 #' @export
-bspop_highlight_var     <- '(Optional) First select a variable and then choose any of its value(s) to be highlighted in bigger asterisks (only applicable for non-boxplots).'
+bspop_highlight_var     <- '(Optional) First select a variable and then choose any of its value(s) to be highlighted in bigger asterisks (only applicable for non- box plots).'
 #' @export
 label_highlight_values  <- 'Flag Value(s):'
 #' @export
@@ -197,6 +195,9 @@ bspop_param_values    <- 'Once a model has been generated, all fixed effects par
 bspop_download_cpp_model <- 'Save current model as a .cpp file including any real-time changes to the parameter values (fixed effects).<br><br>Note: The model must first be generated before the code can be downloaded!'
 #' @export
 bspop_model_code      <- 'Refer to the mrgsolve user guide (provided on the first line in the code editor) on the required syntax. After editing, click on the "Generate Model" button.<br><br>Note: If the model fails to compile, check the "Model Info (Console)" box below for more information.'
+#' @export
+bspop_model_info_console <- 'If the model build was successful, the generated model info will be summarized below. Otherwise, it will display the error message during compilation.'
+
 
 ## Dosing Regimen
 #' @export
@@ -290,9 +291,9 @@ model_rate_checkbox   <- 'Model Rate (Auto)'
 
 ## Plotting options
 #' @export
-label_x_axis          <- 'X-axis Label:'
+label_x_axis          <- 'X-axis Label'
 #' @export
-label_y_axis          <- 'Y-axis Label:'
+label_y_axis          <- 'Y-axis Label'
 
 #' @export
 label_scale_x_axis    <- 'Scale X-axis (Divide by)'

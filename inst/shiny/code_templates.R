@@ -52,8 +52,12 @@ model_examples_list <- c('1 Compartment PK',
 #' @returns a switch for 'model_input' / 'model_input2'
 #' 
 #' @note
-#' This function will be re-defined if "passworded_models" is sourced.                                                   
-#'        An example "Test Passworded Model" is included for example.                                                  
+#' This function will be re-defined if passworded models is sourced externally,
+#' i.e. when provided as an argument for run_mvp(pw_models_path = "path/to/your/private/models.R").
+#' 
+#' An example passworded model called "Test Passworded Model" is included by default as an example,
+#' which can be unlocked by using the password "test".
+#'                                                 
 #' @export
 model_switch_conditions <- function(input_model_select, mcode_model_choice) {
   return(switch(
@@ -101,7 +105,8 @@ model_switch_conditions <- function(input_model_select, mcode_model_choice) {
 #' 
 #' @returns a logical TRUE/FALSE if password is valid
 #' 
-#' *Note* this function will be re-defined if "passworded_models" is sourced. 
+#' *Note* this function will be re-defined if passworded models is sourced externally,
+#'        i.e. when provided as an argument for run_mvp(pw_models_path = "path/to/your/private/models.R")
 #' @export
 update_model_choices <- function(input_password, session, model_list = model_examples_list) {
   
@@ -132,14 +137,8 @@ update_model_choices <- function(input_password, session, model_list = model_exa
     updateSelectizeInput(session, "time_unit", selected = '168', options = list(create = TRUE))
   } 
   
-  if(input_password %in% list_of_valid_passwords) {
-    password_is_valid <- TRUE
-  } else {
-    password_is_valid <- FALSE
-  }
-  
   # Update the selectInput with the new choices
-  if(password_is_valid) {
+  if(input_password %in% list_of_valid_passwords) {
     updateSelectInput(session, "model_select",  choices = new_choices)
     updateSelectInput(session, "model_select2", choices = new_choices)
   } else {
@@ -147,7 +146,7 @@ update_model_choices <- function(input_password, session, model_list = model_exa
     updateSelectInput(session, "model_select2", choices = model_list)    
   }
   
-  return(password_is_valid)
+  return(input_password %in% list_of_valid_passwords)
 }
 
 #-------------------------------------------------------------------------------
@@ -884,7 +883,7 @@ TVCL       : 0.2       : Systemic clearance (L/h/kg)
 TVVC       : 0.3       : Central volume (L/kg)
 TVQ        : 0.1       : Intercompartmental clearance (L/h/kg)
 TVVP       : 0.4       : Peripheral volume (L/kg)
-WTB        : 70        : Baseline total body weight (kg)
+WT         : 70        : Baseline total body weight (kg)
 TVIC50     : 20        : XXXXXX concentration producing half IMAX (nM)
 TVKOUT     : 0.3       : Turnover rate constant for XXX (1/h)
 KIN_KO     : 0.4       : Production rate constant for XXX in knockout mice (XXX units/h)
@@ -907,13 +906,13 @@ $MAIN
 double F1   = TVF1;
 F_GUT       = F1;
 
-double KA   = TVKA                             * exp(ETA(1));
-double CL   = TVCL * WTB * pow((WTB/70), 0.75) * exp(ETA(2)); 
-double VC   = TVVC * WTB * pow((WTB/70), 1)    * exp(ETA(3));
-double Q    = TVQ  * WTB * pow((WTB/70), 0.75) * exp(ETA(4));
-double VP   = TVVP * WTB * pow((WTB/70), 1)    * exp(ETA(5));
-double IC50 = TVIC50                           * exp(ETA(6));
-double KOUT = TVKOUT                           * exp(ETA(7));
+double KA   = TVKA                           * exp(ETA(1));
+double CL   = TVCL * WT * pow((WT/70), 0.75) * exp(ETA(2)); 
+double VC   = TVVC * WT * pow((WT/70), 1)    * exp(ETA(3));
+double Q    = TVQ  * WT * pow((WT/70), 0.75) * exp(ETA(4));
+double VP   = TVVP * WT * pow((WT/70), 1)    * exp(ETA(5));
+double IC50 = TVIC50                         * exp(ETA(6));
+double KOUT = TVKOUT                         * exp(ETA(7));
 
 double KIN     = KIN_KO * KO_FLAG + KIN_WT * (1 - KO_FLAG);
 double BASE_WT = KIN_WT/KOUT;

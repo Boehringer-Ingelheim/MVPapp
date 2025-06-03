@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.18</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.19</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -179,7 +179,7 @@ by allowing <strong>multiple columns</strong> to perform a
 a hard limit of up to 30 unique combinations.</li>
 <li>(Optional) Median lines by variable allows quick assessment of
 trends by variable. Median lines are derived by connecting the median
-values of equidistant bins (n=20) across the x-axis.</li>
+values of quantiles (n=20) across the x-axis.</li>
 <li>(Optional) For PKPD models with multiple compartments, a quick
 shortcut is available to filter to only the compartment of interest to
 be shown.</li>
@@ -189,6 +189,11 @@ the “Download Non-Interactive Plot” button (if it is a regular plot).
 Image settings can be configured in the “Download Options” box, which is
 collapsed by default (expand by clicking on the “+” icon).</li>
 </ol>
+<p>💡 The “Quantize X-axis” option converts a continuous X-axis into
+discrete quantiles, and displays the results in a box plot with the
+quantile limits shown at the bottom. <strong>Note that this option
+retains all observations, as opposed to the “Box plot” option that only
+retains unique IDs</strong>.</p>
 <p>💡 by default interactive plots are switched off for speed.
 <strong>Toggle the checkbox to allow interactive plotting, where
 hovering on each individual observation will display extra
@@ -201,9 +206,9 @@ information</strong>, along with other useful features.</p>
 <li>
 <strong>Assuming that the x-axis is a categorical variable</strong>,
 one can toggle the box plot icon to change the visualization to display
-a box plot, with the number of subjects displayed on top of each
-boxplot. There currently is a hard limit of up to 20 categories for box
-plots (i.e. must have &lt;= 20 unique x-axis values).</li>
+a box plot (by unique IDs), with the number of subjects displayed on top
+of each boxplot. There currently is a hard limit of up to 20 categories
+for box plots (i.e. must have &lt;= 20 unique x-axis values).</li>
 <li>(Optional) “Color by” and “facet(s) by” settings apply accordingly.
 Use the “Text Label Size” to adjust the text size that displayed the
 number of subjects.</li>
@@ -222,10 +227,10 @@ y-axis variable is either:</p>
 <li>A character type, or</li>
 <li>There are &lt;=7 unique values</li>
 </ul>
-<p><strong>This will be triggered automatically when any of these two
-conditions are met</strong>. The size of the circle reflects the number
-of unique subjects belonging to that subset, which is also displayed in
-a text label.</p>
+<p><strong>Count plots are triggered automatically when any of these two
+conditions are met when the Box Plot option is toggled.</strong> The
+size of the circle reflects the number of unique subjects belonging to
+that subset, which is also displayed in a text label.</p>
 <p>💡 Currently if the “Color by” option is used, a known issue is that
 the circles would be stacked on top of each other. A workaround is to
 use the Interactive Plot option and hover over the circle to obtain
@@ -253,7 +258,9 @@ dosing lines are scaled by their relative amount that is given by the
 “Dose Column”, and each unique dose will be labeled as text. If the
 <code>RATE</code> column is present, the dosing lines will be extended
 accordingly to the infusion duration. An optional unit for the dose can
-also be inserted.</li>
+also be inserted. <strong>Dosing records (i.e. EVID == 1) must be
+present in the filtered data for this option to work!</strong>
+</li>
 <li>(Optional) BLQ information can be inserted by providing the “LLOQ
 Column”, which will then be shown as horizontal dashed orange
 lines.</li>

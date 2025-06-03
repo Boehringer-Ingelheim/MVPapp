@@ -38,8 +38,10 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/general_warning_modal.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/generate_dosing_regimens.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/generate_log_breaks.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/get_bin_times.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/gm_mean.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/gm_mean_cv.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/handle_blanks.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/index.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/lm_eqn.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/lm_eqn_old.html</loc></url>
@@ -82,6 +84,7 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/split_data_frame.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/tblNCA_progress.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/today_numeric.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/transform_ev_df.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/trim_columns.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/update_model_choices.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/update_model_object.html</loc></url>

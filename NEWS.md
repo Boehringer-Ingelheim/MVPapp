@@ -1,3 +1,17 @@
+# MVPapp 0.2.19 (2025-06-03)
+
+## Features
+
+* Re-worked median line bins to be based on quantiles (#37, #38)
+* Built-in data filtering option to distinct by ID (#40)
+* More QoL options for NCA (safeguards and rounding) (#41)
+* Minor re-factoring and other QoL updates
+
+## Bugfixes
+
+* Bug fixes for General Plot's box plot count labels (#39)
+* Better handling of NAs for Quantize X-axis option in General Plot
+
 # MVPapp 0.2.18 (2025-04-21)
 
 ## Features

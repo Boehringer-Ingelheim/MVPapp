@@ -314,32 +314,22 @@ do_data_page_plot <- function(nmd,
     shiny::showNotification(paste0("Dosing rows (EVID >= 1) are excluded from the general plot."), type = "message", duration = 10)
   }
   
-  # Safeguard for blanks ("") since plotly has bugs with handling it
-  if(is.character(nmd[[y_axis]]) && any(nmd[[y_axis]] == "")) {
-    shiny::showNotification(paste0("WARNING: Some ", y_axis, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
-    nmd <- nmd %>% dplyr::mutate(!!y_axis := ifelse(!!dplyr::sym(y_axis) == "", ".(blank)", !!dplyr::sym(y_axis)))
-  }
-  
-  if(is.character(nmd[[x_axis]]) && any(nmd[[x_axis]] == "")) {
-    shiny::showNotification(paste0("WARNING: Some ", x_axis, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
-    nmd <- nmd %>% dplyr::mutate(!!x_axis := ifelse(!!dplyr::sym(x_axis) == "", ".(blank)", !!dplyr::sym(x_axis)))
-  }
-  
   if(debug) {
     message(paste0("Testing for blanks"))
   }
   
-  if(!is.null(facet_name[1]) && facet_name[1] != "") {
-    for (i in seq_along(facet_name)) {
-      if(is.character(nmd[[facet_name[i]]]) && facet_name[i] != x_axis) {
-        if(any(nmd[[facet_name[i]]] == "")) {
-          shiny::showNotification(paste0("WARNING: Some ", facet_name[i], " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
-          nmd <- nmd %>% dplyr::mutate(!!facet_name[i] := ifelse(!!dplyr::sym(facet_name[i]) == "", ".(blank)", !!dplyr::sym(facet_name[i])))
-        }
+  # Safeguard for blanks ("") since plotly has bugs with handling it
+  nmd <- handle_blanks(nmd, y_axis)
+  nmd <- handle_blanks(nmd, x_axis)
+
+  if (!is.null(facet_name) && facet_name[1] != "") {
+    for (facet in facet_name) {
+      if (facet != x_axis) {
+        nmd <- handle_blanks(nmd, facet)
       }
     }
   }
-  
+
   if(color_by != "") {
     
     if(can_quantize & color_by == x_axis_orig) {
@@ -351,11 +341,7 @@ do_data_page_plot <- function(nmd,
     } else {
       # Safeguard for blanks ("") since plotly has bugs with handling it
       # Only applicable if the column is character type as int columns with NAs will fail
-      if(is.character(nmd[[color_by]]) && any(nmd[[color_by]] == "")) {
-        shiny::showNotification(paste0("WARNING: Some ", color_by, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
-        nmd <- nmd %>%
-          dplyr::mutate(!!color_by := ifelse(!!dplyr::sym(color_by) == "", ".(blank)", !!dplyr::sym(color_by)))
-      }
+      nmd <- handle_blanks(nmd, color_by)
       nmd[[color_by]] <- as.factor(nmd[[color_by]])
       
       # Create a named vector of colors - this is required to be consistent with ind plots if some pages don't have all factor levels during color_by
@@ -375,7 +361,7 @@ do_data_page_plot <- function(nmd,
   if(boxplot) {
     if(length(unique(nmd[[x_axis]])) > boxplot_x_threshold) {
       a <- ggplot2::ggplot() +
-        ggplot2::labs(title = paste0('ERROR: There are too many X-axis categories (>', boxplot_x_threshold, ') for boxplots. Try the "Quantize X-axis" option instead.')) +
+        ggplot2::labs(title = paste0('ERROR: There are too many X-axis categories (>', boxplot_x_threshold, ') for boxplots.\nTry the "Quantize X-axis" option instead.')) +
         ggplot2::theme(panel.background = ggplot2::element_blank(),
                        plot.title = ggplot2::element_text(color = error_text_color))
       return(a)
@@ -404,7 +390,7 @@ do_data_page_plot <- function(nmd,
     } else {
       a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]]))
     }
-
+    
     # Calculate the number of observations for each category
     df_count <- nmd 
     
@@ -453,10 +439,10 @@ do_data_page_plot <- function(nmd,
       if(label_size > 0) {
         if(can_quantize) { # For quantized plots, we are plotting all observations, not unique IDs
           a <- a +
-            ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]]) * 1.02, label = paste0("Nobs=", n),  group = NULL), color = "black", vjust = 2, size = label_size)          
+            ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("Nobs=", n),  group = NULL), color = "black", vjust = 2, size = label_size)          
         } else {
-        a <- a +
-          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]]) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+          a <- a +
+            ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
         }
       }
     }
@@ -473,15 +459,9 @@ do_data_page_plot <- function(nmd,
   
   if(med_line & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) { # can only do median line when both x & y are numeric
     
-    d_bin_number    <- 20 # Sets the number of bins to be used for the median lines.
-    d_max_data_x    <- max(as.numeric(nmd[[x_axis]]), na.rm = TRUE)
-    d_min_data_x    <- min(as.numeric(nmd[[x_axis]]), na.rm = TRUE)
-    d_bin_increment <- (d_max_data_x - d_min_data_x) / d_bin_number
-    d_bin_times     <- seq(d_min_data_x, d_max_data_x, by = d_bin_increment)
-    
     nmd <- nmd %>%
       dplyr::mutate(
-        binned_xvar = quantize(nmd[[x_axis]], levels = d_bin_times)
+        binned_xvar = quantize(nmd[[x_axis]], levels = get_bin_times(nmd[[x_axis]], bin_num = 20, relative_threshold = 0.05))
       )
     
     if(med_line_by == "") {
@@ -657,7 +637,7 @@ do_data_page_ind_plot <- function(nmd,
     nmd <- nmd %>% dplyr::arrange(ID) %>%
       mutate(facet_label = paste0("ID: ", ID))
   }
-
+  
   # Calculate outliers
   if(!is.null(strat_by) && strat_by != '' && !boxplot) {
     nmd <- categorize_outliers(df              = nmd,
@@ -676,11 +656,7 @@ do_data_page_ind_plot <- function(nmd,
     } else {
       # Safeguard for blanks ("") since plotly has bugs with handling it
       # Only applicable if the column is character type as int columns with NAs will fail
-      if(is.character(nmd[[color_by]]) && any(nmd[[color_by]] == "")) {
-        shiny::showNotification(paste0("WARNING: Some ", color_by, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
-        nmd <- nmd %>%
-          dplyr::mutate(!!color_by := ifelse(!!dplyr::sym(color_by) == "", ".(blank)", !!dplyr::sym(color_by)))
-      }
+      nmd <- handle_blanks(nmd, color_by)
       nmd[[color_by]] <- as.factor(nmd[[color_by]])
       
       # Create a named vector of colors - this is required to be consistent with ind plots if some pages don't have all factor levels during color_by
@@ -691,22 +667,8 @@ do_data_page_ind_plot <- function(nmd,
   }
   
   # Safeguard for blanks ("") since plotly has bugs with handling it
-  if(is.character(nmd[[y_axis]]) && any(nmd[[y_axis]] == "")) {
-    shiny::showNotification(paste0("WARNING: Some ", y_axis, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
-    nmd <- nmd %>% dplyr::mutate(!!y_axis := ifelse(!!dplyr::sym(y_axis) == "", ".(blank)", !!dplyr::sym(y_axis)))
-  }
-  
-  if(is.character(nmd[[x_axis]]) && any(nmd[[x_axis]] == "")) {
-    shiny::showNotification(paste0("WARNING: Some ", x_axis, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
-    nmd <- nmd %>% dplyr::mutate(!!x_axis := ifelse(!!dplyr::sym(x_axis) == "", ".(blank)", !!dplyr::sym(x_axis)))
-  }
-  
-  if(is.character(nmd[[facet_name]]) && facet_name != "" & facet_name != x_axis) {
-    if(any(nmd[[facet_name]] == "")) {
-      shiny::showNotification(paste0("WARNING: Some ", facet_name, " values are blank. It has been renamed to '.(blank)' to facilitate plotting."), type = "warning", duration = 10)
-      nmd <- nmd %>% dplyr::mutate(!!facet_name := ifelse(!!dplyr::sym(facet_name) == "", ".(blank)", !!dplyr::sym(facet_name)))
-    }
-  }
+  nmd <- handle_blanks(nmd, y_axis)
+  nmd <- handle_blanks(nmd, x_axis)
   
   # Calculating the entire dataset's limits to ensure consistency across pages for same_scale
   if(!is.character(nmd[[x_axis]])) {
@@ -913,7 +875,7 @@ do_data_page_ind_plot <- function(nmd,
         ggplot2::geom_boxplot(varwidth = TRUE)
       if(label_size > 0) {
         a <- a +
-          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]]) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
       }
     }
     
@@ -992,32 +954,6 @@ do_data_page_ind_plot <- function(nmd,
     ggplot2::labs(color = color_by)
   
   # median line and smoother not relevant for ind plots
-  
-  # if(med_line & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) { # can only do median line when both x & y are numeric
-  # 
-  #   d_bin_number    <- 20 # Sets the number of bins to be used for the median lines.
-  #   d_max_data_x    <- max(as.numeric(nmd[[x_axis]]), na.rm = TRUE)
-  #   d_min_data_x    <- min(as.numeric(nmd[[x_axis]]), na.rm = TRUE)
-  #   d_bin_increment <- (d_max_data_x - d_min_data_x) / d_bin_number
-  #   d_bin_times     <- seq(d_min_data_x, d_max_data_x, by = d_bin_increment)
-  # 
-  #   nmd <- nmd %>%
-  #     dplyr::mutate(
-  #       binned_xvar = quantize(nmd[[x_axis]], levels = d_bin_times)
-  #     )
-  # 
-  #   if(med_line_by == "") {
-  #     a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL), fun = median, geom="line", colour = "black", alpha = 0.8)
-  #   } else { # end of stat_summary_data_by NULL check
-  #     a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL, color = as.factor(.data[[med_line_by]])),
-  #                                    fun = median, geom="line", alpha = 0.8)
-  #   }
-  # 
-  # } # end of stat_summary_data_option
-  # 
-  # if(smoother & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) {
-  #   a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), se = FALSE, linetype = "dashed")
-  # }
   
   if(dolm & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) {
     # Calculate linear regression and R-squared value for each facet
@@ -1219,7 +1155,6 @@ draw_correlation_plot <- function(input_df,
 #' @export
 #-------------------------------------------------------------------------------
 
-
 run_single_sim <- function(input_model_object,
                            pred_model         = FALSE,
                            ev_df,
@@ -1236,134 +1171,89 @@ run_single_sim <- function(input_model_object,
                            parallel_n         = 200#,
                            #number_of_cores    = 8L # uses future_mrgsim_d as mc_mrgsim_d doesn't work in Shiny
 ) {
-  if(!is.null(input_model_object)) {
-    ## modeling duration, it cannot coexist with tinf
-    if(model_dur) {
-      if (debug) {
-        message('pre_model_dur')
-      }
-      ev_df <- ev_df %>%
-        as.data.frame() %>%
-        dplyr::mutate(rate = -2) %>%
-        dplyr::select(-tinf) %>%
-        mrgsolve::as.ev()
-      
-      if (debug) {
-        message('post_model_dur')
-      }
-    }
-    
-    if(model_rate) {
-      if (debug) {
-        message('pre_model_rate')
-      }
-      ev_df <- ev_df
-      as.data.frame() %>%
-        dplyr::mutate(rate = -1) %>%
-        dplyr::select(-tinf) %>%
-        mrgsolve::as.ev()
-      
-      if (debug) {
-        message('post_model_rate')
-      }
-    }
-    
-    if(pred_model) { # set all CMTs to zero as that is required for PRED models
-      ev_df <- ev_df %>%
-        mutate(cmt  = 0)
-      
-      if("tinf" %in% names(ev_df)) {
-        ev_df <- ev_df %>%
-          select(-tinf)
-      }
-      
-      if("rate" %in% names(ev_df)) {
-        ev_df <- ev_df %>%
-          select(-rate)
-      }
-    }
-    
-    ### If reading in Databases:
-    if(nsubj > 1 & !is.null(ext_db)) { # Note that ext_db is not NULL even for "None" option
-      
-      # Extract list of columns in ext_db to be carried out (not used any more)
-      #carry_out_cols <- names(ext_db)
-      #carry_out_cols <- carry_out_cols[carry_out_cols != "ID"]
-      
-      # Joining ext_db with ev_df
-      ev_df2 <- ev_df %>%
-        mrgsolve::ev_rep((1:nrow(ext_db)))
-      
-      ext_db_ev <- data.table::merge.data.table(ev_df2, ext_db, by = "ID", all.x = TRUE)
-      
-      set.seed(seed) # Setting seed outside mrgsim to ensure reproducibility
-      
-      # if(parallel_sim & nsubj >= parallel_n) {
-      #   shiny::showNotification(paste0("Performing simulations in parallel (N >= ", parallel_n, ")..."), type = "message", duration = 10)
-      #   options(mc.cores = number_of_cores)
-      #   input_model_object@digits <- 5 # how many sigdigs to output
-      #
-      #   solved_output <- mrgsim.parallel::mc_mrgsim_d( # error with mclapply
-      #     mod       = input_model_object,
-      #     data      = ext_db_ev,
-      #     nchunk    = number_of_cores,
-      #     carry_out = carry_out_cols,
-      #     obsonly   = TRUE,
-      #     tgrid     = sampling_times,
-      #     tad       = TRUE#,
-      #     #.parallel = FALSE
-      #   )
-      #
-      # solved_output <- mrgsim.parallel::future_mrgsim_d(  # mc_mrgsim_d doesn't work in Shiny, and future_mrgsim_d is not reliable
-      #   mod       = input_model_object,
-      #   data      = ext_db_ev,
-      #   nchunk    = number_of_cores,
-      #   carry_out = carry_out_cols,
-      #   obsonly   = TRUE,
-      #   tgrid     = sampling_times,
-      #   tad       = TRUE
-      # ) #%T>%
-      #system.time()
-      #
-      #} else {
-      
-      input_model_object@digits <- 5 # how many sigdigs to output
-      
-      sim_output <- mrgsolve::qsim(input_model_object,
-                                   data = ext_db_ev,
-                                   obsonly = TRUE,
-                                   tgrid = sampling_times,
-                                   tad = TRUE,
-                                   output = "df")
-      
-      # mrgsim_q / qsim does not support carry_out cols, so merging back in here
-      solved_output <- data.table::merge.data.table(sim_output, ext_db, by = "ID", all.x = TRUE) #%>%
-      #} # not using parallel
-    } # end of multiple nsubj sims
-    
-    ### If single subject (or bad number of subjects input)
-    if(nsubj <= 1) {
-      solved_output <- input_model_object %>%
-        mrgsolve::obsonly() %>%
-        mrgsolve::zero_re() %>%
-        mrgsolve::mrgsim_df(events = ev_df,
-                            tgrid  = sampling_times,
-                            tad    = TRUE)
-    }
-    
-    solved_output <- solved_output %>%
-      dplyr::rename(TIME    = time) %>%
-      dplyr::mutate(TIMEADJ = TIME / divide_by,
-                    ID      = as.factor(paste0(append_id_text, ID))
-      )
-    
-    return(solved_output)
-  } else {
-    
+  
+  # Early exit if input_model_object is NULL
+  if (is.null(input_model_object)) {
     if (debug) {
       message("input_model_object is NULL")
     }
+    return(NULL)
   }
+  
+  ev_df <- transform_ev_df(ev_df, model_dur, model_rate, pred_model, debug)
+  
+  ### If reading in Databases:
+  if(nsubj > 1 & !is.null(ext_db)) { # Note that ext_db is not NULL even for "None" option
+
+    # Joining ext_db with ev_df
+    ev_df2 <- ev_df %>%
+      mrgsolve::ev_rep((1:nrow(ext_db)))
+    
+    ext_db_ev <- data.table::merge.data.table(ev_df2, ext_db, by = "ID", all.x = TRUE)
+    
+    set.seed(seed) # Setting seed outside mrgsim to ensure reproducibility
+    
+    # if(parallel_sim & nsubj >= parallel_n) {
+    #   shiny::showNotification(paste0("Performing simulations in parallel (N >= ", parallel_n, ")..."), type = "message", duration = 10)
+    #   options(mc.cores = number_of_cores)
+    #   input_model_object@digits <- 5 # how many sigdigs to output
+    #
+    #   solved_output <- mrgsim.parallel::mc_mrgsim_d( # error with mclapply
+    #     mod       = input_model_object,
+    #     data      = ext_db_ev,
+    #     nchunk    = number_of_cores,
+    #     carry_out = carry_out_cols,
+    #     obsonly   = TRUE,
+    #     tgrid     = sampling_times,
+    #     tad       = TRUE#,
+    #     #.parallel = FALSE
+    #   )
+    #
+    # solved_output <- mrgsim.parallel::future_mrgsim_d(  # mc_mrgsim_d doesn't work in Shiny, and future_mrgsim_d is not reliable
+    #   mod       = input_model_object,
+    #   data      = ext_db_ev,
+    #   nchunk    = number_of_cores,
+    #   carry_out = carry_out_cols,
+    #   obsonly   = TRUE,
+    #   tgrid     = sampling_times,
+    #   tad       = TRUE
+    # ) #%T>%
+    #system.time()
+    #
+    #} else {
+    
+    input_model_object@digits <- 5 # how many sigdigs to output
+    
+    sim_output <- mrgsolve::qsim(input_model_object,
+                                 data = ext_db_ev,
+                                 obsonly = TRUE,
+                                 tgrid = sampling_times,
+                                 tad = TRUE,
+                                 output = "df")
+    
+    # mrgsim_q / qsim does not support carry_out cols, so merging back in here
+    solved_output <- data.table::merge.data.table(sim_output, ext_db, by = "ID", all.x = TRUE) #%>%
+    #} # not using parallel
+  } # end of multiple nsubj sims
+  
+  ### If single subject (or bad number of subjects input)
+  if(nsubj <= 1) {
+    solved_output <- input_model_object %>%
+      mrgsolve::obsonly() %>%
+      mrgsolve::zero_re() %>%
+      mrgsolve::mrgsim_df(events = ev_df,
+                          tgrid  = sampling_times,
+                          tad    = TRUE)
+  }
+  
+  solved_output <- solved_output %>%
+    dplyr::rename(TIME    = time) %>%
+    dplyr::mutate(TIMEADJ = TIME / divide_by,
+                  ID      = as.factor(paste0(append_id_text, ID))
+    )
+  
+  return(solved_output)
+  
 } # end of run_single_sim
 
 
@@ -2634,15 +2524,9 @@ plot_data_with_nm <- function(
     
     if(stat_summary_data_option) {
       
-      bin_number    <- 20 # Sets the number of bins to be used for the median lines.
-      max_data_x    <- max(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
-      min_data_x    <- min(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
-      bin_increment <- (max_data_x - min_data_x) / bin_number
-      bin_times     <- seq(min_data_x, max_data_x, by = bin_increment)
-      
       nonmem_dataset <- nonmem_dataset %>%
         dplyr::mutate(
-          binned_xvar = quantize(nonmem_dataset[[xvar]], levels = bin_times)
+          binned_xvar = quantize(nonmem_dataset[[xvar]], levels = get_bin_times(nonmem_dataset[[xvar]], bin_num = 20, relative_threshold = 0.05))
         )
       
       if(stat_summary_data_by == "") {
@@ -2656,11 +2540,7 @@ plot_data_with_nm <- function(
   
   if(!is.null(input_dataset1)) {
     p1 <- p1 +
-      ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]), color = line_color_1) +
-      ggplot2::theme_bw() +
-      ggplot2::labs(x = xlabel,
-                    y = ylabel) +
-      ggplot2::ggtitle(title)
+      ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]), color = line_color_1) 
     
     if (geom_point_sim_option) {
       p1 <- p1 +
@@ -2670,24 +2550,13 @@ plot_data_with_nm <- function(
   
   if(!is.null(input_dataset2)) {
     p1 <- p1 +
-      ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]), color = line_color_2) +
-      ggplot2::theme_bw() +
-      ggplot2::labs(x = xlabel,
-                    y = ylabel) +
-      ggplot2::ggtitle(title)
+      ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]), color = line_color_2)
     
     if (geom_point_sim_option) {
       p1 <- p1 +
         ggplot2::geom_point(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]), color = line_color_2)
     }
   }
-  
-  # max_x_value <- dplyr::case_when(!is.null(input_dataset1) & !is.null(input_dataset2) ~
-  #                            max(max(input_dataset1[[xvar]]), max(input_dataset2[[xvar]])),
-  #                          !is.null(input_dataset1) ~ max(input_dataset1[[xvar]]),
-  #                          !is.null(input_dataset2) ~ max(input_dataset2[[xvar]]),
-  #                          TRUE                     ~ 10
-  # )
   
   p1 <- smart_x_axis(p1, xlabel = xlabel, debug = debug)
   
@@ -2705,6 +2574,12 @@ plot_data_with_nm <- function(
       ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
       ggplot2::annotation_logticks(sides = "l")
   }
+  
+  p1 <- p1 +
+    ggplot2::theme_bw() +
+    ggplot2::labs(x = xlabel,
+                  y = ylabel) +
+    ggplot2::ggtitle(title)
   
   if(!is.null(nonmem_dataset) & !is.null(color_data_by) & color_data_by %in% names(nonmem_dataset)) {
     p1 <- p1 +
@@ -2829,21 +2704,14 @@ plot_three_data_with_nm <- function(
     
     if(stat_summary_data_option) { # 2023-07-24 steve
       
-      bin_number    <- 20 # Sets the number of bins to be used for the median lines.
-      max_data_x    <- max(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
-      max_x_value   <- max(max_x_value, max_data_x) # Take the larger of the two when a dataset is present
-      min_data_x    <- min(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
-      bin_increment <- (max_data_x - min_data_x) / bin_number
-      bin_times     <- seq(min_data_x, max_data_x, by = bin_increment)
-      
       nonmem_dataset <- nonmem_dataset %>%
         dplyr::mutate(
-          binned_xvar = quantize(nonmem_dataset[[xvar]], levels = bin_times)
+          binned_xvar = quantize(nonmem_dataset[[xvar]], levels = get_bin_times(nonmem_dataset[[xvar]], bin_num = 20, relative_threshold = 0.05))
         )
       
       p1 <- p1 + ggplot2::stat_summary(data = nonmem_dataset, ggplot2::aes(x = binned_xvar, y = .data[[nm_yvar]], group = NULL, color = NULL), geom="line", fun = median, colour = "black", alpha = 0.8)
     } # end of stat_summary_data_option
-  }
+  } # end of dataset check
   
   if (geom_ribbon_option) {
     p1 <- p1 +
@@ -2874,8 +2742,8 @@ plot_three_data_with_nm <- function(
     p1 <- p1 +
       ggplot2::geom_point(alpha = 0.7)
   }
-  
-  p1 <- smart_x_axis(p1, max_x = max_x_value, xlabel = xlabel) # max_x = max_x_value,
+
+  p1 <- smart_x_axis(p1, xlabel = xlabel) # max_x = max_x_value,
   
   ### Apply log axis if required
   if(log_x_axis) {
@@ -2977,7 +2845,7 @@ plot_iiv_data_with_nm <- function(
   
   if(!is.null(input_dataset1)) {
     if(debug) {
-      message('dataset provided')
+      message('dataset1 provided')
     }
     
     input_dataset1 <- input_dataset1 %>% dplyr::select(ID, dplyr::all_of(c(xvar, yvar)), median_yvar, mean_yvar, lower_yvar, upper_yvar) # Only include relevant columns to be plotted
@@ -2987,7 +2855,7 @@ plot_iiv_data_with_nm <- function(
   
   if(!is.null(input_dataset2)) {
     if(debug) {
-      message('dataset provided')
+      message('dataset2 provided')
     }
     input_dataset2 <- input_dataset2 %>% dplyr::select(ID, all_of(c(xvar, yvar_2)), median_yvar, mean_yvar, lower_yvar, upper_yvar) # Only include relevant columns to be plotted
     
@@ -3022,15 +2890,9 @@ plot_iiv_data_with_nm <- function(
     
     if(stat_summary_data_option) { # 2023-07-24 steve
       
-      bin_number    <- 20 # Sets the number of bins to be used for the median lines.
-      max_data_x    <- max(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
-      min_data_x    <- min(as.numeric(nonmem_dataset[[xvar]]), na.rm = TRUE)
-      bin_increment <- (max_data_x - min_data_x) / bin_number
-      bin_times     <- seq(min_data_x, max_data_x, by = bin_increment)
-      
       nonmem_dataset <- nonmem_dataset %>%
         dplyr::mutate(
-          binned_xvar = quantize(nonmem_dataset[[xvar]], levels = bin_times)
+          binned_xvar = quantize(nonmem_dataset[[xvar]], levels = get_bin_times(nonmem_dataset[[xvar]], bin_num = 20, relative_threshold = 0.05))
         )
       
       p1 <- p1 + ggplot2::stat_summary(data = nonmem_dataset, ggplot2::aes(x = binned_xvar, y = .data[[nm_yvar]]), fun = median, geom="line", colour = "black", alpha = 0.7)
@@ -3041,23 +2903,10 @@ plot_iiv_data_with_nm <- function(
     if(!show_ind_profiles) {
       p1 <- p1 +
         ggplot2::geom_ribbon(data = input_dataset1, ggplot2::aes(ymax = .data[[y_max]], ymin = .data[[y_min]]), fill = line_color_1, alpha = 0.4, color = line_color_1) +
-        ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[y_median]]), color = line_color_1, linewidth = 1.2) +
-        ggplot2::theme_bw() +
-        ggplot2::labs(x = xlabel,
-                      y = ylabel) +
-        ggplot2::ggtitle(title) +
-        ggplot2::theme(legend.position = "none")
+        ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[y_median]]), color = line_color_1, linewidth = 1.2)
     } else {
       p1 <- p1 +
-        ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]], color = ID), alpha = 0.4) +
-        ggplot2::theme_bw() +
-        ggplot2::labs(x = xlabel,
-                      y = ylabel) +
-        ggplot2::ggtitle(title) +
-        ggplot2::theme(legend.position = "none")
-      if(debug) {
-        message('plot generated')
-      }
+        ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]], color = ID), alpha = 0.4)
     }
     if(show_y_mean) {
       p1 <- p1 +
@@ -3069,23 +2918,10 @@ plot_iiv_data_with_nm <- function(
     if(!show_ind_profiles) {
       p1 <- p1 +
         ggplot2::geom_ribbon(data = input_dataset2, ggplot2::aes(ymax = .data[[y_max]], ymin = .data[[y_min]]), fill = line_color_2, alpha = 0.4, color = line_color_2) +
-        ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[y_median]]), color = line_color_2, linewidth = 1.2) +
-        ggplot2::theme_bw() +
-        ggplot2::labs(x = xlabel,
-                      y = ylabel) +
-        ggplot2::ggtitle(title) +
-        ggplot2::theme(legend.position = "none")
+        ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[y_median]]), color = line_color_2, linewidth = 1.2)
     } else {
       p1 <- p1 +
-        ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]], color = ID), alpha = 0.4) +
-        ggplot2::theme_bw() +
-        ggplot2::labs(x = xlabel,
-                      y = ylabel) +
-        ggplot2::ggtitle(title) +
-        ggplot2::theme(legend.position = "none")
-      if(debug) {
-        message('plot generated')
-      }
+        ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]], color = ID), alpha = 0.4) 
     }
     if(show_y_mean) {
       p1 <- p1 +
@@ -3106,6 +2942,17 @@ plot_iiv_data_with_nm <- function(
     p1 <- p1 +
       ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
       ggplot2::annotation_logticks(sides = "l")
+  }
+  
+  p1 <- p1 +
+    ggplot2::theme_bw() +
+    ggplot2::labs(x = xlabel,
+                  y = ylabel) +
+    ggplot2::ggtitle(title) +
+    ggplot2::theme(legend.position = "none")
+  
+  if(debug) {
+    message('iiv plot generated')
   }
   
   return(p1)
@@ -4636,37 +4483,50 @@ quantile_ranges_name <- function(quantiles_df, df_orig, xvar) {
 
 categorize_xvar <- function(df, quantiles_df, xvar) {
   
+  # Check for any blanks / NAs in X-axis
+  # if(any(is.na(df[[xvar]]))) {
+  #   df <- df %>% filter(!is.na(!!dplyr::sym(xvar)))
+  #   shiny::showNotification(paste0("WARNING: Some ", xvar, " values are NA and are removed prior to plotting."), type = "warning", duration = 10)
+  # }
+  
+  # print("before rename quantiles_df:")
+  # print(knitr::kable(quantiles_df))
+  
   # Rename the quantile df to have limits inserted as part of the column name
   for(i in seq_along(quantiles_df)) {
     ending_bracket   <- "]" # Note that [ ] means inclusive intervals, ( ) means exclusive intervals
     if(i == 1) { # Special case for first quantile
       starting_bracket <- "\n["
-      names(quantiles_df)[i] <- paste0(names(quantiles_df)[i], starting_bracket, round(min(df[[xvar]], na.rm = TRUE)), "-", round(quantiles_df[,1]), ending_bracket)
+      names(quantiles_df)[i] <- paste0(names(quantiles_df)[i], starting_bracket, round(min(df[[xvar]], na.rm = TRUE)), "-", round(quantiles_df[[1,1]]), ending_bracket)
     } else {
       starting_bracket <- "\n("
-      names(quantiles_df)[i] <- paste0(names(quantiles_df)[i], starting_bracket, round(quantiles_df[,..i-1]), "-", round(quantiles_df[,..i]), ending_bracket)
+      #names(quantiles_df)[i] <- paste0(names(quantiles_df)[i], starting_bracket, round(quantiles_df[,..i-1]), "-", round(quantiles_df[,..i]), ending_bracket)
+      names(quantiles_df)[i] <- paste0(names(quantiles_df)[i], starting_bracket, round(quantiles_df[[1,i-1]]), "-", round(quantiles_df[[1,i]]), ending_bracket)
     }
   }
+  
+  # print("after rename quantiles_df:")
+  # print(knitr::kable(quantiles_df))
   
   conditions <- purrr::map2(
     quantiles_df,
     names(quantiles_df),
     ~rlang::expr(!!dplyr::sym(xvar) <= !!.x ~ !!.y)
   )
-
+  
   conditions <- c(rlang::expr(is.na(!!dplyr::sym(xvar)) ~ "NA"), conditions)
-
+  
   df <- df %>%
     dplyr::mutate(Quantile = dplyr::case_when(!!!conditions)) # triple-bang for list
   
   # Rename NAs
   df <- df %>%
     dplyr::mutate(Quantile = dplyr::case_when(is.na(Quantile) ~ "NA", TRUE ~ Quantile))
-
+  
   # Reorder factor levels to place "NA" first
   df <- df %>%
-   dplyr::mutate(Quantile = forcats::fct_relevel(Quantile, "NA", names(quantiles_df)))
-
+    dplyr::mutate(Quantile = forcats::fct_relevel(Quantile, "NA", names(quantiles_df)))
+  
   return(df)
 }
 
@@ -4786,4 +4646,114 @@ categorize_outliers <- function(df,
   }
   
   return(df)
+}
+
+
+#-------------------------------------------------------------------------------
+#' @name get_bin_times
+#'
+#' @title Function that derives bin times of x_axis
+#' group
+#'
+#' @param df              Input dataframe column of x-axis
+#' @param bin_num         Maximum number of bins, integer
+#' @param relative_threshold relative threshold of lumping bins that are close together
+#'
+#' @returns a vector of unique bin times
+#' @export
+#-------------------------------------------------------------------------------
+
+get_bin_times <- function(dfcol, bin_num = 20, relative_threshold = 0.05) {
+  
+  # If number of unique times are less than 20, use that instead
+  if(length(unique(as.numeric(dfcol))) < bin_num) {bin_num <- length(unique(as.numeric(dfcol)))}
+  
+  # Determine the unique bin boundaries based on quantiles
+  bin_times <- unique(quantile(as.numeric(dfcol), probs = seq(0, 1, length.out = bin_num + 1), na.rm = TRUE))
+  
+  # Initialize the lumped bin times
+  lumped_bin_times <- c(bin_times[1])  # Start with the first value
+  
+  # Iterate through the bin times
+  for (i in 2:length(bin_times)) {
+    # Check the relative difference between the current value and the last value in lumped_bin_times
+    if (abs(bin_times[i] / lumped_bin_times[length(lumped_bin_times)] - 1) > relative_threshold) {
+      # If the relative difference exceeds the threshold, add the current value to lumped_bin_times
+      lumped_bin_times <- c(lumped_bin_times, bin_times[i])
+    }
+  }  
+  
+  return(lumped_bin_times)
+}
+
+
+#-------------------------------------------------------------------------------
+#' @name handle_blanks
+#'
+#' @title Function that turns blank values into ".(blanks)"
+#' group
+#'
+#' @param df              Input dataframe
+#' @param column_name     Name of column (must be character type) to check for blanks
+#'
+#' @importFrom dplyr mutate sym
+#' @returns a dataframe with the blank values converted into ".(blanks)
+#' @export
+#-------------------------------------------------------------------------------
+
+handle_blanks <- function(df, column_name) {
+  if (is.character(df[[column_name]]) && any(df[[column_name]] == "")) {
+    shiny::showNotification(paste0("WARNING: Some ", column_name, " values are blank. Renamed to '.(blank)'."), type = "warning", duration = 10)
+    df <- df %>% dplyr::mutate(!!column_name := ifelse(!!dplyr::sym(column_name) == "", ".(blank)", !!dplyr::sym(column_name)))
+  }
+  return(df)
+}
+
+#-------------------------------------------------------------------------------
+#' @name transform_ev_df
+#'
+#' @title Helper function to handle ev_df transformations
+#' group
+#'
+#' @param ev_df           Input event dataframe
+#' @param model_dur       When TRUE, models duration
+#' @param model_rate      When TRUE, models rate
+#' @param pred_model      When TRUE, the model is a PRED model
+#' @param debug           When TRUE, outputs debugging messages
+#'
+#' @importFrom dplyr mutate select any_of
+#' @importFrom mrgsolve as.ev
+#' @returns a cleaned event dataframe
+#' @export
+#-------------------------------------------------------------------------------
+
+# Helper function to handle ev_df transformations
+transform_ev_df <- function(ev_df, model_dur, model_rate, pred_model, debug = FALSE) {
+  
+  if (model_dur) { # modeling duration, it cannot coexist with tinf
+    if(debug) {message("Applying model_dur transformation")}
+    ev_df <- ev_df %>%
+      as.data.frame() %>%
+      dplyr::mutate(rate = -2) %>%
+      dplyr::select(-tinf) %>%
+      mrgsolve::as.ev()
+  }
+  
+  if (model_rate) {
+    if(debug) {message("Applying model_rate transformation")}
+    ev_df <- ev_df %>%
+      as.data.frame() %>%
+      dplyr::mutate(rate = -1) %>%
+      dplyr::select(-tinf) %>%
+      mrgsolve::as.ev()
+  }
+  
+  if (pred_model) { # set all CMTs to zero as that is required for PRED models
+    if(debug) {message("Applying pred_model transformation")}
+    ev_df <- ev_df %>%
+      dplyr::mutate(cmt = 0) %>%
+      dplyr::select(-dplyr::any_of(c("tinf", "rate")))
+  }
+  
+  return(ev_df)
 }

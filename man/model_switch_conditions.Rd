@@ -20,6 +20,9 @@ shorthand function to switch model code based on
 choice of model input, and append model name
 }
 \note{
-This function will be re-defined if "passworded_models" is sourced.
-An example "Test Passworded Model" is included for example.
+This function will be re-defined if passworded models is sourced externally,
+i.e. when provided as an argument for run_mvp(pw_models_path = "path/to/your/private/models.R").
+
+An example passworded model called "Test Passworded Model" is included by default as an example,
+which can be unlocked by using the password "test".
 }

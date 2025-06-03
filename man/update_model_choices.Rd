@@ -19,7 +19,8 @@ input$model_select & input$model_select2 are updated as a side effect}
 \value{
 a logical TRUE/FALSE if password is valid
 
-\emph{Note} this function will be re-defined if "passworded_models" is sourced.
+\emph{Note} this function will be re-defined if passworded models is sourced externally,
+i.e. when provided as an argument for run_mvp(pw_models_path = "path/to/your/private/models.R")
 }
 \description{
 Shorthand function to update list of models and
