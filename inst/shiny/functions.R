@@ -1129,6 +1129,38 @@ draw_correlation_plot <- function(input_df,
 }
 
 #-------------------------------------------------------------------------------
+#' @name safely_qsim
+#'
+#' @title purrr:safely wrappers for various functions
+#' @param ... args to be passed
+#'
+#' @returns A list with two elements:
+#' * `result`: The result of `mrgsolve::qsim`, or `NULL` if an error occurred.
+#' * `error`: The error that occurred, or `NULL` if no error occurred.
+#'
+#' @seealso `mrgsolve::qsim`
+#' @export
+#-------------------------------------------------------------------------------
+
+safely_qsim <- purrr::safely(mrgsolve::qsim)
+
+#-------------------------------------------------------------------------------
+#' @name safely_mrgsim_df
+#'
+#' @title purrr:safely wrappers for various functions
+#' @param ... args to be passed
+#'
+#' @returns A list with two elements:
+#' * `result`: The result of `mrgsolve::mrgsim_df`, or `NULL` if an error occurred.
+#' * `error`: The error that occurred, or `NULL` if no error occurred.
+#'
+#' @seealso `mrgsolve::mrgsim_df`
+#' @export
+#-------------------------------------------------------------------------------
+
+safely_mrgsim_df <- purrr::safely(mrgsolve::mrgsim_df)
+
+#-------------------------------------------------------------------------------
 #' @name run_single_sim
 #'
 #' @title Executes a mrgsim call based on user input
@@ -1224,15 +1256,17 @@ run_single_sim <- function(input_model_object,
     
     input_model_object@digits <- 5 # how many sigdigs to output
     
-    sim_output <- mrgsolve::qsim(input_model_object,
-                                 data = ext_db_ev,
-                                 obsonly = TRUE,
-                                 tgrid = sampling_times,
-                                 tad = TRUE,
-                                 output = "df")
+    solved_output <- safely_qsim(input_model_object,
+                              data = ext_db_ev,
+                              obsonly = TRUE,
+                              tgrid = sampling_times,
+                              tad = TRUE,
+                              output = "df")
     
     # mrgsim_q / qsim does not support carry_out cols, so merging back in here
-    solved_output <- data.table::merge.data.table(sim_output, ext_db, by = "ID", all.x = TRUE) #%>%
+    if(is.null(solved_output$error)) {
+      solved_output$result <- data.table::merge.data.table(solved_output$result, ext_db, by = "ID", all.x = TRUE)
+    } 
     #} # not using parallel
   } # end of multiple nsubj sims
   
@@ -1241,18 +1275,23 @@ run_single_sim <- function(input_model_object,
     solved_output <- input_model_object %>%
       mrgsolve::obsonly() %>%
       mrgsolve::zero_re() %>%
-      mrgsolve::mrgsim_df(events = ev_df,
-                          tgrid  = sampling_times,
-                          tad    = TRUE)
+      safely_mrgsim_df(events = ev_df,
+                       tgrid  = sampling_times,
+                       tad    = TRUE)
   }
   
-  solved_output <- solved_output %>%
-    dplyr::rename(TIME    = time) %>%
-    dplyr::mutate(TIMEADJ = TIME / divide_by,
-                  ID      = as.factor(paste0(append_id_text, ID))
-    )
-  
-  return(solved_output)
+  if(is.null(solved_output$error)) {
+    solved_output <- solved_output$result %>%
+      dplyr::rename(TIME    = time) %>%
+      dplyr::mutate(TIMEADJ = TIME / divide_by,
+                    ID      = as.factor(paste0(append_id_text, ID))
+      )
+  } else {
+    shiny::showNotification(paste0(solved_output$error, " Potentially due to non-sensible parameter values."), type = "error", duration = 10)
+    solved_output <- NULL
+  }
+    
+  return(solved_output) # Successful sims will be returned as df; otherwise a NULL is returned
   
 } # end of run_single_sim
 
@@ -2177,6 +2216,10 @@ pknca_table <- function(input_simulated_table,
                         debug      = FALSE
 ) {
   
+  if(is.null(input_simulated_table)) {
+    return(NULL)
+  }
+  
   reactive_cmin <- paste0(output_conc, '_CMIN_ranged')
   reactive_cmax <- paste0(output_conc, '_CMAX_ranged')
   reactive_cavg <- paste0(output_conc, '_CAVG_ranged')
@@ -2669,10 +2712,28 @@ plot_three_data_with_nm <- function(
     message(paste0("x_max: : ", x_max))
   }
   
+  if(is.null(c(input_dataset_min, input_dataset_mid, input_dataset_max))) {
+    return(NULL)
+  }
+  
   ## Mutating a new column programmatically to use the selected parameter name
-  df_min <- input_dataset_min %>% dplyr::mutate(ID = "Min", "{param_name}" := param_min_value)
-  df_mid <- input_dataset_mid %>% dplyr::mutate(ID = "Mid", "{param_name}" := param_mid_value)
-  df_max <- input_dataset_max %>% dplyr::mutate(ID = "Max", "{param_name}" := param_max_value)
+  if(!is.null(input_dataset_min)) {
+    df_min <- input_dataset_min %>% dplyr::mutate(ID = "Min", "{param_name}" := param_min_value)
+  } else {
+    df_min <- NULL
+  }
+  
+  if(!is.null(input_dataset_mid)) {
+    df_mid <- input_dataset_mid %>% dplyr::mutate(ID = "Mid", "{param_name}" := param_mid_value)
+  } else {
+    df_mid <- NULL
+  }
+  
+  if(!is.null(input_dataset_max)) {
+    df_max <- input_dataset_max %>% dplyr::mutate(ID = "Max", "{param_name}" := param_max_value)
+  } else {
+    df_max <- NULL
+  }
   
   ## Combining into a single dataset to easily facilitate legends in ggplot
   combined_input <- dplyr::bind_rows(df_min, df_mid, df_max)
@@ -3236,9 +3297,13 @@ sanitize_numeric_input <- function(numeric_input,
 
 create_value_box <- function(input_dataset, name_ends_with, value_box_subtitle, width = infoBox_width, color, sigdig = 4, dp = FALSE) {
   
-  metric_value <- input_dataset %>%
-    dplyr::select(dplyr::ends_with(name_ends_with)) %>%
-    unique()  # %>%
+  if(is.null(input_dataset)) {
+    metric_value <- NA_real_
+  } else {
+    metric_value <- input_dataset %>%
+      dplyr::select(dplyr::ends_with(name_ends_with)) %>%
+      unique()  # %>%
+  }
   
   if(dp) {
     metric_value <- metric_value %>% round(digits = as.integer(sigdig))

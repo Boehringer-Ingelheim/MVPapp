@@ -9,6 +9,7 @@
 
 ## Bugfixes
 
+* Prevent non-sensible parameter estimates from crashing the entire app (#42)
 * Bug fixes for General Plot's box plot count labels (#39)
 * Better handling of NAs for Quantize X-axis option in General Plot
 

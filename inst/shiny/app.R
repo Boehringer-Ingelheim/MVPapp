@@ -1875,7 +1875,7 @@ ui <- shiny::navbarPage(
                                    tags$li("Model will crash if model code contains 'R_' pattern which does not refer to modelling rate."),
                                    tags$li("Weight-based dosing is not propagated in IIV models."),
                                    tags$li("When 'Model Duration' is checked and then a dose is inserted into a compartment where the appropriate syntax (e.g. 'D_[CMT]') is not present, the app will crash. Workaround with providing a miniscule amount to D_[CMT] (e.g. D_GUT = 0.0001)"),
-                                   tags$li("Bad inputs to parameter values (e.g. negative values when there isn't supposed to be one) may crash the app."),
+                                   #tags$li("Bad inputs to parameter values (e.g. negative values when there isn't supposed to be one) may crash the app."),
                                    tags$li("Graphical issues when using the Show AUC option with the Log Y axis option."),
                                    tags$li("Maximum upload dataset size is currently limited to 100 MB."),
                                    tags$li("Recommended minimum resolution is 1920 * 1080 pixels in full screen mode.")
@@ -1901,7 +1901,7 @@ ui <- shiny::navbarPage(
                                title = 'Changelog', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
                                p('Please visit the ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/releases", "Github release page", target = "_blank"), ' for more information.'),
                                htmltools::br(),
-                               p('v0.2.19 (2025-06-03) - Re-worked median line bins to be based on quantiles. Bug fixes for box plot count labels. Better handling of NAs for Quantize X-axis. Built-in data filtering option to distinct by ID. More QoL options for NCA (safeguards and rounding). Minor re-factoring. Minor QoL updates.'),
+                               p('v0.2.19 (2025-06-03) - Prevent bad parameter values from crashing the app. Re-worked median line bins to be based on quantiles. Bug fixes for box plot count labels. Better handling of NAs for Quantize X-axis. Built-in data filtering option to distinct by ID. More QoL options for NCA (safeguards and rounding). Minor re-factoring and QoL updates.'),
                                p('v0.2.18 (2025-04-21) - Tooltips for Select Time Intervals. Safeguards for too many samples. Bugfixes and improvements for NCA. Sorting option and flagging outliers option for individual plots. New template model (parallel zero/first-order absorption).'),
                                p('v0.2.17 (2025-03-13) - Quantized plots in Data Page. More template models (QE, MM TMDD) and minor corrections to existing models. More tooltips. Minor bugfixes.'),
                                p('v0.2.16 (2025-03-04) - Insert delay for some inputs to avoid re-performing computations as frequently.'),
@@ -3577,11 +3577,12 @@ server <- function(input, output, session) {
 
         if(is.data.frame(sim_output)) {
           model_1_checkpoint$sim_generated_model_1 <- TRUE
-
           if (show_debugging_msg) {
-            message('simulation1 generated')
+            message('simulation1 generated successfully')
           }
-
+          return(sim_output)
+        } else {
+          model_1_checkpoint$sim_generated_model_1 <- FALSE
           return(sim_output)
         }
       }
@@ -3938,11 +3939,13 @@ server <- function(input, output, session) {
             )
         }
         if(is.data.frame(sim_output)) {
-          if (show_debugging_msg) {
-            message('simulation2 generated')
-          }
           model_2_checkpoint$sim_generated_model_2 <- TRUE
-
+          if (show_debugging_msg) {
+            message('simulation2 generated successfully')
+          }
+          return(sim_output)
+        } else {
+          model_2_checkpoint$sim_generated_model_2 <- FALSE
           return(sim_output)
         }
       }
@@ -5905,7 +5908,6 @@ server <- function(input, output, session) {
   ## IIV simulation 1 ----
   simulation_IIV_output_model_1 <- reactive({
     if (iiv_checkpoint_model_1$reconstructed_iiv) {
-
       iiv_sim_output_model_1 <-
         run_single_sim(
           input_model_object = changed_matrix_model_1(),
@@ -5923,20 +5925,24 @@ server <- function(input, output, session) {
           parallel_n         = 100 # input$para_n,
         )
 
-      iiv_sim_output_model_1 <- quantile_output(iiv_sim_output_model_1,
-                                                yvar = input$yaxis_name,
-                                                lower_quartile = sanitize_numeric_input(d_lower_quartile(), legal_minimum = 0, display_error = TRUE)/100,
-                                                upper_quartile = sanitize_numeric_input(d_upper_quartile(), legal_maximum = 100, display_error = TRUE)/100
-      )
+      if(!is.null(iiv_sim_output_model_1)) {
+        iiv_sim_output_model_1 <- quantile_output(iiv_sim_output_model_1,
+                                                  yvar = input$yaxis_name,
+                                                  lower_quartile = sanitize_numeric_input(d_lower_quartile(), legal_minimum = 0, display_error = TRUE)/100,
+                                                  upper_quartile = sanitize_numeric_input(d_upper_quartile(), legal_maximum = 100, display_error = TRUE)/100
+        )
 
-      iiv_sim_output_model_1$yvar <- iiv_sim_output_model_1[[input$yaxis_name]]
+        iiv_sim_output_model_1$yvar <- iiv_sim_output_model_1[[input$yaxis_name]]
 
-      if(is.data.frame(iiv_sim_output_model_1)) {
-        iiv_checkpoint_model_1$iiv_simulation <- TRUE
-        if (show_debugging_msg) {
-          message('simulation1 iiv generated')
+        if(is.data.frame(iiv_sim_output_model_1)) {
+          iiv_checkpoint_model_1$iiv_simulation <- TRUE
+          if (show_debugging_msg) {
+            message('simulation1 iiv generated')
+          }
+          return(iiv_sim_output_model_1)
         }
-        return(iiv_sim_output_model_1)
+      } else {
+        return(NULL)
       }
     }
   }, label = 'iiv_output_model_1()')
@@ -6660,20 +6666,24 @@ server <- function(input, output, session) {
           parallel_n         = 100 # input$para_n
         )
 
-      iiv_sim_output_model_2 <- quantile_output(iiv_sim_output_model_2,
-                                                yvar = input$yaxis_name_2,
-                                                lower_quartile = sanitize_numeric_input(d_lower_quartile(), legal_minimum = 0, display_error = TRUE)/100,
-                                                upper_quartile = sanitize_numeric_input(d_upper_quartile(), legal_maximum = 100, display_error = TRUE)/100
-      )
+      if(!is.null(iiv_sim_output_model_2)) {
+        iiv_sim_output_model_2 <- quantile_output(iiv_sim_output_model_2,
+                                                  yvar = input$yaxis_name_2,
+                                                  lower_quartile = sanitize_numeric_input(d_lower_quartile(), legal_minimum = 0, display_error = TRUE)/100,
+                                                  upper_quartile = sanitize_numeric_input(d_upper_quartile(), legal_maximum = 100, display_error = TRUE)/100
+        )
 
-      iiv_sim_output_model_2$yvar <- iiv_sim_output_model_2[[input$yaxis_name_2]]
+        iiv_sim_output_model_2$yvar <- iiv_sim_output_model_2[[input$yaxis_name_2]]
 
-      if(is.data.frame(iiv_sim_output_model_2)) {
-        iiv_checkpoint_model_2$iiv_simulation <- TRUE
-        if (show_debugging_msg) {
-          message('simulation1 generated')
+        if(is.data.frame(iiv_sim_output_model_2)) {
+          iiv_checkpoint_model_2$iiv_simulation <- TRUE
+          if (show_debugging_msg) {
+            message('simulation1 generated')
+          }
+          return(iiv_sim_output_model_2)
         }
-        return(iiv_sim_output_model_2)
+      } else {
+        return(NULL)
       }
     }
   }, label = 'iiv_output_model_2()')

@@ -74,7 +74,9 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/run_mvp.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/run_single_sim.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/safely_eval.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/safely_mrgsim_df.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/safely_parse.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/safely_qsim.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/safely_run_single_sim.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/sample_age_wt.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/sanitize_numeric_input.html</loc></url>
