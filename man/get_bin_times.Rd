@@ -8,11 +8,11 @@ group}
 get_bin_times(dfcol, bin_num = 20, relative_threshold = 0.05)
 }
 \arguments{
+\item{dfcol}{Input dataframe column of x-axis}
+
 \item{bin_num}{Maximum number of bins, integer}
 
 \item{relative_threshold}{relative threshold of lumping bins that are close together}
-
-\item{df}{Input dataframe column of x-axis}
 }
 \value{
 a vector of unique bin times

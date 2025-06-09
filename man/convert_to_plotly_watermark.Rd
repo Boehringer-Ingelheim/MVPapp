@@ -13,6 +13,7 @@ convert_to_plotly_watermark(
   width = NULL,
   height = NULL,
   debug = FALSE,
+  try_tooltip = FALSE,
   plotly_watermark = TRUE
 )
 }
@@ -32,6 +33,8 @@ convert_to_plotly_watermark(
 \item{height}{height in pixels. Default NULL - uses current resolution}
 
 \item{debug}{Set to TRUE to show debug messages}
+
+\item{try_tooltip}{Testing tooltip display option, relevant for tornado plots}
 
 \item{plotly_watermark}{Set to TRUE to insert "For Internal Use Only"}
 }

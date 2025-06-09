@@ -4,12 +4,14 @@
 \alias{update_model_object}
 \title{Function to update model object}
 \usage{
-update_model_object(input_model_object, input_new_df)
+update_model_object(input_model_object, input_new_df, convert_colnames = FALSE)
 }
 \arguments{
 \item{input_model_object}{original model object}
 
 \item{input_new_df}{dataframe containing new name/value combinations}
+
+\item{convert_colnames}{When TRUE, rename input_new_df column names}
 }
 \value{
 a mrgsolve model object

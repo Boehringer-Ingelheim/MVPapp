@@ -1,3 +1,16 @@
+# MVPapp 0.2.19 (2025-06-09)
+
+## Features
+
+* Implemented Batch runs (Parameter Sensitivity Analysis Page - All Parameters) to assess all parameters in the model with a defined upper/lower range in a single click (#44)
+  * QoL features includes fixing parameters, reset entire table, multiple display scales, and other graphical options
+
+## Bugfixes
+
+* General performance improvements for larger models with long sampling (#43)
+* Stability and minor UI fixes
+
+
 # MVPapp 0.2.19 (2025-06-03)
 
 ## Features

@@ -13,11 +13,8 @@ smart_x_axis(p1, max_x = NULL, xvar = "TIMEADJ", xlabel, debug = FALSE)
 
 \item{xvar}{x variable string to be used to derive max_x}
 
-\item{xlabel}{Will only apply when xlabel is either
-"Time (hours)"
-"Time (weeks)",
-"Time (days)",
-"Time (months)}
+\item{xlabel}{Will only apply when xlabel is either "Time (hours)",
+"Time (weeks)", "Time (days)", or "Time (months)}
 
 \item{debug}{Shows debug messages}
 }

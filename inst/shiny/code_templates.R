@@ -1086,10 +1086,6 @@ modlib_examples <-
 ### IMPORTANT: Do not have same model for both Model 1 / Model 2 as internal model names cannot be identical!                    
 '
 
-## model_object <- mread("pred1",   modlib()) # closed-form example [not supported in MVP]
-## model_object <- mread("1005",    modlib()) # embedded NONMEM result [not supported in MVP]
-## model_object <- mread("nm-like", modlib()) # model with nonmem-like syntax [not supported in MVP]                         
-
 #-------------------------------------------------------------------------------
 #' PD model of gemcitabine, with gompertz and effect compartment
 #' Tham LS, Holford NH, Wang L, Soo RA, Lee SC, Lee HS, et al. A pharmacodynamic model for the time course of tumor shrinkage by gemcitabine + carboplatin in non-small cell lung cancer patients. Clin Cancer Res. 2008;14(13):4213-8.

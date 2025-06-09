@@ -49,6 +49,8 @@ do_data_page_ind_plot(
 
 \item{colnums}{How many cols per page}
 
+\item{pagenum}{Page number to filter by}
+
 \item{filter_id}{Filter by these IDs}
 
 \item{filter_cmt}{Filter by this CMT}

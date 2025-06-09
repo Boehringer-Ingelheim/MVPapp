@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.19</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -164,7 +164,7 @@
 </li>
 <li>Changes are immediately shown on the plot on the right, and PK/PD metrics are provided on the left page under each respective sub tab.
 <ul>
-<li>If you have a PK/PD model, you may need to switch the Y-axis from the Simulation page to display PD information, assuming your default Y-axis is PK concentration.<br>
+<li>If you have a PK/PD model, you may need to switch the Y-axis from the Simulation page to display PD information (assuming your default Y-axis is PK concentration).<br>
 </li>
 <li>The rounding of the metrics can be changed in the “Rounding Options” sub tab.<br>
 </li>
@@ -181,6 +181,23 @@
 <li>Simulations of the middle profile, in addition to its derived metrics can be downloaded in the Table page.</li>
 </ol>
 <p><img src="www/psaexample.png"></p>
+<div class="section level4">
+<h4 id="assessing-all-structural-parameters">Assessing All Structural Parameters<a class="anchor" aria-label="anchor" href="#assessing-all-structural-parameters"></a>
+</h4>
+<p>Batch run simulations (i.e. assessing all parameters at the same time) can be generated from the “All Parameters” tab on the top-left side of the page, with <strong>results available from just a single click</strong>, visualized using <a href="https://en.wikipedia.org/wiki/Tornado_diagram" target="_blank" class="external-link">Tornado Plots</a>. This feature is particularly useful for complex models with up to hundreds of parameters, e.g. QSP models.</p>
+<ol style="list-style-type: decimal">
+<li>By default, all parameters are perturbed based on ±50% of the original value (i.e. the reference model). Users may tweak the Lower and Upper Multipliers to quickly pre-configure the range easily. Each value can also be adjusted manually in the Batch Run Parameters Table below.</li>
+<li>(Optional) Remove any parameters from the batch run using the “Fix parameters” option on the top-left side.</li>
+<li>Press the “Batch Run” button when ready. Each simulation will substitute one of its parameters univariately, while the rest of the parameters are unchanged based on the reference model (i.e. the total number of simulations are 2 * each parameter (lower and upper) + 1 (the reference model)).</li>
+<li>On the right hand side in the “Plotting Options”, select the variable to summarize over (usually the PK/PD concentration variable). Afterwards, choose the exposure metric of interest from the “Select Metric” option.
+<ul>
+<li>Other graphical options such as displaying in different scales, effect size text labels, filtering parameters, and bioequivalence (80% - 125%) visual guide are provided.</li>
+<li>A new set of Batch Runs should be generated whenever the Batch Run Parameter Table is changed.</li>
+</ul>
+</li>
+</ol>
+<p><img src="www/tornado3.png"></p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="simulations-with-variability">Simulations with Variability<a class="anchor" aria-label="anchor" href="#simulations-with-variability"></a>
@@ -244,7 +261,7 @@
 <li>Navigate to the “Exposure Box Plots” on the top right side of the page.<br>
 </li>
 <li>Select the time intervals of interest to derive metrics, which could be relevant when deriving AUCtau,ss, for example. By default the entire time range is used.</li>
-<li>Pick an exposure metric in the “Select Metric” option in the “Plotting Options” box. Currently, Cmax, Cmin, Cavg, AUC, Tmax and Tmin are supported.</li>
+<li>Pick an exposure metric in the “Select Metric” option in the “Plotting Options” box. Currently, AUC, Cmax, Cmin, Cavg, Clast, Tmax, and Tmin are supported.</li>
 <li>Labels, titles, and the option to insert more summary statistics are available to further customize the plot, allowing great “off-the-shelf” graphics to be downloaded for presentations.</li>
 </ol>
 <p><img src="www/expplot.png"></p>

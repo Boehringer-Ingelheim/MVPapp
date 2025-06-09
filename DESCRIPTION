@@ -1,6 +1,6 @@
 Package: MVPapp
 Title: Model Visualization Platform
-Version: 0.2.19
+Version: 0.3.0
 Authors@R: c(
     person("Steve", "Choy", email = "steve.choy@outlook.com", role = c("aut", "cre")),
     person("Jin Gyu", "Kim", role = "aut"))
@@ -33,6 +33,7 @@ Imports: bslib (>= 0.5.1),
          plotly (>= 4.10.1),
          purrr,
          rhandsontable (>= 0.3.8),
+         scales,
          shiny (>= 1.7.4.1),
          shinyAce,
          shinyalert,
@@ -43,6 +44,7 @@ Imports: bslib (>= 0.5.1),
          shinythemes,
          shinyWidgets (>= 0.8.0),
          stringr,
+         tibble,
          tidyr
 Suggests: readr,
           foreign,

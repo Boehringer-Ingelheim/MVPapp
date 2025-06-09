@@ -34,6 +34,8 @@ plot_iiv_exp_data(
 
 \item{show_stats}{Display texts of stats for each box plot}
 
+\item{xlab}{Optional name for xvar}
+
 \item{title}{Title for plot}
 }
 \value{

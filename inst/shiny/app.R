@@ -1166,78 +1166,80 @@ ui <- shiny::navbarPage(
                                                                              checkboxInput('dp_checkbox_model_1', dp_checkbox_name),
                                                                              shinyBS::bsPopover('dp_checkbox_model_1', dp_checkbox_name , content = bspop_dp_checkbox, placement = "bottom", trigger = "hover")
                                                                       )
-                                                             )# end of tabPanel
-                                                           )# end of tabsetPanel
+                                                             ) # end of tabPanel
+                                                           ) # end of tabsetPanel
                                        )   # end of box
-                                     )
+                                     ) # end of fluidRow
                         ),                         # end of sidebarPanel
                         mainPanel(width = mainbar_width,
-                                  shinydashboard::box(width = 12,
-                                                      title = label_main_sim_plot, status = 'primary', solidHeader = TRUE, collapsible = FALSE,
-                                                      uiOutput('psa_plot_output_model_1'),
-                                                      downloadButton("download_psa_plot_model_1", "Download Non-Interactive Plot"),
-                                                      shinyBS::bsPopover('download_psa_plot_model_1', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover")
-                                  ),
-                                  shinyBS::bsPopover("bspop_select_time_interval", title = "Select Time Interval", content = bspop_select_time_interval, placement = "right", trigger = "hover"),
-                                  shinydashboard::box(width = 12,
-                                                      title = tags$span(htmltools::HTML("Select Time Interval for Deriving Metrics (Original Time Scale)&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_select_time_interval")),
-                                                      status = 'primary', solidHeader = TRUE, collapsible = TRUE,
-                                                      column(width = 6,
-                                                             shinyWidgets::pickerInput('min_nca_obs_time_model_1', label = 'Start Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE))),
-                                                      column(width = 6,
-                                                             shinyWidgets::pickerInput('max_nca_obs_time_model_1', label = 'End Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE)))
-                                  ),
-                                  shinydashboard::box(width = 12,
-                                                      title = 'Plotting Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
-                                                      column(width = 3,
-                                                             checkboxInput('log_y_axis_model_1', log_y_axis_label),
-                                                             checkboxInput('geom_point_sim_option_model_1', add_sim_geom_point, width = '100%', value = TRUE)
-                                                      ),
-                                                      column(width = 3,
-                                                             checkboxInput('log_x_axis_model_1', log_x_axis_label),
-                                                             checkboxInput('geom_point_data_option_model_1', add_data_geom_point, width = '100%', value = TRUE)),
-                                                      column(width = 3,
-                                                             checkboxInput('geom_vline_option_model_1', add_geom_vline, width = '100%', value = TRUE),
-                                                             checkboxInput('combine_nmdata_1_model_1', label_combine_nm_data, width = '100%'),
-                                                             shinyBS::bsPopover('combine_nmdata_1_model_1', title = label_combine_nm_data, content = bspop_combine_nm_data, trigger = 'hover', placement = 'top'),
-                                                      ),
-                                                      column(width = 3,
-                                                             checkboxInput('geom_ribbon_option_model_1', add_geom_ribbon, width = '100%', value = FALSE),
-                                                             checkboxInput('stat_sum_data_option_model_1', add_data_stat_sum, width = '100%', value = TRUE),
-                                                             shinyBS::bsPopover('stat_sum_data_option_model_1', title = add_data_stat_sum, content = bspop_data_stat_sum, placement = 'top')),
-                                                      column(width = 9,
-                                                             textInput('plot_title_psa_model_1', plot_title_label, value = NULL, placeholder = plot_title_placeholder)
-                                                      ),
-                                                      column(width = 3,
-                                                             div(style = "height: 15px;"),  # Empty div to add space
-                                                             shinyBS::bsPopover('do_psa_plotly_model_1', 'Interactive Plot (Slower)' , content = bspop_do_sim_plotly, placement = "top", trigger = "hover"),
-                                                             checkboxInput('do_psa_plotly_model_1', 'Interactive Plot (Slower)', value = TRUE)
-                                                      )
-                                  ),       # end of box
-                                  shinydashboard::box(width = 12,
-                                                      title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
-                                                      column(width = 6,
-                                                             textInput('plotly3_filename_model_1', plotly_filename_label, value = paste0(today_numeric(), '_psa_plot_model_1')),
-                                                             shinyBS::bsPopover('plotly3_filename_model_1', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
-                                                      ),
-                                                      column(width = 2,
-                                                             selectInput('plotly3_format_model_1', label = plotly_format_label,
-                                                                         choices = c("png","jpeg","svg","webp"),
-                                                                         selected = 'png',
-                                                                         selectize = FALSE)
-                                                      ),
-                                                      column(width = 2,
-                                                             numericInput('plotly3_width_model_1', plotly_width_label, value = NULL, min = 1, step = 10),
-                                                             shinyBS::bsPopover('plotly3_width_model_1', title = plotly_width_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
-                                                      ),
-                                                      column(width = 2,
-                                                             numericInput('plotly3_height_model_1', plotly_height_label, value = NULL, min = 1, step = 10),
-                                                             shinyBS::bsPopover('plotly3_height_model_1', title = plotly_height_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
-                                                      )
-                                  )
-                        )
-                      )
-             ),
+                                  fluidRow(
+                                    shinydashboard::box(width = 12,
+                                                        title = label_main_sim_plot, status = 'primary', solidHeader = TRUE, collapsible = FALSE,
+                                                        uiOutput('psa_plot_output_model_1'),
+                                                        downloadButton("download_psa_plot_model_1", "Download Non-Interactive Plot"),
+                                                        shinyBS::bsPopover('download_psa_plot_model_1', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover")
+                                    ),
+                                    shinyBS::bsPopover("bspop_select_time_interval", title = "Select Time Interval", content = bspop_select_time_interval, placement = "top", trigger = "hover"),
+                                    shinydashboard::box(width = 12,
+                                                        title = tags$span(htmltools::HTML("Select Time Interval for Deriving Metrics (Original Time Scale)&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_select_time_interval")),
+                                                        status = 'primary', solidHeader = TRUE, collapsible = TRUE,
+                                                        column(width = 6,
+                                                               shinyWidgets::pickerInput('min_nca_obs_time_model_1', label = 'Start Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE))),
+                                                        column(width = 6,
+                                                               shinyWidgets::pickerInput('max_nca_obs_time_model_1', label = 'End Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE)))
+                                    ),
+                                    shinydashboard::box(width = 12,
+                                                        title = 'Plotting Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
+                                                        column(width = 3,
+                                                               checkboxInput('log_y_axis_model_1', log_y_axis_label),
+                                                               checkboxInput('geom_point_sim_option_model_1', add_sim_geom_point, width = '100%', value = TRUE)
+                                                        ),
+                                                        column(width = 3,
+                                                               checkboxInput('log_x_axis_model_1', log_x_axis_label),
+                                                               checkboxInput('geom_point_data_option_model_1', add_data_geom_point, width = '100%', value = TRUE)),
+                                                        column(width = 3,
+                                                               checkboxInput('geom_vline_option_model_1', add_geom_vline, width = '100%', value = TRUE),
+                                                               checkboxInput('combine_nmdata_1_model_1', label_combine_nm_data, width = '100%'),
+                                                               shinyBS::bsPopover('combine_nmdata_1_model_1', title = label_combine_nm_data, content = bspop_combine_nm_data, trigger = 'hover', placement = 'top'),
+                                                        ),
+                                                        column(width = 3,
+                                                               checkboxInput('geom_ribbon_option_model_1', add_geom_ribbon, width = '100%', value = FALSE),
+                                                               checkboxInput('stat_sum_data_option_model_1', add_data_stat_sum, width = '100%', value = TRUE),
+                                                               shinyBS::bsPopover('stat_sum_data_option_model_1', title = add_data_stat_sum, content = bspop_data_stat_sum, placement = 'top')),
+                                                        column(width = 9,
+                                                               textInput('plot_title_psa_model_1', plot_title_label, value = NULL, placeholder = plot_title_placeholder)
+                                                        ),
+                                                        column(width = 3,
+                                                               div(style = "height: 15px;"),  # Empty div to add space
+                                                               shinyBS::bsPopover('do_psa_plotly_model_1', 'Interactive Plot (Slower)' , content = bspop_do_sim_plotly, placement = "top", trigger = "hover"),
+                                                               checkboxInput('do_psa_plotly_model_1', 'Interactive Plot (Slower)', value = TRUE)
+                                                        )
+                                    ),       # end of box
+                                    shinydashboard::box(width = 12,
+                                                        title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
+                                                        column(width = 6,
+                                                               textInput('plotly3_filename_model_1', plotly_filename_label, value = paste0(today_numeric(), '_psa_plot_model_1')),
+                                                               shinyBS::bsPopover('plotly3_filename_model_1', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
+                                                        ),
+                                                        column(width = 2,
+                                                               selectInput('plotly3_format_model_1', label = plotly_format_label,
+                                                                           choices = c("png","jpeg","svg","webp"),
+                                                                           selected = 'png',
+                                                                           selectize = FALSE)
+                                                        ),
+                                                        column(width = 2,
+                                                               numericInput('plotly3_width_model_1', plotly_width_label, value = NULL, min = 1, step = 10),
+                                                               shinyBS::bsPopover('plotly3_width_model_1', title = plotly_width_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
+                                                        ),
+                                                        column(width = 2,
+                                                               numericInput('plotly3_height_model_1', plotly_height_label, value = NULL, min = 1, step = 10),
+                                                               shinyBS::bsPopover('plotly3_height_model_1', title = plotly_height_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
+                                                        )
+                                    ) # end of box
+                                  ) # end of fluidRow
+                        ) # end of mainPanel
+                      ) # end of sidebarLayout
+             ), # end of tabPanel Model 1
              tabPanel(title = 'Model 2',
                       sidebarLayout(
                         sidebarPanel(width = sidebar_width,
@@ -1320,75 +1322,389 @@ ui <- shiny::navbarPage(
                                      )
                         ),            # end of sidebarPanel
                         mainPanel(width = mainbar_width,
-                                  shinydashboard::box(width = 12,
-                                                      title = label_main_sim_plot, status = 'primary', solidHeader = TRUE, collapsible = FALSE,
-                                                      uiOutput('psa_plot_output_model_2'),
-                                                      downloadButton("download_psa_plot_model_2", "Download Non-Interactive Plot"),
-                                                      shinyBS::bsPopover('download_psa_plot_model_2', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover")
-                                  ),
-                                  shinyBS::bsPopover("bspop_select_time_interval_model_2", title = "Select Time Interval", content = bspop_select_time_interval, placement = "right", trigger = "hover"),
-                                  shinydashboard::box(width = 12,
-                                                      title = tags$span(htmltools::HTML("Select Time Interval for Deriving Metrics (Original Time Scale)&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_select_time_interval_model_2")),
-                                                      status = 'primary', solidHeader = TRUE, collapsible = TRUE,
-                                                      column(width = 6,
-                                                             shinyWidgets::pickerInput('min_nca_obs_time_model_2', label = 'Start Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE))),
-                                                      column(width = 6,
-                                                             shinyWidgets::pickerInput('max_nca_obs_time_model_2', label = 'End Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE)))
-                                  ),             # end of box
-                                  shinydashboard::box(width = 12,
-                                                      title = 'Plotting Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
-                                                      column(width = 3,
-                                                             checkboxInput('log_y_axis_model_2', log_y_axis_label),
-                                                             checkboxInput('geom_point_sim_option_model_2', add_sim_geom_point, width = '100%', value = TRUE)
-                                                      ),
-                                                      column(width = 3,
-                                                             checkboxInput('log_x_axis_model_2', log_x_axis_label),
-                                                             checkboxInput('geom_point_data_option_model_2', add_data_geom_point, width = '100%', value = TRUE)),
-                                                      column(width = 3,
-                                                             checkboxInput('geom_vline_option_model_2', add_geom_vline, width = '100%', value = TRUE),
-                                                             checkboxInput('combine_nmdata_1_model_2', label_combine_nm_data, width = '100%'),
-                                                             shinyBS::bsPopover('combine_nmdata_1_model_2', title = label_combine_nm_data, content = bspop_combine_nm_data, trigger = 'hover', placement = 'top')
+                                  fluidRow(
+                                    shinydashboard::box(width = 12,
+                                                        title = label_main_sim_plot, status = 'primary', solidHeader = TRUE, collapsible = FALSE,
+                                                        uiOutput('psa_plot_output_model_2'),
+                                                        downloadButton("download_psa_plot_model_2", "Download Non-Interactive Plot"),
+                                                        shinyBS::bsPopover('download_psa_plot_model_2', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover")
+                                    ),
+                                    shinyBS::bsPopover("bspop_select_time_interval_model_2", title = "Select Time Interval", content = bspop_select_time_interval, placement = "top", trigger = "hover"),
+                                    shinydashboard::box(width = 12,
+                                                        title = tags$span(htmltools::HTML("Select Time Interval for Deriving Metrics (Original Time Scale)&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_select_time_interval_model_2")),
+                                                        status = 'primary', solidHeader = TRUE, collapsible = TRUE,
+                                                        column(width = 6,
+                                                               shinyWidgets::pickerInput('min_nca_obs_time_model_2', label = 'Start Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE))),
+                                                        column(width = 6,
+                                                               shinyWidgets::pickerInput('max_nca_obs_time_model_2', label = 'End Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE)))
+                                    ),             # end of box
+                                    shinydashboard::box(width = 12,
+                                                        title = 'Plotting Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
+                                                        column(width = 3,
+                                                               checkboxInput('log_y_axis_model_2', log_y_axis_label),
+                                                               checkboxInput('geom_point_sim_option_model_2', add_sim_geom_point, width = '100%', value = TRUE)
+                                                        ),
+                                                        column(width = 3,
+                                                               checkboxInput('log_x_axis_model_2', log_x_axis_label),
+                                                               checkboxInput('geom_point_data_option_model_2', add_data_geom_point, width = '100%', value = TRUE)),
+                                                        column(width = 3,
+                                                               checkboxInput('geom_vline_option_model_2', add_geom_vline, width = '100%', value = TRUE),
+                                                               checkboxInput('combine_nmdata_1_model_2', label_combine_nm_data, width = '100%'),
+                                                               shinyBS::bsPopover('combine_nmdata_1_model_2', title = label_combine_nm_data, content = bspop_combine_nm_data, trigger = 'hover', placement = 'top')
 
-                                                      ),
-                                                      column(width = 3,
-                                                             checkboxInput('geom_ribbon_option_model_2', add_geom_ribbon, width = '100%', value = FALSE),
-                                                             checkboxInput('stat_sum_data_option_model_2', add_data_stat_sum, width = '100%', value = TRUE),
-                                                             shinyBS::bsPopover('stat_sum_data_option_model_2', title = add_data_stat_sum, content = bspop_data_stat_sum, placement = 'right')),
-                                                      column(width = 9,
-                                                             textInput('plot_title_psa_model_2', plot_title_label, value = NULL, placeholder = plot_title_placeholder)
-                                                      ),
-                                                      column(width = 3,
-                                                             div(style = "height: 15px;"),  # Empty div to add space
-                                                             shinyBS::bsPopover('do_psa_plotly_model_2', 'Interactive Plot (Slower)' , content = bspop_do_sim_plotly, placement = "top", trigger = "hover"),
-                                                             checkboxInput('do_psa_plotly_model_2', 'Interactive Plot (Slower)', value = TRUE)
-                                                      )
-                                  ),       # end of box
-                                  shinydashboard::box(width = 12,
-                                                      title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
-                                                      column(width = 6,
-                                                             textInput('plotly3_filename_model_2', plotly_filename_label, value = paste0(today_numeric(), '_psa_plot_model_2')),
-                                                             shinyBS::bsPopover('plotly3_filename_model_2', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
-                                                      ),
-                                                      column(width = 2,
-                                                             selectInput('plotly3_format_model_2', label = plotly_format_label,
-                                                                         choices = c("png","jpeg","svg","webp"),
-                                                                         selected = 'png',
-                                                                         selectize = FALSE)
-                                                      ),
-                                                      column(width = 2,
-                                                             numericInput('plotly3_width_model_2', plotly_width_label, value = NULL, min = 1, step = 10),
-                                                             shinyBS::bsPopover('plotly3_width_model_2', title = plotly_width_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
-                                                      ),
-                                                      column(width = 2,
-                                                             numericInput('plotly3_height_model_2', plotly_height_label, value = NULL, min = 1, step = 10),
-                                                             shinyBS::bsPopover('plotly3_height_model_2', title = plotly_height_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
-                                                      )
-                                  )
-                        )# end of mainPanel
-                      )# end of sidebarLayout
-             )# end of tabPanel_2
-           )                                      # end of navset_pill
-  ),                                         # end of tabPanel
+                                                        ),
+                                                        column(width = 3,
+                                                               checkboxInput('geom_ribbon_option_model_2', add_geom_ribbon, width = '100%', value = FALSE),
+                                                               checkboxInput('stat_sum_data_option_model_2', add_data_stat_sum, width = '100%', value = TRUE),
+                                                               shinyBS::bsPopover('stat_sum_data_option_model_2', title = add_data_stat_sum, content = bspop_data_stat_sum, placement = 'right')),
+                                                        column(width = 9,
+                                                               textInput('plot_title_psa_model_2', plot_title_label, value = NULL, placeholder = plot_title_placeholder)
+                                                        ),
+                                                        column(width = 3,
+                                                               div(style = "height: 15px;"),  # Empty div to add space
+                                                               shinyBS::bsPopover('do_psa_plotly_model_2', 'Interactive Plot (Slower)' , content = bspop_do_sim_plotly, placement = "top", trigger = "hover"),
+                                                               checkboxInput('do_psa_plotly_model_2', 'Interactive Plot (Slower)', value = TRUE)
+                                                        )
+                                    ),       # end of box
+                                    shinydashboard::box(width = 12,
+                                                        title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
+                                                        column(width = 6,
+                                                               textInput('plotly3_filename_model_2', plotly_filename_label, value = paste0(today_numeric(), '_psa_plot_model_2')),
+                                                               shinyBS::bsPopover('plotly3_filename_model_2', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
+                                                        ),
+                                                        column(width = 2,
+                                                               selectInput('plotly3_format_model_2', label = plotly_format_label,
+                                                                           choices = c("png","jpeg","svg","webp"),
+                                                                           selected = 'png',
+                                                                           selectize = FALSE)
+                                                        ),
+                                                        column(width = 2,
+                                                               numericInput('plotly3_width_model_2', plotly_width_label, value = NULL, min = 1, step = 10),
+                                                               shinyBS::bsPopover('plotly3_width_model_2', title = plotly_width_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
+                                                        ),
+                                                        column(width = 2,
+                                                               numericInput('plotly3_height_model_2', plotly_height_label, value = NULL, min = 1, step = 10),
+                                                               shinyBS::bsPopover('plotly3_height_model_2', title = plotly_height_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
+                                                        )
+                                    ) # end of box
+                                  ) # end of fluidRow
+                        ) # end of mainPanel
+                      ) # end of sidebarLayout
+             ),# end of tabPanel_2
+             tabPanel(title = 'Model 1 (All Parameters)',
+                      sidebarLayout(
+                        sidebarPanel(width = sidebar_width,
+                                     fluidRow(
+                                       shinyBS::bsPopover("bspop_batch_runs_model_1", title = "Batch Runs", content = bspop_batch_runs, placement = "right", trigger = "hover"),
+                                       shinyBS::bsPopover("tor_lower_model_1", title = "Upper/Lower Bound Multiplier", content = bspop_bounds, placement = "right", trigger = "hover"),
+                                       shinyBS::bsPopover("tor_upper_model_1", title = "Upper/Lower Bound Multiplier", content = bspop_bounds, placement = "right", trigger = "hover"),
+                                       shinydashboard::box(width = 12,
+                                                           title = tags$span(htmltools::HTML("Simulation Settings&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_batch_runs_model_1")),
+                                                           status = 'primary', solidHeader = TRUE, collapsible = FALSE, collapsed = FALSE,
+                                                           column(width = 4,
+                                                                  numericInput('tor_lower_model_1',
+                                                                               label_lower_multiplier,
+                                                                               value = 0.5,
+                                                                               min = 0.1,
+                                                                               max = 1.0,
+                                                                               step = 0.1),
+                                                           ),
+                                                           column(width = 4,
+                                                                  numericInput('tor_upper_model_1',
+                                                                               label_upper_multiplier,
+                                                                               value = 1.5,
+                                                                               min = 1.1,
+                                                                               step = 0.1),
+                                                           ),
+                                                           column(width = 4,
+                                                                  selectizeInput(inputId = 'tor_fix_model_1', label = label_fix_parameters, character(0), multiple = TRUE)
+                                                           ),
+                                                           column(width = 12,
+                                                                  tags$div(tags$hr(style="border-color: #CCCCCC; border-width: 4px;"))
+                                                           ),
+                                                           column(width = 6,
+                                                                  label_batch_table
+                                                           ),
+                                                           column(width = 6,
+                                                                  tags$div(
+                                                                    style = "display: flex; justify-content: flex-end; gap: 20px;", # Align to the right and add spacing
+                                                                    shinyBS::bsButton('reset_reference_model_1', 'Reset', style = 'default', icon = icon("arrow-rotate-right")),
+                                                                    actionButton('generate_batch_model_1', label = htmltools::HTML('<i class="fa fa-beat fa-circle-play" style="--fa-animation-duration: 1s;"></i>&nbsp;&nbsp;Batch Run'),
+                                                                                 class = 'pull-right')#,
+                                                                    #shinyBS::bsButton('generate_batch_model_1', 'Batch Run', style = 'default', icon = icon("circle-play"))
+                                                                  ),
+                                                                  shinyBS::bsPopover('reset_reference_model_1', 'Reset Reference', content = bspop_reset_reference, placement = "bottom", trigger = "hover"),
+                                                                  shinyBS::bsPopover('generate_batch_model_1', 'Batch Run', content = bspop_generate_batch, placement = "bottom", trigger = "hover")
+                                                           ),
+                                                           column(width = 12,
+                                                                  div(style = "height: 5px;"),  # Empty div to add space
+                                                                  rhandsontable::rHandsontableOutput('tor_table_model_1')
+                                                           ),
+
+                                                           column(width = 12,
+                                                                  div(style = "height: 10px;"),  # Empty div to add space
+                                                                  div(
+                                                                    style = "display: inline-block; vertical-align: top;",
+                                                                    downloadButton("download_tor_table_model_1", "Download Table (.csv)")
+                                                                  ),
+                                                                  div(
+                                                                    style = "display: inline-block; vertical-align: top; margin-left: 20px;",
+                                                                    checkboxInput('tor_show_digits_model_1', label_tor_show_digits, value = TRUE),
+                                                                    shinyBS::bsPopover('tor_show_digits_model_1', label_tor_show_digits, content = bspop_tor_show_digits, placement = "right", trigger = "hover")
+                                                                  )
+                                                           )
+                                       ) # end of box
+                                     ) # end of fluidRow
+                        ), # end of sidebarPanel
+                        mainPanel(width = mainbar_width,
+                                  fluidRow(
+                                    shinydashboard::box(width = 12,
+                                                        title = "Tornado Plot", status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
+                                                        uiOutput('tor_plot_output_model_1'),
+                                                        downloadButton("download_tor_plot_model_1", "Download Non-Interactive Plot"),
+                                                        shinyBS::bsPopover('download_tor_plot_model_1', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover"),
+                                                        tags$span(style = "padding: 10px;"), # Add horizontal space
+                                                        downloadButton("download_tor_summary_model_1", "Download Summary Results (.csv)"),
+                                                        tags$span(style = "padding: 10px;"), # Add horizontal space
+                                                        downloadButton("download_tor_results_model_1", "Download All Simulations (.csv)"),
+
+                                    ), # end of box
+                                    shinyBS::bsPopover("bspop_select_time_interval_tor_plot_model_1", title = "Select Time Interval", content = bspop_select_time_interval_exp, placement = "top", trigger = "hover"),
+                                    shinydashboard::box(width = 12,
+                                                        title = tags$span(htmltools::HTML("Select Time Interval for Deriving Metrics (Original Time Scale)&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_select_time_interval_tor_plot_model_1")),
+                                                        status = 'primary', solidHeader = TRUE, collapsible = TRUE,
+                                                        column(width = 6,
+                                                               shinyWidgets::pickerInput('min_tor_obs_time_model_1', label = 'Start Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE))),
+                                                        column(width = 6,
+                                                               shinyWidgets::pickerInput('max_tor_obs_time_model_1', label = 'End Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE)))
+                                    ), # end of box
+                                    shinydashboard::box(width = 12,
+                                                        title = 'Plotting Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
+                                                        fluidRow(
+                                                          column(width = 4,
+                                                                 selectInput('tor_var_model_1', label_tor_variable, character(0)),
+                                                          ),
+                                                          column(width = 2,
+                                                                 selectInput('select_tor_metric_model_1', label = 'Select Metric',
+                                                                             choices = c("AUC", "Cmax","Cavg","Cmin","Clast","Tmax","Tmin"),
+                                                                             selected = 'AUC',
+                                                                             selectize = FALSE)
+                                                          ),
+                                                          column(width = 2,
+                                                                 selectInput('tor_display_as_model_1', label_tor_display, choices = c("Percentage", "Ratio", "Value"), selected = "Percentage")
+                                                          ),
+                                                          column(width = 2,
+                                                                 numericInput('trim_tor_model_1', label_trim_tor, value = 20, min = 1, step = 1),
+                                                                 shinyBS::bsPopover('trim_tor_model_1', 'Limit Parameters', content = bspop_trim_tor, placement = "left", trigger = "hover")
+                                                          ),
+                                                          column(width = 2,
+                                                                 div(style = "height: 20px;"),  # Empty div to add space
+                                                                 checkboxInput('show_bioeq_model_1', label_show_bioeq, value = TRUE),
+                                                                 shinyBS::bsPopover('show_bioeq_model_1', label_show_bioeq, content = bspop_show_bioeq, placement = "top", trigger = "hover")
+                                                          )
+                                                        ),
+                                                        fluidRow(
+                                                          column(width = 4,
+                                                                 textInput('plot_title_tor_model_1', plot_title_label, value = NULL, placeholder = plot_title_placeholder)
+                                                          ),
+                                                          column(width = 2,
+                                                                 textInput('xlab_tor_model_1', 'X-axis Label', value = '', placeholder = "(Optional)")
+                                                          ),
+                                                          column(width = 2,
+                                                                 div(style = "height: 20px;"),  # Empty div to add space
+                                                                 checkboxInput('tor_display_text_model_1', label_tor_display_text, value = TRUE),
+                                                                 shinyBS::bsPopover('tor_display_text_model_1', label_tor_display_text , content = bspop_tor_display_text, placement = "top", trigger = "hover"),
+                                                          ),
+                                                          column(width = 4,
+                                                                 div(style = "height: 20px;"),  # Empty div to add space
+                                                                 shinyBS::bsPopover('do_tor_plotly_model_1', 'Interactive Plot (Slower)' , content = bspop_do_sim_plotly, placement = "top", trigger = "hover"),
+                                                                 checkboxInput('do_tor_plotly_model_1', 'Interactive Plot (Slower)', value = TRUE)
+                                                          )
+                                                        )
+                                    ),       # end of box
+                                    shinydashboard::box(width = 12,
+                                                        title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
+                                                        column(width = 6,
+                                                               textInput('plotlytor_filename_model_1', plotly_filename_label, value = paste0(today_numeric(), '_tornado_plot_model_1')),
+                                                               shinyBS::bsPopover('plotlytor_filename_model_1', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
+                                                        ),
+                                                        column(width = 2,
+                                                               selectInput('plotlytor_format_model_1', label = plotly_format_label,
+                                                                           choices = c("png","jpeg","svg","webp"),
+                                                                           selected = 'png',
+                                                                           selectize = FALSE)
+                                                        ),
+                                                        column(width = 2,
+                                                               numericInput('plotlytor_width_model_1', plotly_width_label, value = NULL, min = 1, step = 10),
+                                                               shinyBS::bsPopover('plotlytor_width_model_1', title = plotly_width_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
+                                                        ),
+                                                        column(width = 2,
+                                                               numericInput('plotlytor_height_model_1', plotly_height_label, value = NULL, min = 1, step = 10),
+                                                               shinyBS::bsPopover('plotlytor_height_model_1', title = plotly_height_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
+                                                        )
+                                    ) # end of box
+                                  ) # end of fluidRow
+                        ) # end of mainPanel
+                      ) # end of sidebarLayout
+             ), # end of tabPanel Model 1 Tornado
+             tabPanel(title = 'Model 2 (All Parameters)',
+                      sidebarLayout(
+                        sidebarPanel(width = sidebar_width,
+                                     fluidRow(
+                                       shinyBS::bsPopover("bspop_batch_runs_model_2", title = "Batch Runs", content = bspop_batch_runs, placement = "right", trigger = "hover"),
+                                       shinyBS::bsPopover("tor_lower_model_2", title = "Upper/Lower Bound Multiplier", content = bspop_bounds, placement = "right", trigger = "hover"),
+                                       shinyBS::bsPopover("tor_upper_model_2", title = "Upper/Lower Bound Multiplier", content = bspop_bounds, placement = "right", trigger = "hover"),
+                                       shinydashboard::box(width = 12,
+                                                           title = tags$span(htmltools::HTML("Simulation Settings&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_batch_runs_model_2")),
+                                                           status = 'primary', solidHeader = TRUE, collapsible = FALSE, collapsed = FALSE,
+                                                           column(width = 4,
+                                                                  numericInput('tor_lower_model_2',
+                                                                               label_lower_multiplier,
+                                                                               value = 0.5,
+                                                                               min = 0.1,
+                                                                               max = 1.0,
+                                                                               step = 0.1),
+                                                           ),
+                                                           column(width = 4,
+                                                                  numericInput('tor_upper_model_2',
+                                                                               label_upper_multiplier,
+                                                                               value = 1.5,
+                                                                               min = 1.1,
+                                                                               step = 0.1),
+                                                           ),
+                                                           column(width = 4,
+                                                                  selectizeInput(inputId = 'tor_fix_model_2', label = label_fix_parameters, character(0), multiple = TRUE)
+                                                           ),
+                                                           column(width = 12,
+                                                                  tags$div(tags$hr(style="border-color: #CCCCCC; border-width: 4px;"))
+                                                           ),
+                                                           column(width = 6,
+                                                                  label_batch_table
+                                                           ),
+                                                           column(width = 6,
+                                                                  tags$div(
+                                                                    style = "display: flex; justify-content: flex-end; gap: 20px;", # Align to the right and add spacing
+                                                                    shinyBS::bsButton('reset_reference_model_2', 'Reset', style = 'default', icon = icon("arrow-rotate-right")),
+                                                                    actionButton('generate_batch_model_2', label = htmltools::HTML('<i class="fa fa-beat fa-circle-play" style="--fa-animation-duration: 1s;"></i>&nbsp;&nbsp;Batch Run'),
+                                                                                 class = 'pull-right')#,
+                                                                    #shinyBS::bsButton('generate_batch_model_1', 'Batch Run', style = 'default', icon = icon("circle-play"))
+                                                                  ),
+                                                                  shinyBS::bsPopover('reset_reference_model_2', 'Reset Reference', content = bspop_reset_reference, placement = "bottom", trigger = "hover"),
+                                                                  shinyBS::bsPopover('generate_batch_model_2', 'Batch Run', content = bspop_generate_batch, placement = "bottom", trigger = "hover")
+                                                           ),
+                                                           column(width = 12,
+                                                                  div(style = "height: 5px;"),  # Empty div to add space
+                                                                  rhandsontable::rHandsontableOutput('tor_table_model_2')
+                                                           ),
+
+                                                           column(width = 12,
+                                                                  div(style = "height: 10px;"),  # Empty div to add space
+                                                                  div(
+                                                                    style = "display: inline-block; vertical-align: top;",
+                                                                    downloadButton("download_tor_table_model_2", "Download Table (.csv)")
+                                                                  ),
+                                                                  div(
+                                                                    style = "display: inline-block; vertical-align: top; margin-left: 20px;",
+                                                                    checkboxInput('tor_show_digits_model_2', label_tor_show_digits, value = TRUE),
+                                                                    shinyBS::bsPopover('tor_show_digits_model_2', label_tor_show_digits, content = bspop_tor_show_digits, placement = "right", trigger = "hover")
+                                                                  )
+                                                           )
+                                       ) # end of box
+                                     ) # end of fluidRow
+                        ), # end of sidebarPanel
+                        mainPanel(width = mainbar_width,
+                                  fluidRow(
+                                    shinydashboard::box(width = 12,
+                                                        title = "Tornado Plot", status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
+                                                        uiOutput('tor_plot_output_model_2'),
+                                                        downloadButton("download_tor_plot_model_2", "Download Non-Interactive Plot"),
+                                                        shinyBS::bsPopover('download_tor_plot_model_2', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover"),
+                                                        tags$span(style = "padding: 10px;"), # Add horizontal space
+                                                        downloadButton("download_tor_summary_model_2", "Download Summary Results (.csv)"),
+                                                        tags$span(style = "padding: 10px;"), # Add horizontal space
+                                                        downloadButton("download_tor_results_model_2", "Download All Simulations (.csv)"),
+
+                                    ), # end of box
+                                    shinyBS::bsPopover("bspop_select_time_interval_tor_plot_model_2", title = "Select Time Interval", content = bspop_select_time_interval_exp, placement = "top", trigger = "hover"),
+                                    shinydashboard::box(width = 12,
+                                                        title = tags$span(htmltools::HTML("Select Time Interval for Deriving Metrics (Original Time Scale)&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_select_time_interval_tor_plot_model_2")),
+                                                        status = 'primary', solidHeader = TRUE, collapsible = TRUE,
+                                                        column(width = 6,
+                                                               shinyWidgets::pickerInput('min_tor_obs_time_model_2', label = 'Start Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE))),
+                                                        column(width = 6,
+                                                               shinyWidgets::pickerInput('max_tor_obs_time_model_2', label = 'End Time', choices = character(0), width = '300px', options = list(`live-search` = TRUE)))
+                                    ), # end of box
+                                    shinydashboard::box(width = 12,
+                                                        title = 'Plotting Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
+                                                        fluidRow(
+                                                          column(width = 4,
+                                                                 selectInput('tor_var_model_2', label_tor_variable, character(0)),
+                                                          ),
+                                                          column(width = 2,
+                                                                 selectInput('select_tor_metric_model_2', label = 'Select Metric',
+                                                                             choices = c("AUC", "Cmax","Cavg","Cmin","Clast","Tmax","Tmin"),
+                                                                             selected = 'AUC',
+                                                                             selectize = FALSE)
+                                                          ),
+                                                          column(width = 2,
+                                                                 selectInput('tor_display_as_model_2', label_tor_display, choices = c("Percentage", "Ratio", "Value"), selected = "Percentage")
+                                                          ),
+                                                          column(width = 2,
+                                                                 numericInput('trim_tor_model_2', label_trim_tor, value = 20, min = 1, step = 1),
+                                                                 shinyBS::bsPopover('trim_tor_model_2', 'Limit Parameters', content = bspop_trim_tor, placement = "left", trigger = "hover")
+                                                          ),
+                                                          column(width = 2,
+                                                                 div(style = "height: 20px;"),  # Empty div to add space
+                                                                 checkboxInput('show_bioeq_model_2', label_show_bioeq, value = TRUE),
+                                                                 shinyBS::bsPopover('show_bioeq_model_2', label_show_bioeq, content = bspop_show_bioeq, placement = "top", trigger = "hover")
+                                                          )
+                                                        ),
+                                                        fluidRow(
+                                                          column(width = 4,
+                                                                 textInput('plot_title_tor_model_2', plot_title_label, value = NULL, placeholder = plot_title_placeholder)
+                                                          ),
+                                                          column(width = 2,
+                                                                 textInput('xlab_tor_model_2', 'X-axis Label', value = '', placeholder = "(Optional)")
+                                                          ),
+                                                          column(width = 2,
+                                                                 div(style = "height: 20px;"),  # Empty div to add space
+                                                                 checkboxInput('tor_display_text_model_2', label_tor_display_text, value = TRUE),
+                                                                 shinyBS::bsPopover('tor_display_text_model_2', label_tor_display_text , content = bspop_tor_display_text, placement = "top", trigger = "hover"),
+                                                          ),
+                                                          column(width = 4,
+                                                                 div(style = "height: 20px;"),  # Empty div to add space
+                                                                 shinyBS::bsPopover('do_tor_plotly_model_2', 'Interactive Plot (Slower)' , content = bspop_do_sim_plotly, placement = "top", trigger = "hover"),
+                                                                 checkboxInput('do_tor_plotly_model_2', 'Interactive Plot (Slower)', value = TRUE)
+                                                          )
+                                                        )
+                                    ),       # end of box
+                                    shinydashboard::box(width = 12,
+                                                        title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
+                                                        column(width = 6,
+                                                               textInput('plotlytor_filename_model_2', plotly_filename_label, value = paste0(today_numeric(), '_tornado_plot_model_2')),
+                                                               shinyBS::bsPopover('plotlytor_filename_model_2', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
+                                                        ),
+                                                        column(width = 2,
+                                                               selectInput('plotlytor_format_model_2', label = plotly_format_label,
+                                                                           choices = c("png","jpeg","svg","webp"),
+                                                                           selected = 'png',
+                                                                           selectize = FALSE)
+                                                        ),
+                                                        column(width = 2,
+                                                               numericInput('plotlytor_width_model_2', plotly_width_label, value = NULL, min = 1, step = 10),
+                                                               shinyBS::bsPopover('plotlytor_width_model_2', title = plotly_width_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
+                                                        ),
+                                                        column(width = 2,
+                                                               numericInput('plotlytor_height_model_2', plotly_height_label, value = NULL, min = 1, step = 10),
+                                                               shinyBS::bsPopover('plotlytor_height_model_2', title = plotly_height_label, content = bspop_plotly_width_height, placement = 'left', trigger = "focus")
+                                                        )
+                                    ) # end of box
+                                  ) # end of fluidRow
+                        ) # end of mainPanel
+                      ) # end of sidebarLayout
+             ) # end of tabPanel Model 2 Tornado
+           ) # end of navset_pill
+  ), # end of tabPanel (Page 3 PSA)
   ## Page 4 Tables ----
   tabPanel('Tables', icon = icon('table'),
            bslib::navset_pill(
@@ -1764,7 +2080,7 @@ ui <- shiny::navbarPage(
                                                           )
                                                         ) # end of fluidRow
                                     ), # end of box
-                                    shinyBS::bsPopover("bspop_select_time_interval_exp_plot", title = "Select Time Interval", content = bspop_select_time_interval_exp, placement = "right", trigger = "hover"),
+                                    shinyBS::bsPopover("bspop_select_time_interval_exp_plot", title = "Select Time Interval", content = bspop_select_time_interval_exp, placement = "top", trigger = "hover"),
                                     shinydashboard::box(width = 12,
                                                         title = tags$span(htmltools::HTML("Select Time Interval for Deriving Metrics (Original Time Scale)&nbsp;"), tags$i(class="fa fa-circle-question", id = "bspop_select_time_interval_exp_plot")),
                                                         status = 'primary', solidHeader = TRUE, collapsible = TRUE,
@@ -1778,8 +2094,8 @@ ui <- shiny::navbarPage(
                                                         fluidRow(
                                                           column(width = 2,
                                                                  selectInput('select_exp', label = 'Select Metric',
-                                                                             choices = c("CMAX","CAVG","CMIN","AUC", "TMAX", "TMIN"),
-                                                                             selected = 'CMAX',
+                                                                             choices = c("AUC", "Cmax","Cavg","Cmin","Clast","Tmax","Tmin"),
+                                                                             selected = 'AUC',
                                                                              selectize = FALSE)
                                                           ),
                                                           column(width = 2,
@@ -1901,6 +2217,7 @@ ui <- shiny::navbarPage(
                                title = 'Changelog', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
                                p('Please visit the ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/releases", "Github release page", target = "_blank"), ' for more information.'),
                                htmltools::br(),
+                               p('v0.3.0 (2025-06-09) - Parameter Sensitivity Analysis - Batch Runs (i.e. Tornado Plots). Fix slowness of plots when switching models with differing sample times. General improvements.'),
                                p('v0.2.19 (2025-06-03) - Prevent bad parameter values from crashing the app. Re-worked median line bins to be based on quantiles. Bug fixes for box plot count labels. Better handling of NAs for Quantize X-axis. Built-in data filtering option to distinct by ID. More QoL options for NCA (safeguards and rounding). Minor re-factoring and QoL updates.'),
                                p('v0.2.18 (2025-04-21) - Tooltips for Select Time Intervals. Safeguards for too many samples. Bugfixes and improvements for NCA. Sorting option and flagging outliers option for individual plots. New template model (parallel zero/first-order absorption).'),
                                p('v0.2.17 (2025-03-13) - Quantized plots in Data Page. More template models (QE, MM TMDD) and minor corrections to existing models. More tooltips. Minor bugfixes.'),
@@ -4053,6 +4370,10 @@ server <- function(input, output, session) {
                            'yaxis_name',
                            choices = c(mrgsolve::outvars(inputted_model_1())$capture, mrgsolve::outvars(inputted_model_1())$cmt),
                            selected = mrgsolve::outvars(inputted_model_1())$capture[1])
+      updateSelectizeInput(session,
+                           'tor_var_model_1',
+                           choices = c(mrgsolve::outvars(inputted_model_1())$capture, mrgsolve::outvars(inputted_model_1())$cmt),
+                           selected = mrgsolve::outvars(inputted_model_1())$capture[1])
 
       if (show_debugging_msg) {
         message('updated yaxis_name')
@@ -4064,6 +4385,10 @@ server <- function(input, output, session) {
     if(model_2_is_valid()) {
       updateSelectizeInput(session,
                            'yaxis_name_2',
+                           choices = c(mrgsolve::outvars(inputted_model_2())$capture, mrgsolve::outvars(inputted_model_2())$cmt),
+                           selected = mrgsolve::outvars(inputted_model_2())$capture[1])
+      updateSelectizeInput(session,
+                           'tor_var_model_2',
                            choices = c(mrgsolve::outvars(inputted_model_2())$capture, mrgsolve::outvars(inputted_model_2())$cmt),
                            selected = mrgsolve::outvars(inputted_model_2())$capture[1])
 
@@ -4290,9 +4615,22 @@ server <- function(input, output, session) {
                                     choices = sort(unique(simulation_output_model_1()$TIME)),
                                     select = max(unique(simulation_output_model_1()$TIME))
     )
+    shinyWidgets::updatePickerInput(session,
+                                    inputId = 'min_tor_obs_time_model_1',
+                                    label = NULL,
+                                    choices = sort(unique(simulation_output_model_1()$TIME)),
+                                    select = min(unique(simulation_output_model_1()$TIME))
+    )
+
+    shinyWidgets::updatePickerInput(session,
+                                    inputId = 'max_tor_obs_time_model_1',
+                                    label = NULL,
+                                    choices = sort(unique(simulation_output_model_1()$TIME)),
+                                    select = max(unique(simulation_output_model_1()$TIME))
+    )
   }, label = 'update model_1 time selection')
 
-  observeEvent(input$min_nca_obs_time, {
+  observeEvent(input$min_nca_obs_time_model_1, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_nca_obs_time_model_1',
                                     label = NULL,
@@ -4310,6 +4648,24 @@ server <- function(input, output, session) {
     )
   }, label = 'update model_1 time selection (Min)')
 
+  observeEvent(input$min_tor_obs_time_model_1, {
+    shinyWidgets::updatePickerInput(session,
+                                    inputId = 'max_tor_obs_time_model_1',
+                                    label = NULL,
+                                    choices = unique(sort(simulation_output_model_1()$TIME[simulation_output_model_1()$TIME > as.numeric(input$min_tor_obs_time_model_1)])),
+                                    selected = input$max_tor_obs_time_model_1
+    )
+  }, label = 'update Batch Run model_1 time selection (Max)')
+
+  observeEvent(input$max_tor_obs_time_model_1, {
+    shinyWidgets::updatePickerInput(session,
+                                    inputId = 'min_tor_obs_time_model_1',
+                                    label = NULL,
+                                    choices = unique(sort(simulation_output_model_1()$TIME[simulation_output_model_1()$TIME < as.numeric(input$max_tor_obs_time_model_1)])),
+                                    selected = input$min_tor_obs_time_model_1
+    )
+  }, label = 'update Batch Run model_1 time selection (Min)')
+
   numeric_obs_min_model_1 <- reactive({
     as.numeric(input$min_nca_obs_time_model_1)
   }, label = 'convert model_1 time to numeric (Min)')
@@ -4317,6 +4673,14 @@ server <- function(input, output, session) {
   numeric_obs_max_model_1 <- reactive({
     as.numeric(input$max_nca_obs_time_model_1)
   }, label = 'convert model_1 time to numeric (Max)')
+
+  numeric_tor_min_model_1 <- reactive({
+    as.numeric(input$min_tor_obs_time_model_1)
+  }, label = 'convert Batch Run model_1 time to numeric (Min)')
+
+  numeric_tor_max_model_1 <- reactive({
+    as.numeric(input$max_tor_obs_time_model_1)
+  }, label = 'convert Batch Run model_1 time to numeric (Max)')
 
   ### Update input$param_selector ----
   observeEvent(inputted_model_1(), {
@@ -4739,6 +5103,19 @@ server <- function(input, output, session) {
                                     choices = sort(unique(simulation_output_model_2()$TIME)),
                                     select = max(unique(simulation_output_model_2()$TIME))
     )
+    shinyWidgets::updatePickerInput(session,
+                                    inputId = 'min_tor_obs_time_model_2',
+                                    label = NULL,
+                                    choices = sort(unique(simulation_output_model_2()$TIME)),
+                                    select = min(unique(simulation_output_model_2()$TIME))
+    )
+
+    shinyWidgets::updatePickerInput(session,
+                                    inputId = 'max_tor_obs_time_model_2',
+                                    label = NULL,
+                                    choices = sort(unique(simulation_output_model_2()$TIME)),
+                                    select = max(unique(simulation_output_model_2()$TIME))
+    )
   }, label = 'update model_2 time selection')
 
   observeEvent(input$min_nca_obs_time_model_2, {
@@ -4759,13 +5136,39 @@ server <- function(input, output, session) {
     )
   }, label = 'update model_2 time selection (Min)')
 
+  observeEvent(input$min_tor_obs_time_model_2, {
+    shinyWidgets::updatePickerInput(session,
+                                    inputId = 'max_tor_obs_time_model_2',
+                                    label = NULL,
+                                    choices = unique(sort(simulation_output_model_2()$TIME[simulation_output_model_2()$TIME > as.numeric(input$min_tor_obs_time_model_2)])),
+                                    selected = input$max_tor_obs_time_model_2
+    )
+  }, label = 'update Batch Run model_2 time selection (Max)')
+
+  observeEvent(input$max_tor_obs_time_model_2, {
+    shinyWidgets::updatePickerInput(session,
+                                    inputId = 'min_tor_obs_time_model_2',
+                                    label = NULL,
+                                    choices = unique(sort(simulation_output_model_2()$TIME[simulation_output_model_2()$TIME < as.numeric(input$max_tor_obs_time_model_2)])),
+                                    selected = input$min_tor_obs_time_model_2
+    )
+  }, label = 'update Batch Run model_2 time selection (Min)')
+
   numeric_obs_min_model_2 <- reactive({
     as.numeric(input$min_nca_obs_time_model_2)
   }, label = 'convert model_2 time to numeric (Min)')
 
   numeric_obs_max_model_2 <- reactive({
     as.numeric(input$max_nca_obs_time_model_2)
-  }, label = 'convert model_2 time to numeric (Min)')
+  }, label = 'convert model_2 time to numeric (Max)')
+
+  numeric_tor_min_model_2 <- reactive({
+    as.numeric(input$min_tor_obs_time_model_2)
+  }, label = 'convert Batch Run model_2 time to numeric (Min)')
+
+  numeric_tor_max_model_2 <- reactive({
+    as.numeric(input$max_tor_obs_time_model_2)
+  }, label = 'convert Batch Run model_2 time to numeric (Max)')
 
   ### Update input$param_selector_model_2 ----
   observeEvent(inputted_model_2(), {
@@ -5166,6 +5569,491 @@ server <- function(input, output, session) {
                       width = input$plotly3_width_model_2,
                       height = input$plotly3_height_model_2
       )
+    }
+  )
+
+  ## Tornado Plots Model 1
+
+  # Initialize reactiveVals to store current info
+  tor_tab_orig_model_1         <- reactiveVal()
+  tor_tab_new_model_1          <- reactiveVal()
+  last_change_ref_model_1      <- reactiveVal(0)
+  single_bound_change_model_1  <- reactiveVal(0)
+  batch_runs_model_1           <- reactiveVal(NULL)
+  d_plot_title_tor_model_1     <- debounce(reactive({ input$plot_title_tor_model_1 }), debounce_timer_slow)
+  d_xlab_tor_model_1           <- debounce(reactive({ input$xlab_tor_model_1 }), debounce_timer_slow)
+  d_trim_tor_model_1           <- debounce(reactive({ input$trim_tor_model_1 }), debounce_timer_slow)
+
+  observeEvent(inputted_model_1(), {
+    updateSelectInput(session,
+                      "tor_fix_model_1",
+                      choices  = names(inputted_model_1())$param)
+  }, label = 'model_1 PSA batch run params to fix')
+
+  observeEvent(c(changed_reacted_param_model_1(), input$tor_fix_model_1), {
+    shiny::req(model_1_is_valid())
+    tmp <- extract_model_params(changed_reacted_param_model_1()) %>%
+      dplyr::rename(Name = name, Reference = value)
+
+    if(!is.null(input$tor_fix_model_1)) {
+      tmp <- tmp %>% dplyr::filter(!(Name %in% input$tor_fix_model_1))
+    }
+
+    tmp <- tmp %>%
+      dplyr::mutate(
+        Lower = Reference * sanitize_numeric_input(input$tor_lower_model_1, allow_zero = FALSE, return_value = 0.5, display_error = TRUE),
+        Upper = Reference * sanitize_numeric_input(input$tor_upper_model_1, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
+      )
+
+    tor_tab_orig_model_1(tmp) # used for resetting reference values
+    tor_tab_new_model_1(tmp)
+  })
+
+  observeEvent(input$reset_reference_model_1, {
+    tor_tab_new_model_1(tor_tab_orig_model_1())  # Reset to original values
+  })
+
+  tor_tab_model_1 <- eventReactive(c(tor_tab_new_model_1(), input$tor_lower_model_1, input$tor_upper_model_1, input$tor_show_digits_model_1) , {
+    shiny::req(tor_tab_new_model_1())
+
+    all_params_table <-  update_batch_run_table(
+      param_df              = tor_tab_new_model_1(),
+      lower_multiplier      = input$tor_lower_model_1,
+      upper_multiplier      = input$tor_upper_model_1,
+      last_change_ref_index = last_change_ref_model_1(),
+      single_bound_change   = single_bound_change_model_1(),
+      show_as_character     = input$tor_show_digits_model_1
+    )
+
+    table_col_types <- ifelse(input$tor_show_digits_model_1, c("text", rep(ncol(all_params_table))), c("text", rep("numeric", ncol(all_params_table) -1)))
+
+    rhandsontable::rhandsontable(all_params_table, colTypes = table_col_types, contextMenu = FALSE) %>%
+      rhandsontable::hot_col("Name", readOnly = TRUE,
+                             renderer = "function(instance, td, row, col, prop, value, cellProperties) {
+                      Handsontable.renderers.TextRenderer.apply(this, arguments);
+                      td.style.background = '#d3d3d3';  // Grey background
+                    }")  # Disable editing for param
+  })
+
+  output$tor_table_model_1 <- rhandsontable::renderRHandsontable({
+    shiny::req(model_1_is_valid())
+    tor_tab_model_1()
+  })
+
+  # Capture changes made in the rhandsontable UI
+  observeEvent(input$tor_table_model_1, {
+    shiny::req(input$tor_table_model_1)
+    tmp <- rhandsontable::hot_to_r(input$tor_table_model_1)
+
+    if(nrow(tmp) == nrow(tor_tab_new_model_1()) && !any(is.na(tmp))) { # Workaround with glitch caused by removing fixed parameters, and checking no non-sensible inputs
+
+      # Record if last change was made on a reference value
+      if(any(tmp$Reference != tor_tab_new_model_1()$Reference)) {
+        last_change_ref_model_1(which(tmp$Reference != tor_tab_new_model_1()$Reference))
+      } else {
+        last_change_ref_model_1(0)
+      }
+
+      # Record if last change was made on a upper/lower bound, the length would be > 1 if entire table was updated due to changing multipliers
+      length_diff_bounds <- length(which(tmp$Lower != tor_tab_new_model_1()$Lower)) + length(which(tmp$Upper != tor_tab_new_model_1()$Upper))
+      single_bound_change_model_1(length_diff_bounds)
+
+      # Update tor_tab_new_model_1 with the modified table from the UI
+      tor_tab_new_model_1(tmp)
+    }
+  })
+
+  observeEvent(input$generate_batch_model_1, {
+    shiny::req(tor_tab_new_model_1())
+    batch_runs <- iterate_batch_runs(
+      batch_run_df       = tor_tab_new_model_1(),
+      input_model_object = changed_reacted_param_model_1(),
+      pred_model         = model_1_is_pred(),
+      ev_df              = dosing_regimen_model_1(),
+      model_dur          = model_duration_argument_model_1(),
+      model_rate         = model_rate_argument_model_1(),
+      sampling_times     = sampling_options(),
+      divide_by          = time_value(),
+      debug              = show_debugging_msg,
+      show_progress      = TRUE,
+      parallel_sim       = FALSE, #input$para_checkbox,
+      parallel_n         = 100 # input$para_n,
+    )
+
+    batch_runs_model_1(batch_runs)
+
+    if(show_debugging_msg) {
+      message("batch_runs_model_1 updated")
+    }
+  })
+
+  tor_summary_model_1 <- reactive({
+    tor_summary <- NULL
+    if (!is.null(batch_runs_model_1())) {
+      if(input$tor_var_model_1 %in% names(batch_runs_model_1())) {
+        tor_summary <- exposures_table(input_simulated_table = batch_runs_model_1(),
+                                       output_conc           = input$tor_var_model_1,
+                                       start_time            = numeric_tor_min_model_1(),
+                                       end_time              = numeric_tor_max_model_1(),
+                                       carry_out             = c(".desc", ".cat", ".paramname")
+        ) %>% mutate(.varname = input$tor_var_model_1)
+      }
+    }
+    return(tor_summary)
+  }, label = "batch runs summary data model 1")
+
+  ## tor_page_plot_model_1() ----
+  tor_page_plot_model_1 <- reactive({
+    shiny::req(tor_summary_model_1())
+
+    tmp <- tor_summary_model_1()
+    reference_value <- (tmp %>% dplyr::filter(.cat == "Reference"))[[input$select_tor_metric_model_1]]
+
+    tmp2 <- tmp %>%
+      dplyr::filter(.cat != "Reference") %>%
+      dplyr::select(.paramname, .cat, !!dplyr::sym(input$select_tor_metric_model_1)) %>%
+      tidyr::pivot_wider(., names_from = .cat, values_from = !!dplyr::sym(input$select_tor_metric_model_1), id_cols = .paramname)
+
+    tor_plot <- tornado_plot(
+      df              = tmp2,
+      reference_value = reference_value,
+      metric_name     = input$select_tor_metric_model_1,
+      plot_title      = input$plot_title_tor_model_1,
+      display_as      = input$tor_display_as_model_1,
+      display_text    = input$tor_display_text_model_1,
+      filter_rows     = input$trim_tor_model_1,
+      xlabname        = input$xlab_tor_model_1,
+      bioeq_lines     = input$show_bioeq_model_1
+    )
+
+    return(tor_plot)
+  }, label = 'tor_page_plot_model_1')
+
+  ## UI: output$tor_plot_output ----
+  output$tor_plot_output_model_1 <- renderUI({
+    shiny::conditionalPanel(
+      condition = "true",
+      div(style = "height:600px",
+          if(input$do_tor_plotly_model_1) {
+            plotly::plotlyOutput("tor_plotly_model_1", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          } else {
+            plotOutput("tor_ggplot_model_1", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          }
+      )
+    )
+  })
+
+  output$tor_ggplot_model_1 <- renderPlot(tor_page_plot_model_1() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
+
+  output$tor_plotly_model_1 <- plotly::renderPlotly(convert_to_plotly_watermark(tor_page_plot_model_1(),
+                                                                                format           = input$plotlytor_format_model_1,
+                                                                                filename         = input$plotlytor_filename_model_1,
+                                                                                width            = input$plotlytor_width_model_1,
+                                                                                height           = input$plotlytor_height_model_1,
+                                                                                plotly_watermark = insert_watermark,
+                                                                                debug            = show_debugging_msg)
+  )
+
+  #### Tornado Plot download section
+  observeEvent(input$do_tor_plotly_model_1, {
+    if (input$do_tor_plotly_model_1) {
+      shinyjs::disable("download_tor_plot_model_1")
+      updateSelectInput(session, "plotlytor_format_model_1", label = plotly_format_label,
+                        choices = c("png", "jpeg", "svg", "webp"))
+    } else {
+      shinyjs::enable("download_tor_plot_model_1")
+      updateSelectInput(session, "plotlytor_format_model_1", label = plotly_format_label,
+                        choices = c("png", "pdf", "jpeg", "svg"))
+    }
+  }, label = "update_download_tor_plot_model_1")
+
+  output$download_tor_plot_model_1 <- downloadHandler(
+    filename = function() {
+      paste0(input$plotlytor_filename_model_1, ".", input$plotlytor_format_model_1)
+    },
+    content = function(file) {
+      ggplot2::ggsave(file,
+                      plot = tor_page_plot_model_1() + add_watermark(watermark_toggle = insert_watermark),
+                      device = input$plotlytor_format_model_1,
+                      units = "px",
+                      width = input$plotlytor_width_model_1,
+                      height = input$plotlytor_height_model_1
+      )
+    }
+  )
+
+  ## Download section for Batch Runs Model 1
+
+  output$download_tor_table_model_1 <- downloadHandler(
+    filename = function() {
+      paste0(today_numeric(), "_batch_run_table_model_1.csv")
+    },
+    content = function(file) {
+      #write.csv(rhandsontable::hot_to_r(input$tor_table_model_1), file, row.names = FALSE)
+      data.table::fwrite(rhandsontable::hot_to_r(input$tor_table_model_1), file, quote = FALSE, row.names = FALSE)
+    },
+    contentType = "text/csv"
+  )
+
+  output$download_tor_summary_model_1 <- downloadHandler(
+    filename = function() {
+      paste0(today_numeric(), "_batch_run_summary_model_1_", input$tor_var_model_1, ".csv")
+    },
+    content = function(file) {
+      data.table::fwrite(tor_summary_model_1(), file, quote = FALSE, row.names = FALSE)
+    }
+  )
+
+  output$download_tor_results_model_1 <- downloadHandler(
+    filename = function() {
+      paste0(today_numeric(), "_batch_run_results_model_1.csv")
+    },
+    content = function(file) {
+      data.table::fwrite(batch_runs_model_1(), file, quote = FALSE, row.names = FALSE)
+    }
+  )
+
+  ## Tornado Plots Model 2
+
+  # Initialize reactiveVals to store current info
+  tor_tab_orig_model_2         <- reactiveVal()
+  tor_tab_new_model_2          <- reactiveVal()
+  last_change_ref_model_2      <- reactiveVal(0)
+  single_bound_change_model_2  <- reactiveVal(0)
+  batch_runs_model_2           <- reactiveVal(NULL)
+  d_plot_title_tor_model_2     <- debounce(reactive({ input$plot_title_tor_model_2 }), debounce_timer_slow)
+  d_xlab_tor_model_2           <- debounce(reactive({ input$xlab_tor_model_2 }), debounce_timer_slow)
+  d_trim_tor_model_2           <- debounce(reactive({ input$trim_tor_model_2 }), debounce_timer_slow)
+
+  observeEvent(inputted_model_2(), {
+    updateSelectInput(session,
+                      "tor_fix_model_2",
+                      choices  = names(inputted_model_2())$param)
+  }, label = 'model_2 PSA batch run params to fix')
+
+  observeEvent(c(changed_reacted_param_model_2(), input$tor_fix_model_2), {
+    shiny::req(model_2_is_valid())
+    tmp <- extract_model_params(changed_reacted_param_model_2()) %>%
+      dplyr::rename(Name = name, Reference = value)
+
+    if(!is.null(input$tor_fix_model_2)) {
+      tmp <- tmp %>% dplyr::filter(!(Name %in% input$tor_fix_model_2))
+    }
+
+    tmp <- tmp %>%
+      dplyr::mutate(
+        Lower = Reference * sanitize_numeric_input(input$tor_lower_model_2, allow_zero = FALSE, return_value = 0.5, display_error = TRUE),
+        Upper = Reference * sanitize_numeric_input(input$tor_upper_model_2, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
+      )
+
+    tor_tab_orig_model_2(tmp) # used for resetting reference values
+    tor_tab_new_model_2(tmp)
+  })
+
+  observeEvent(input$reset_reference_model_2, {
+    tor_tab_new_model_2(tor_tab_orig_model_2())  # Reset to original values
+  })
+
+  tor_tab_model_2 <- eventReactive(c(tor_tab_new_model_2(), input$tor_lower_model_2, input$tor_upper_model_2, input$tor_show_digits_model_2), {
+    shiny::req(tor_tab_new_model_2())
+
+    all_params_table <-  update_batch_run_table(
+      param_df              = tor_tab_new_model_2(),
+      lower_multiplier      = input$tor_lower_model_2,
+      upper_multiplier      = input$tor_upper_model_2,
+      last_change_ref_index = last_change_ref_model_2(),
+      single_bound_change   = single_bound_change_model_2(),
+      show_as_character     = input$tor_show_digits_model_2
+    )
+
+    table_col_types <- ifelse(input$tor_show_digits_model_2, c("text", rep(ncol(all_params_table))), c("text", rep("numeric", ncol(all_params_table) -1)))
+
+    rhandsontable::rhandsontable(all_params_table, colTypes = table_col_types, contextMenu = FALSE) %>%
+      rhandsontable::hot_col("Name", readOnly = TRUE,
+                             renderer = "function(instance, td, row, col, prop, value, cellProperties) {
+                      Handsontable.renderers.TextRenderer.apply(this, arguments);
+                      td.style.background = '#d3d3d3';  // Grey background
+                    }")  # Disable editing for param
+  })
+
+  output$tor_table_model_2 <- rhandsontable::renderRHandsontable({
+    shiny::req(model_2_is_valid())
+    tor_tab_model_2()
+  })
+
+  # Capture changes made in the rhandsontable UI
+  observeEvent(input$tor_table_model_2, {
+    shiny::req(input$tor_table_model_2)
+    tmp <- rhandsontable::hot_to_r(input$tor_table_model_2)
+
+    if(nrow(tmp) == nrow(tor_tab_new_model_2()) && !any(is.na(tmp))) { # Workaround with glitch caused by removing fixed parameters, and checking no non-sensible inputs
+
+      # Record if last change was made on a reference value
+      if(any(tmp$Reference != tor_tab_new_model_2()$Reference)) {
+        last_change_ref_model_2(which(tmp$Reference != tor_tab_new_model_2()$Reference))
+      } else {
+        last_change_ref_model_2(0)
+      }
+
+      # Record if last change was made on a upper/lower bound, the length would be > 1 if entire table was updated due to changing multipliers
+      length_diff_bounds <- length(which(tmp$Lower != tor_tab_new_model_2()$Lower)) + length(which(tmp$Upper != tor_tab_new_model_2()$Upper))
+      single_bound_change_model_2(length_diff_bounds)
+
+      # Update tor_tab_new_model_2 with the modified table from the UI
+      tor_tab_new_model_2(tmp)
+    }
+  })
+
+  observeEvent(input$generate_batch_model_2, {
+    shiny::req(tor_tab_new_model_2())
+    batch_runs <- iterate_batch_runs(
+      batch_run_df       = tor_tab_new_model_2(),
+      input_model_object = changed_reacted_param_model_2(),
+      pred_model         = model_2_is_pred(),
+      ev_df              = dosing_regimen_model_2(),
+      model_dur          = model_duration_argument_model_2(),
+      model_rate         = model_rate_argument_model_2(),
+      sampling_times     = sampling_options(),
+      divide_by          = time_value(),
+      debug              = show_debugging_msg,
+      show_progress      = TRUE,
+      parallel_sim       = FALSE, #input$para_checkbox,
+      parallel_n         = 100 # input$para_n,
+    )
+
+    batch_runs_model_2(batch_runs)
+
+    if(show_debugging_msg) {
+      message("batch_runs_model_2 updated")
+    }
+  })
+
+  tor_summary_model_2 <- reactive({
+    tor_summary <- NULL
+    if (!is.null(batch_runs_model_2())) {
+      if(input$tor_var_model_2 %in% names(batch_runs_model_2())) {
+        tor_summary <- exposures_table(input_simulated_table = batch_runs_model_2(),
+                                       output_conc           = input$tor_var_model_2,
+                                       start_time            = numeric_tor_min_model_2(),
+                                       end_time              = numeric_tor_max_model_2(),
+                                       carry_out             = c(".desc", ".cat", ".paramname")
+        ) %>% mutate(.varname = input$tor_var_model_2)
+      }
+    }
+    message("tor_summary_model_2")
+    head(tor_summary) %>% print()
+
+    return(tor_summary)
+  }, label = "batch runs summary data model 1")
+
+  ## tor_page_plot_model_2() ----
+  tor_page_plot_model_2 <- reactive({
+    shiny::req(tor_summary_model_2())
+
+    tmp <- tor_summary_model_2()
+    reference_value <- (tmp %>% dplyr::filter(.cat == "Reference"))[[input$select_tor_metric_model_2]]
+
+    tmp2 <- tmp %>%
+      dplyr::filter(.cat != "Reference") %>%
+      dplyr::select(.paramname, .cat, !!dplyr::sym(input$select_tor_metric_model_2)) %>%
+      tidyr::pivot_wider(., names_from = .cat, values_from = !!dplyr::sym(input$select_tor_metric_model_2), id_cols = .paramname)
+
+    tor_plot <- tornado_plot(
+      df              = tmp2,
+      reference_value = reference_value,
+      metric_name     = input$select_tor_metric_model_2,
+      plot_title      = input$plot_title_tor_model_2,
+      display_as      = input$tor_display_as_model_2,
+      display_text    = input$tor_display_text_model_2,
+      filter_rows     = input$trim_tor_model_2,
+      xlabname        = input$xlab_tor_model_2,
+      bioeq_lines     = input$show_bioeq_model_2
+    )
+
+    return(tor_plot)
+  }, label = 'tor_page_plot_model_2')
+
+  ## UI: output$tor_plot_output ----
+  output$tor_plot_output_model_2 <- renderUI({
+    shiny::conditionalPanel(
+      condition = "true",
+      div(style = "height:600px",
+          if(input$do_tor_plotly_model_2) {
+            plotly::plotlyOutput("tor_plotly_model_2", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          } else {
+            plotOutput("tor_ggplot_model_2", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          }
+      )
+    )
+  })
+
+  output$tor_ggplot_model_2 <- renderPlot(tor_page_plot_model_2() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
+
+  output$tor_plotly_model_2 <- plotly::renderPlotly(convert_to_plotly_watermark(tor_page_plot_model_2(),
+                                                                                format           = input$plotlytor_format_model_2,
+                                                                                filename         = input$plotlytor_filename_model_2,
+                                                                                width            = input$plotlytor_width_model_2,
+                                                                                height           = input$plotlytor_height_model_2,
+                                                                                plotly_watermark = insert_watermark,
+                                                                                debug            = show_debugging_msg)
+  )
+
+  #### Tornado Plot download section
+  observeEvent(input$do_tor_plotly_model_2, {
+    if (input$do_tor_plotly_model_2) {
+      shinyjs::disable("download_tor_plot_model_2")
+      updateSelectInput(session, "plotlytor_format_model_2", label = plotly_format_label,
+                        choices = c("png", "jpeg", "svg", "webp"))
+    } else {
+      shinyjs::enable("download_tor_plot_model_2")
+      updateSelectInput(session, "plotlytor_format_model_2", label = plotly_format_label,
+                        choices = c("png", "pdf", "jpeg", "svg"))
+    }
+  }, label = "update_download_tor_plot_model_2")
+
+  output$download_tor_plot_model_2 <- downloadHandler(
+    filename = function() {
+      paste0(input$plotlytor_filename_model_2, ".", input$plotlytor_format_model_2)
+    },
+    content = function(file) {
+      ggplot2::ggsave(file,
+                      plot = tor_page_plot_model_2() + add_watermark(watermark_toggle = insert_watermark),
+                      device = input$plotlytor_format_model_2,
+                      units = "px",
+                      width = input$plotlytor_width_model_2,
+                      height = input$plotlytor_height_model_2
+      )
+    }
+  )
+
+  ## Download section for Batch Runs Model 2
+
+  output$download_tor_table_model_2 <- downloadHandler(
+    filename = function() {
+      paste0(today_numeric(), "_batch_run_table_model_2.csv")
+    },
+    content = function(file) {
+      #write.csv(rhandsontable::hot_to_r(input$tor_table_model_2), file, row.names = FALSE)
+      data.table::fwrite(rhandsontable::hot_to_r(input$tor_table_model_2), file, quote = FALSE, row.names = FALSE)
+    },
+    contentType = "text/csv"
+  )
+
+  output$download_tor_summary_model_2 <- downloadHandler(
+    filename = function() {
+      paste0(today_numeric(), "_batch_run_summary_model_2_", input$tor_var_model_2, ".csv")
+    },
+    content = function(file) {
+      data.table::fwrite(tor_summary_model_2(), file, quote = FALSE, row.names = FALSE)
+    }
+  )
+
+  output$download_tor_results_model_2 <- downloadHandler(
+    filename = function() {
+      paste0(today_numeric(), "_batch_run_results_model_2.csv")
+    },
+    content = function(file) {
+      data.table::fwrite(batch_runs_model_2(), file, quote = FALSE, row.names = FALSE)
     }
   )
 
@@ -6678,7 +7566,7 @@ server <- function(input, output, session) {
         if(is.data.frame(iiv_sim_output_model_2)) {
           iiv_checkpoint_model_2$iiv_simulation <- TRUE
           if (show_debugging_msg) {
-            message('simulation1 generated')
+            message('simulation2 iiv generated successfully')
           }
           return(iiv_sim_output_model_2)
         }

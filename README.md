@@ -205,8 +205,8 @@ previously defined model settings and making them available (i.e. in
 3.  Changes are immediately shown on the plot on the right, and PK/PD
     metrics are provided on the left page under each respective sub tab.
     - If you have a PK/PD model, you may need to switch the Y-axis from
-      the Simulation page to display PD information, assuming your
-      default Y-axis is PK concentration.  
+      the Simulation page to display PD information (assuming your
+      default Y-axis is PK concentration).  
     - The rounding of the metrics can be changed in the “Rounding
       Options” sub tab.  
 4.  The time interval to derive metrics can be adjusted in the “Select
@@ -220,6 +220,39 @@ previously defined model settings and making them available (i.e. in
     metrics can be downloaded in the Table page.
 
 ![](www/psaexample.png)
+
+#### Assessing All Structural Parameters
+
+Batch run simulations (i.e. assessing all parameters at the same time)
+can be generated from the “All Parameters” tab on the top-left side of
+the page, with **results available from just a single click**,
+visualized using <a href="https://en.wikipedia.org/wiki/Tornado_diagram"
+target="_blank">Tornado Plots</a>. This feature is particularly useful
+for complex models with up to hundreds of parameters, e.g. QSP models.
+
+1.  By default, all parameters are perturbed based on ±50% of the
+    original value (i.e. the reference model). Users may tweak the Lower
+    and Upper Multipliers to quickly pre-configure the range easily.
+    Each value can also be adjusted manually in the Batch Run Parameters
+    Table below.
+2.  (Optional) Remove any parameters from the batch run using the “Fix
+    parameters” option on the top-left side.
+3.  Press the “Batch Run” button when ready. Each simulation will
+    substitute one of its parameters univariately, while the rest of the
+    parameters are unchanged based on the reference model (i.e. the
+    total number of simulations are 2 \* each parameter (lower and
+    upper) + 1 (the reference model)).
+4.  On the right hand side in the “Plotting Options”, select the
+    variable to summarize over (usually the PK/PD concentration
+    variable). Afterwards, choose the exposure metric of interest from
+    the “Select Metric” option.
+    - Other graphical options such as displaying in different scales,
+      effect size text labels, filtering parameters, and bioequivalence
+      (80% - 125%) visual guide are provided.
+    - A new set of Batch Runs should be generated whenever the Batch Run
+      Parameter Table is changed.
+
+![](www/tornado3.png)
 
 ### Simulations with Variability
 
@@ -304,8 +337,8 @@ demographics. 
     be relevant when deriving AUCtau,ss, for example. By default the
     entire time range is used.
 3.  Pick an exposure metric in the “Select Metric” option in the
-    “Plotting Options” box. Currently, Cmax, Cmin, Cavg, AUC, Tmax and
-    Tmin are supported.
+    “Plotting Options” box. Currently, AUC, Cmax, Cmin, Cavg, Clast,
+    Tmax, and Tmin are supported.
 4.  Labels, titles, and the option to insert more summary statistics are
     available to further customize the plot, allowing great
     “off-the-shelf” graphics to be downloaded for presentations.

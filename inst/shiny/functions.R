@@ -538,6 +538,7 @@ do_data_page_plot <- function(nmd,
 #' @param nmd The NONMEM dataset for plotting (requires ID, TIME, DV at minimum)
 #' @param rownums How many rows per page
 #' @param colnums How many cols per page
+#' @param pagenum Page number to filter by
 #' @param filter_id Filter by these IDs
 #' @param filter_cmt Filter by this CMT
 #' @param sort_by Sort by one or more variables (a list)
@@ -2241,8 +2242,8 @@ pknca_table <- function(input_simulated_table,
   input_simulated_table$YVARNAME <- input_simulated_table[[output_conc]]
   
   if (debug) {
-    message(head(input_simulated_table))
-    message(paste0(max(input_simulated_table$YVARNAME)[1]))
+    # message(head(input_simulated_table))
+    # message(paste0(max(input_simulated_table$YVARNAME)[1]))
   }
   
   metrics_table <- input_simulated_table %>%
@@ -2271,12 +2272,12 @@ pknca_table <- function(input_simulated_table,
     dplyr::select(-ID, -tad, -TIMEADJ, -YLAG, -XLAG, -dYVAR, -DVBL)
   
   if (debug) {
-    message(start_time)
-    message(end_time)
-    tmp <- input_simulated_table %>% dplyr::filter(TIME >= start_time)
-    message(dplyr::glimpse(tmp))
-    tmp2 <- input_simulated_table %>% dplyr::filter(TIME <= start_time)
-    message(dplyr::glimpse(tmp2))
+    # message(start_time)
+    # message(end_time)
+    # tmp <- input_simulated_table %>% dplyr::filter(TIME >= start_time)
+    # message(dplyr::glimpse(tmp))
+    # tmp2 <- input_simulated_table %>% dplyr::filter(TIME <= start_time)
+    # message(dplyr::glimpse(tmp2))
   }
   
   ### Repeat metrics for time range # note that the time range is inclusive on both ends
@@ -2370,15 +2371,13 @@ update_resistant_popover <- function(id, title, content, placement = "bottom", t
 #' @param p1               ggplot object
 #' @param max_x            Max x-axis value, will be derived from p1 if it is set to NULL
 #' @param xvar             x variable string to be used to derive max_x
-#' @param xlabel           Will only apply when xlabel is either
-#'                   "Time (hours)"
-#'                   "Time (weeks)",
-#'                   "Time (days)",
-#'                   "Time (months)
+#' @param xlabel           Will only apply when xlabel is either "Time (hours)",
+#'                         "Time (weeks)", "Time (days)", or "Time (months)
 #' @param debug            Shows debug messages
 #'
 #' @returns a ggplot object
 #' @importFrom dplyr case_when
+#' @importFrom scales pretty_breaks
 #' @export
 #-------------------------------------------------------------------------------
 
@@ -2389,6 +2388,9 @@ smart_x_axis <- function(p1,
                          debug = FALSE) {
   
   if(is.null(max_x)) {
+    # default case
+    x_tick_size <- 1
+    
     # Extract the maximum value of the x-axis - by default this is expanded by 5%,
     # so we have to divide it back to arrive at the true range
     max_x <- ggplot2::ggplot_build(p1)$layout$panel_params[[1]]$x.range[[2]] / 1.05
@@ -2406,34 +2408,19 @@ smart_x_axis <- function(p1,
                                       max_x <= 12  ~ 1,
                                       max_x <= 24  ~ 2,
                                       max_x <= 48  ~ 4,
-                                      max_x <= 72  ~ 12,
                                       max_x <= 96  ~ 12,
                                       max_x <= 168 ~ 24,
-                                      max_x <= 336 ~ 48,
                                       max_x <= 480 ~ 48,
                                       max_x <= 2016~ 168,
                                       TRUE         ~ 672)
-      
-      if(debug) {
-        message(paste0("x_tick_size: ", x_tick_size))
-      }
-      
-      p1 <- p1 + ggplot2::scale_x_continuous(breaks = seq(0, max_x + x_tick_size, by = x_tick_size))
     }
     
     if(xlabel == "Time (days)") {
       x_tick_size <- dplyr::case_when(max_x <= 7   ~ 1,
                                       max_x <= 14  ~ 2,
-                                      max_x <= 28  ~ 7,
                                       max_x <= 56  ~ 7,
                                       max_x <= 84  ~ 14,
                                       TRUE         ~ 28)
-      
-      if(debug) {
-        message(print(paste0("x_tick_size: ", x_tick_size)))
-      }
-      
-      p1 <- p1 + ggplot2::scale_x_continuous(breaks = seq(0, max_x + x_tick_size, by = x_tick_size))
     }
     
     if(xlabel == "Time (weeks)") {
@@ -2443,31 +2430,29 @@ smart_x_axis <- function(p1,
                                       max_x <= 32 ~ 2,
                                       max_x <= 52 ~ 4,
                                       TRUE        ~ 12)
-      
-      if(debug) {
-        message(print(paste0("x_tick_size: ", x_tick_size)))
-      }
-      
-      p1 <- p1 + ggplot2::scale_x_continuous(breaks = seq(0, max_x + x_tick_size, by = x_tick_size))
     }
     
     if(xlabel == "Time (months)") {
       x_tick_size <- dplyr::case_when(max_x <= 1  ~ 0.25,
-                                      max_x <= 2  ~ 0.25,
                                       max_x <= 4  ~ 0.5,
                                       max_x <= 12 ~ 1,
                                       max_x <= 24 ~ 2,
                                       max_x <= 48 ~ 4,
                                       TRUE        ~ 12)
-      
-      if(debug) {
-        message(print(paste0("x_tick_size: ", x_tick_size)))
-      }
-      
+    }
+    
+    if(debug) {
+      message(paste0("x_tick_size: ", x_tick_size))
+    }
+    
+    num_ticks <- ceiling(max_x / x_tick_size)
+    if(num_ticks >= 25) {
+      p1 <- p1 + ggplot2::scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
+    } else {
       p1 <- p1 + ggplot2::scale_x_continuous(breaks = seq(0, max_x + x_tick_size, by = x_tick_size))
     }
-  }
-  
+    
+  } # end of finite check
   return(p1)
 }
 
@@ -2601,7 +2586,7 @@ plot_data_with_nm <- function(
     }
   }
   
-  p1 <- smart_x_axis(p1, xlabel = xlabel, debug = debug)
+  
   
   ## Apply log axis if required
   if(log_x_axis) {
@@ -2609,6 +2594,8 @@ plot_data_with_nm <- function(
       #ggplot2::scale_x_log10(guide = "axis_logticks")#, labels=log_x_labels) # Doesn't display as nice
       ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) +
       ggplot2::annotation_logticks(sides = "b")
+  } else {
+    p1 <- smart_x_axis(p1, xlabel = xlabel, debug = debug)
   }
   
   if(log_y_axis) {
@@ -2803,14 +2790,14 @@ plot_three_data_with_nm <- function(
     p1 <- p1 +
       ggplot2::geom_point(alpha = 0.7)
   }
-
-  p1 <- smart_x_axis(p1, xlabel = xlabel) # max_x = max_x_value,
   
   ### Apply log axis if required
   if(log_x_axis) {
     p1<- p1 +
       ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) +
       annotation_logticks(sides = "b")
+  } else {
+    p1 <- smart_x_axis(p1, xlabel = xlabel)
   }
   
   if(log_y_axis) {
@@ -2989,14 +2976,14 @@ plot_iiv_data_with_nm <- function(
         ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[y_mean]]), color = line_color_2, linewidth = 1.2, linetype = "dashed")
     }
   } # end of input_dataset2
-  
-  p1 <- smart_x_axis(p1, xlabel = xlabel) # max_x = max_x_value,
-  
+
   ### Apply log axis if required
   if(log_x_axis) {
     p1 <- p1 +
       ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) +
       ggplot2::annotation_logticks(sides = "b")
+  } else {
+      p1 <- smart_x_axis(p1, xlabel = xlabel)
   }
   
   if(log_y_axis) {
@@ -3048,15 +3035,20 @@ extract_model_params <- function(input_model_object) {
 #'
 #' @param input_model_object  original model object
 #' @param input_new_df        dataframe containing new name/value combinations
+#' @param convert_colnames    When TRUE, rename input_new_df column names
 #'
 #' @returns a mrgsolve model object
 #' @importFrom tidyr pivot_wider
 #' @export
 #-------------------------------------------------------------------------------
 
-update_model_object <- function(input_model_object, input_new_df) {
+update_model_object <- function(input_model_object, input_new_df, convert_colnames = FALSE) {
+
+  tmp1 <- as.data.frame(input_new_df)
   
-  tmp1 <- as.data.frame(input_new_df) %>%
+  if(convert_colnames) {colnames(tmp1) <- c("name", "value")}
+  
+  tmp1 <- tmp1 %>%
     tidyr::pivot_wider(names_from = name, values_from = value) %>%
     as.list()
   
@@ -3078,6 +3070,7 @@ update_model_object <- function(input_model_object, input_new_df) {
 #' @param width          width in pixels. Default NULL - uses current resolution
 #' @param height         height in pixels. Default NULL - uses current resolution
 #' @param debug          Set to TRUE to show debug messages
+#' @param try_tooltip    Testing tooltip display option, relevant for tornado plots
 #' @param plotly_watermark Set to TRUE to insert "For Internal Use Only"
 #'
 #' @returns a plotly object
@@ -3097,13 +3090,18 @@ convert_to_plotly_watermark <- function(ggplot_object,
                                         width       = NULL,
                                         height      = NULL,
                                         debug       = FALSE,
+                                        try_tooltip = FALSE,
                                         plotly_watermark = TRUE) {
   
   if (debug) {
     message("Converting ggplot object to plotly")
   }
   
-  tmp <- plotly::ggplotly(ggplot_object)
+  if(try_tooltip) {
+    tmp <- plotly::ggplotly(ggplot_object, tooltip = "text")
+  } else {
+    tmp <- plotly::ggplotly(ggplot_object)
+  }
   
   tmp <- tmp %>%
     plotly::add_annotations(
@@ -4317,10 +4315,11 @@ trim_columns <- function(data,
 #' @param output_conc            y variable of interest to perform summary stats calc 
 #' @param start_time             start time interval for metrics
 #' @param end_time               end time interval for metrics
+#' @param carry_out              Provide a vector of column names to retain in the summary table
 #' @param debug                  show debugging messages
 #'
 #' @returns a dataframe with additional columns of summary stats
-#' @importFrom dplyr mutate if_else ungroup select filter rename first group_by distinct summarise
+#' @importFrom dplyr mutate if_else ungroup select filter rename first group_by distinct summarise any_of
 #' @export
 #-------------------------------------------------------------------------------
 
@@ -4328,10 +4327,17 @@ exposures_table <- function(input_simulated_table,
                             output_conc,
                             start_time = NULL,
                             end_time   = NULL,
+                            carry_out  = "ID",
                             debug      = FALSE
 ) {
   
   input_simulated_table$YVARNAME <- input_simulated_table[[output_conc]]
+  
+  base_columns      <- c("ID", "YVARNAME", "TIME")
+  columns_to_select <- c(base_columns, carry_out)
+  
+  input_simulated_table <- input_simulated_table %>%
+    dplyr::select(dplyr::any_of(columns_to_select))
   
   # if (debug) {
   #   message(start_time)
@@ -4343,24 +4349,23 @@ exposures_table <- function(input_simulated_table,
   # }
   
   metrics_table <- input_simulated_table %>% dplyr::filter(TIME >= start_time, TIME <= end_time) %>%
-    group_by(ID) %>%
-    dplyr::mutate(CMIN = min(YVARNAME, na.rm = TRUE)[1],
-                  CMAX = max(YVARNAME, na.rm = TRUE)[1], ### First element if multiple values found
-                  CAVG = mean(YVARNAME, na.rm = TRUE)
+    dplyr::group_by(ID) %>%
+    dplyr::mutate(Cmin  = min(YVARNAME, na.rm = TRUE)[1],
+                  Cmax  = max(YVARNAME, na.rm = TRUE)[1], ### First element if multiple values found
+                  Cavg  = mean(YVARNAME, na.rm = TRUE),
+                  Clast = dplyr::last(YVARNAME, na_rm = TRUE)
     ) %>%
-    ungroup()
+    dplyr::ungroup()
   
-  # Calculate CMAX and TMAX in a separate table
+  # Calculate TMAX in a separate table
   tmax_table <- metrics_table %>%
-    group_by(ID) %>%
-    summarise(TMIN = TIME[which.min(YVARNAME)[1]],
-              TMAX = TIME[which.max(YVARNAME)[1]]) %>% # First element if multiple values found
-    ungroup()
+    dplyr::group_by(ID) %>%
+    dplyr::summarise(Tmin = TIME[which.min(YVARNAME)[1]],
+                     Tmax = TIME[which.max(YVARNAME)[1]]) %>% # First element if multiple values found
+    dplyr::ungroup()
   
-  metrics_table <- left_join(metrics_table, tmax_table, by = "ID")
-  
-  metrics_table  <- metrics_table %>%
-    group_by(ID) %>%
+  metrics_table <- left_join(metrics_table, tmax_table, by = "ID") %>%
+    dplyr::group_by(ID) %>%
     dplyr::mutate(YLAG          = dplyr::lag(YVARNAME),
                   XLAG          = dplyr::lag(TIME),
                   dYVAR         = (YVARNAME + YLAG) * (TIME - XLAG) * 0.5, # Area for trapezoid
@@ -4368,9 +4373,12 @@ exposures_table <- function(input_simulated_table,
                   AUC           = sum(dYVAR)) %>%
     dplyr::ungroup()
   
+  list_of_exposures <- c("ID", "Cmin", "Cmax", "Cavg", "Clast", "AUC", "Tmax", "Tmin")
+  
   metrics_table_id <- metrics_table %>%
-    dplyr::select(ID, CMIN, CMAX, CAVG, AUC, TMAX, TMIN) %>%
-    dplyr::distinct(ID, .keep_all = TRUE)
+    dplyr::select(dplyr::any_of(c(list_of_exposures, carry_out))) %>%
+    dplyr::distinct(ID, .keep_all = TRUE)          
+  
   return(metrics_table_id)
 }
 
@@ -4387,6 +4395,7 @@ exposures_table <- function(input_simulated_table,
 #' @param model_1_color        Color for Model 1
 #' @param model_2_color        Color for Model 2
 #' @param show_stats           Display texts of stats for each box plot
+#' @param xlab                 Optional name for xvar
 #' @param title                Title for plot
 #'
 #' @returns a ggplot object
@@ -4720,7 +4729,7 @@ categorize_outliers <- function(df,
 #' @title Function that derives bin times of x_axis
 #' group
 #'
-#' @param df              Input dataframe column of x-axis
+#' @param dfcol           Input dataframe column of x-axis
 #' @param bin_num         Maximum number of bins, integer
 #' @param relative_threshold relative threshold of lumping bins that are close together
 #'
@@ -4821,4 +4830,399 @@ transform_ev_df <- function(ev_df, model_dur, model_rate, pred_model, debug = FA
   }
   
   return(ev_df)
+}
+
+#-------------------------------------------------------------------------------
+#' @name iterate_batch_runs
+#'
+#' @title Perform multiple simulations from a dataframe containing parameters
+#'
+#' @param batch_run_df          Input batch run dataframe containing "Name", "Reference", "Lower", "Upper"
+#' @param input_model_object    mrgmod object
+#' @param pred_model            Default FALSE. set to TRUE to set ev_df CMT to 0
+#' @param ev_df                 ev() dataframe containing dosing info
+#' @param model_dur             Default FALSE, set to TRUE to model duration inside the code
+#' @param model_rate            Default FALSE, set to TRUE to model rate inside the code
+#' @param sampling_times        A vector of sampling times (note: not a tgrid object)
+#' @param divide_by             Divide the TIME by this value, used for scaling x-axis
+#' @param debug                 Default FALSE, set to TRUE to show more messages in console
+#' @param append_id_text        A string prefix to be inserted for each ID
+#' @param debug                 When TRUE, outputs debugging messages
+#' @param parallel_sim          Default TRUE, uses the future and mrgsim.parallel packages !Not implemented live!
+#' @param parallel_n            The number of subjects required before parallelization is used !Not implemented live!
+#'
+#' @importFrom dplyr mutate rename select bind_rows across
+#' @importFrom shiny withProgress setProgress 
+#' @returns a df mrgsolve output totaling 2 * params + 1 (reference) runs
+#' @export
+#-------------------------------------------------------------------------------
+
+iterate_batch_runs <- function(batch_run_df,
+                               input_model_object,
+                               pred_model         = FALSE,
+                               ev_df,
+                               model_dur          = FALSE,
+                               model_rate         = FALSE,
+                               sampling_times,
+                               divide_by          = 1,
+                               debug              = FALSE,
+                               append_id_text     = "m1-",
+                               show_progress      = TRUE,
+                               parallel_sim       = FALSE,
+                               parallel_n         = 200#,
+) {
+  
+  if(nrow(batch_run_df) == 0) {
+    return(NULL)
+  }
+  
+  # Coerce all columns except "name" to numeric
+  batch_run_df <- batch_run_df %>%
+    dplyr::mutate(dplyr::across(-Name, as.numeric))
+  
+  # Initiate empty list totaling 2 * params + 1 (reference) run
+  list_of_runs  <- vector("list", nrow(batch_run_df) * 2 + 1)
+  ref_run_df    <- batch_run_df #%>% dplyr::rename(value = Reference)
+  nrow_batch_df <- nrow(batch_run_df)
+  
+  shiny::withProgress(message = "Batch Run", value = 0, {
+    for(i in 1:length(list_of_runs)) {
+      
+      m <- i-1 # Offset by reference run
+      # Replace bound value as reference before updating it
+      this_run_df <- ref_run_df
+      
+      if(i == 1) { # Reference run
+        run_name      <- "ref"
+        run_name_good <- "Reference"
+        cat_name      <- "Reference"
+        param_name    <- "Reference"
+      } else {
+        
+        # Check if this is the first half of bounds (i.e. replace values with lower bounds)
+        if(m <= nrow_batch_df) {
+          
+          this_run_df$Reference[m] <- this_run_df$Lower[m]
+          run_name      <- paste0("lower", this_run_df$Name[m])
+          run_name_good <- paste0("lower ", this_run_df$Name[m])
+          cat_name      <- "Lower"
+          param_name    <- this_run_df$Name[m]
+          
+        } else { # Otherwise replace by upper bounds
+          
+          this_run_df$Reference[m - nrow_batch_df] <- this_run_df$Upper[m - nrow_batch_df] 
+          run_name      <- paste0("upper", this_run_df$Name[m - nrow_batch_df])
+          run_name_good <- paste0("upper ", this_run_df$Name[m - nrow_batch_df])
+          cat_name      <- "Upper"
+          param_name    <- this_run_df$Name[m - nrow_batch_df]
+        }
+      }
+      
+      this_model_object <- update_model_object(input_model_object, this_run_df %>% select(-Lower, -Upper), convert_colnames = TRUE)
+      
+      if(debug) {
+        message("Trying Batch run: ", run_name_good)
+      }
+      
+      if(show_progress) {shiny::setProgress(value = i / length(list_of_runs), detail = paste0(i, "/", length(list_of_runs)))}
+      
+      tmp <- run_single_sim(
+        input_model_object = this_model_object,
+        pred_model         = pred_model,
+        ev_df              = ev_df,
+        model_dur          = model_dur,
+        model_rate         = model_rate,
+        sampling_times     = sampling_times,
+        divide_by          = divide_by,
+        debug              = debug,
+        append_id_text     = run_name,
+        parallel_sim       = parallel_sim,
+        parallel_n         = parallel_n
+      )
+      
+      if(!is.null(tmp) && is.data.frame(tmp)) {
+        tmp$.desc         <- run_name_good
+        tmp$.cat          <- cat_name
+        tmp$.paramname    <- param_name
+        list_of_runs[[i]] <- tmp
+      }
+    } # end of for-loop
+  })
+  
+  return(dplyr::bind_rows(list_of_runs))
+}
+
+#-------------------------------------------------------------------------------
+#' @name update_batch_run_table
+#'
+#' @title Update batch run parameter table
+#'
+#' @param param_df              Input dataframe containing mrgsolve parameter names and values ("reference", "lower", "upper") as characters
+#' @param lower_multiplier      lower bound multiplier
+#' @param upper_multiplier      upper bound multiplier
+#' @param last_change_ref_index Row index if last change through the UI was a reference value, otherwise 0
+#' @param single_bound_change   If last change was through the UI on a upper/lower bound it will be 1, otherwise will be > 1 (many bounds changed via multiplier)
+#' @param show_as_character     When TRUE, coerce entire dataframe to characters
+#'
+#' @importFrom dplyr mutate across everything
+#' @returns a df containing mrgsolve parameter names and values ("reference", "lower", "upper") as characters
+#' @export
+#-------------------------------------------------------------------------------
+
+update_batch_run_table <- function(param_df,
+                                   lower_multiplier      = 0.5,
+                                   upper_multiplier      = 1.5,
+                                   last_change_ref_index = 0,
+                                   single_bound_change   = 0,
+                                   show_as_character     = FALSE) {
+  
+  # # Coerce all columns except "name" to numeric
+  starting_table <- param_df %>%
+    dplyr::mutate(dplyr::across(-Name, as.numeric))
+  
+  if(any(is.na(starting_table))) {
+    return(starting_table)
+  }
+  
+  # Default case is changing entire table
+  all_params_table <- starting_table %>%
+    dplyr::mutate(
+      Lower = Reference * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 0.5, display_error = TRUE),
+      Upper = Reference * sanitize_numeric_input(upper_multiplier, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
+    )
+  
+  # If last change was on a reference value. Only the corresponding upper/lower bounds should be updated
+  # Switching models could introduce more than one last_change_ref_model_1() so we're also checking against that
+  if(length(last_change_ref_index) == 1 && last_change_ref_index > 0) {
+    all_params_table <- starting_table
+    all_params_table$Lower[last_change_ref_index] <- all_params_table$Reference[last_change_ref_index] * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)
+    all_params_table$Upper[last_change_ref_index] <- all_params_table$Reference[last_change_ref_index] * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
+  } 
+  
+  # If last change was on a bound, don't update the entire table
+  if(single_bound_change == 1) {
+    all_params_table <- starting_table
+  }
+  
+  # # Coerce entire dataframe to character before displaying
+  if(show_as_character) {
+    all_params_table <- all_params_table %>%
+      dplyr::mutate(dplyr::across(dplyr::everything(), as.character))
+  }
+  
+  return(all_params_table)
+}
+
+#-------------------------------------------------------------------------------
+#' @name tornado_plot
+#'
+#' @title Draws a tornado plot
+#'
+#' @param df                    Input df containing "Parameter", "Lower", "Upper"
+#' @param param_name            Column name for parameters
+#' @param lower_name            Column name for lower bounds
+#' @param upper_name            Column name for upper bounds
+#' @param lower_color           Fill color for lower bounds in bars
+#' @param upper_color           Fill color for upper bounds in bars
+#' @param reference_value       Untransformed reference value
+#' @param metric_name           Exposure metric name to be used for plot label
+#' @param plot_title            Plot title
+#' @param display_as            A choice between "Ratio", "Percentage", and "Value"
+#' @param filter_rows           Filter by X number of rows
+#' @param display_text          When TRUE, displays the size as a text labl at the end of each bar
+#' @param xlabname              Custom name for X-axis (technically the Y-axis due to coord_flip)
+#' @param bioeq_lines           When TRUE, plots the 80% / 125% lines relative to reference value
+#'
+#' @importFrom dplyr mutate select arrange slice_tail case_when if_else rename sym
+#' @importFrom tidyr pivot_longer
+#' @importFrom forcats fct_inorder
+#' @importFrom ggplot2 ggplot geom_rect theme_bw geom_hline scale_x_continuous scale_fill_manual coord_flip
+#' @importFrom ggplot2 scale_y_continuous aes labs ggtitle
+#' @importFrom scales percent pretty_breaks
+#' @returns a ggplot object
+#' @export
+#-------------------------------------------------------------------------------
+
+tornado_plot <- function(df,
+                         reference_value,
+                         param_name    = ".paramname",
+                         lower_name    = "Lower",
+                         upper_name    = "Upper",
+                         lower_color   = "#FC8D62", # "#1B9E77",
+                         upper_color   = "#66C2A5", # "#7570B3",
+                         metric_name   = "",
+                         plot_title    = "",
+                         display_as    = TRUE,
+                         filter_rows   = 20,
+                         display_text  = FALSE,
+                         xlabname      = "",
+                         bioeq_lines   = FALSE) {
+  
+  # width of columns in plot (value between 0 and 1)
+  width <- 0.95
+  
+  df <- df %>%
+    dplyr::rename(Parameter = !!dplyr::sym(param_name),
+                  Lower     = !!dplyr::sym(lower_name),
+                  Upper     = !!dplyr::sym(upper_name))
+  
+  # get data frame in shape for ggplot and geom_rect
+  df2 <- df %>% 
+    dplyr::mutate(delta_upper = Upper - reference_value,
+                  delta_lower = Lower - reference_value,
+                  del = abs(delta_upper) +  abs(delta_lower)) %>%
+    tidyr::pivot_longer(cols = c(Lower, Upper), names_to = "Level", values_to = "output_pretransform") %>%
+    dplyr::arrange(del) %>%
+    dplyr::select(Parameter, Level, output_pretransform)
+  
+  if(filter_rows != "" & is.numeric(filter_rows)) {
+    if(filter_rows > 0) {
+      df2 <- df2 %>%
+        dplyr::slice_tail(n = filter_rows * 2) # multiply by 2 because it is upper + lower
+    }
+  }
+  
+  df2 <- df2 %>%
+    dplyr::mutate(Parameter = forcats::fct_inorder(Parameter))
+  
+  if(display_as == "Ratio") {
+    df2 <- df2 %>%
+      dplyr::mutate(output = output_pretransform / reference_value)
+    ref_line   <- 1
+    bioeq_high <- 1.25
+    bioeq_low  <- 0.80
+    label_name <- paste0(metric_name, " (Ratio to Reference)")
+  }
+  
+  if(display_as == "Percentage") {
+    df2 <- df2 %>%
+      dplyr::mutate(output = (output_pretransform - reference_value) / reference_value)
+    ref_line   <- 0
+    bioeq_high <- 0.25
+    bioeq_low  <- -0.2
+    label_name <- paste0(metric_name, " (% Change From Reference)")
+  }
+  
+  if(display_as == "Value") {
+    df2 <- df2 %>%
+      dplyr::mutate(output = output_pretransform)
+    ref_line   <- reference_value
+    bioeq_high <- reference_value * 1.25
+    bioeq_low  <- reference_value * 0.8
+    label_name <- paste0(metric_name, " Value")
+  }
+  
+  # Calculate text labels and whether to plot them
+  if(display_text) {
+    # Add positions for text labels
+    df2 <- df2 %>%
+      dplyr::mutate(percent_change = (output_pretransform - reference_value) / reference_value * 100,
+                    label_text     = dplyr::case_when(
+                      percent_change > -1 & percent_change < 1             ~ "", # Don't plot text if it is sufficient close to Reference, i.e. within 1%
+                      display_as == "Percentage"                           ~ as.character(round(output * 100, 0)),
+                      TRUE                                                 ~ as.character(round(output, 2))
+                    )
+      ) # Rounded values for display
+    
+    if(display_as == "Percentage") {
+      df2 <- df2 %>% dplyr::mutate(label_text = dplyr::if_else(label_text == "", "", paste0(label_text, "%")))
+    }
+  }
+  
+  df2 <- df2 %>%
+    dplyr::mutate(ymin=pmin(output, ref_line),
+                  ymax=pmax(output, ref_line),
+                  xmin=as.numeric(Parameter)-width/2,
+                  xmax=as.numeric(Parameter)+width/2,
+                  tooltip = paste0("Parameter: ", Parameter, 
+                                   "<br>Value: ", round(output, 2)))  # Tooltip content for plotly
+  
+  p <- ggplot2::ggplot() +
+    ggplot2::geom_rect(data = df2, ggplot2::aes(ymax=ymax, ymin=ymin, xmax=xmax, xmin=xmin, fill=Level, text = tooltip)) + # Add tooltip content for plotly
+    ggplot2::theme_bw() + 
+    ggplot2::geom_hline(yintercept = ref_line) +
+    ggplot2::scale_x_continuous(breaks = seq_along(unique(df2$Parameter)),
+                                labels = unique(df2$Parameter)) + 
+    ggplot2::scale_fill_manual(values = c(Lower = lower_color, Upper = upper_color) ) +
+    ggplot2::coord_flip()
+  
+  if(bioeq_lines) {
+    p <- p +
+      ggplot2::geom_hline(yintercept = bioeq_high, linetype = "dashed", alpha = 0.5) +
+      ggplot2::geom_hline(yintercept = bioeq_low,  linetype = "dashed", alpha = 0.5)
+  }
+  
+  if(display_as == "Ratio" | display_as == "Percentage") {
+    max_y <- max(df2$ymax, na.rm = TRUE)
+    min_y <- min(df2$ymin, na.rm = TRUE)
+    
+    if(is.finite(max_y) & is.finite(min_y)) {
+      
+      abs_y <- pmax(abs(max_y) + abs(min_y), bioeq_high) # including high bioeq line in case where fold-changes are miniscule
+      
+      tick_size <- dplyr::case_when(  abs_y <=  1    ~ 0.05,
+                                      abs_y <=  2    ~ 0.1,
+                                      abs_y <=  3    ~ 0.25,
+                                      abs_y <= 10    ~ 0.5,
+                                      abs_y <= 20    ~ 1,
+                                      abs_y <= 40    ~ 2,
+                                      abs_y <= 80    ~ 5,
+                                      abs_y <= 100   ~ 10,
+                                      abs_y <= 200   ~ 20,
+                                      abs_y <= 500   ~ 50,
+                                      abs_y <= 1000  ~ 100,
+                                      abs_y <= 5000  ~ 500,
+                                      abs_y <= 20000 ~ 1000,
+                                      TRUE           ~ 5000)
+      
+      if(display_as == "Percentage") {
+        
+        # Align min_y to the nearest multiple of tick_size
+        aligned_min_y <- floor(min_y / tick_size) * tick_size
+        aligned_max_y <- ceiling(max_y / tick_size) * tick_size
+        
+        if(bioeq_lines) {
+          define_limits <- seq(pmin(aligned_min_y, bioeq_low), pmax(aligned_max_y, bioeq_high), tick_size)
+        } else {
+          define_limits <- seq(aligned_min_y, aligned_max_y, tick_size)
+        }
+        p <- p + ggplot2::scale_y_continuous(breaks = define_limits, labels = function(x) paste0(x * 100, "%"))
+        
+      } else {
+        
+        if(bioeq_lines) {
+          define_limits <- seq(0, pmax(max_y + tick_size, bioeq_high), tick_size)
+        } else {
+          define_limits <- seq(0, max_y + tick_size, tick_size)
+        }        
+        
+        p <- p + ggplot2::scale_y_continuous(breaks = define_limits)      
+      }
+    } # end of finite y check
+  } # end of display as percentage or ratio check
+  
+  if(display_as == "Value") {
+    p <- p + ggplot2::scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
+  }
+  
+  # Add text labels at both ends of each bar
+  if(display_text) {
+    df2$Parameter <- as.numeric(df2$Parameter)
+    p <- p +
+      ggplot2::geom_text(data = df2,
+                         ggplot2::aes(x = Parameter, 
+                                      y = output, 
+                                      label = label_text),
+                         #size = 4, # Adjust text size
+                         hjust = ifelse(df2$output_pretransform > reference_value, -0.2, 1.2), # Adjust vertical alignment
+                         vjust = 0.5) # Adjust horizontal alignment
+  }
+  
+  if(xlabname != "") {label_name <- xlabname} 
+  
+  p <- p +
+    ggplot2::labs(x = NULL, y = label_name) +
+    ggplot2::ggtitle(plot_title)
+  
+  return(p)
 }

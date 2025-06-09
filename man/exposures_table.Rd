@@ -9,6 +9,7 @@ exposures_table(
   output_conc,
   start_time = NULL,
   end_time = NULL,
+  carry_out = "ID",
   debug = FALSE
 )
 }
@@ -20,6 +21,8 @@ exposures_table(
 \item{start_time}{start time interval for metrics}
 
 \item{end_time}{end time interval for metrics}
+
+\item{carry_out}{Provide a vector of column names to retain in the summary table}
 
 \item{debug}{show debugging messages}
 }
