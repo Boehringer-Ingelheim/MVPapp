@@ -5026,31 +5026,13 @@ update_batch_run_table <- function(param_df,
 #' @export
 #-------------------------------------------------------------------------------
 
-calculate_tick_size <- function(abs_y, max_ticks = 12, nice_values = c(1,2,5)) {
+calculate_tick_size <- function(abs_y, max_ticks = 12, nice_values = c(1,2,5,10)) {
   approx_tick_size <- abs_y / max_ticks
   
-  #message("approx tick size: ", approx_tick_size)
-  
-  # Find the nearest "nice" tick size (1, 2, or 5 times a power of 10)
+  # Find the nearest "nice" tick size (1, 2, 5, or 10 times a power of 10)
   magnitude      <- 10^floor(log10(approx_tick_size))  # Power of 10
-  
-  #message("magnitude floor: ", magnitude)
-  
   possible_ticks <- nice_values * magnitude      # Generate possible tick sizes
-  
-  #message("possible ticks: ", possible_ticks)
-  
-  valid_ticks <- possible_ticks[possible_ticks >= approx_tick_size]
-  
-  # Handle edge case where no valid ticks are found
-  if (length(valid_ticks) == 0) {
-    tick_size <- max(possible_ticks)  # Fallback to the largest possible tick size
-  } else {
-    tick_size <- min(valid_ticks)  # Pick the smallest valid tick size
-  }
-  
-  #message("tick size: ", tick_size)
-  
+  tick_size <- min(possible_ticks[possible_ticks >= approx_tick_size]) # Return the minimum possible_ticks that exceeds approx_tick_size
   return(tick_size)
 }
 
@@ -5216,7 +5198,7 @@ tornado_plot <- function(df,
         }
       }
       
-      tick_size <- calculate_tick_size(abs_y = abs_y, max_ticks = 12, nice_values = c(1,2,5))
+      tick_size <- calculate_tick_size(abs_y = abs_y, max_ticks = 12, nice_values = c(1,2,5,10))
       
       if(display_as == "Percentage") {
         
