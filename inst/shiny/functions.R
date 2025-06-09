@@ -5014,6 +5014,30 @@ update_batch_run_table <- function(param_df,
 }
 
 #-------------------------------------------------------------------------------
+#' @name calculate_tick_size
+#'
+#' @title Calculates a nice tick size for tornado plots 
+#'
+#' @param abs_y                 Range of y-axis values (absolute value)
+#' @param max_ticks             Maximum number of ticks
+#' @param nice_values           Ticks should be multiples of these values
+#'
+#' @returns a numeric of optimal tick size
+#' @export
+#-------------------------------------------------------------------------------
+
+calculate_tick_size <- function(abs_y, max_ticks = 12, nice_values = c(1,2,5)) {
+  approx_tick_size <- abs_y / max_ticks
+  
+  # Find the nearest "nice" tick size (1, 2, or 5 times a power of 10)
+  magnitude      <- 10^floor(log10(approx_tick_size))  # Power of 10
+  possible_ticks <- nice_values * magnitude      # Generate possible tick sizes
+  tick_size      <- min(possible_ticks[possible_ticks >= approx_tick_size])  # Pick the smallest valid tick size
+  
+  return(tick_size)
+}
+
+#-------------------------------------------------------------------------------
 #' @name tornado_plot
 #'
 #' @title Draws a tornado plot
@@ -5158,22 +5182,24 @@ tornado_plot <- function(df,
     
     if(is.finite(max_y) & is.finite(min_y)) {
       
-      abs_y <- pmax(abs(max_y) + abs(min_y), bioeq_high) # including high bioeq line in case where fold-changes are miniscule
+      if(bioeq_lines) {
+        
+        if(display_as == "Percentage") {
+          abs_y <- pmax(abs(max_y) + abs(min_y), bioeq_high) # including high bioeq line in case where fold-changes are miniscule
+        }
+        if(display_as == "Ratio") {
+          abs_y <- pmax((abs(max_y - 1) + abs(min_y - 1)), bioeq_high - 1 )
+        } 
+      } else {
+        if(display_as == "Percentage") {
+          abs_y <- pmax(abs(max_y) + abs(min_y))
+        }
+        if(display_as == "Ratio") {
+          abs_y <- pmax((abs(max_y - 1) + abs(min_y - 1)))
+        }
+      }
       
-      tick_size <- dplyr::case_when(  abs_y <=  1    ~ 0.05,
-                                      abs_y <=  2    ~ 0.1,
-                                      abs_y <=  3    ~ 0.25,
-                                      abs_y <= 10    ~ 0.5,
-                                      abs_y <= 20    ~ 1,
-                                      abs_y <= 40    ~ 2,
-                                      abs_y <= 80    ~ 5,
-                                      abs_y <= 100   ~ 10,
-                                      abs_y <= 200   ~ 20,
-                                      abs_y <= 500   ~ 50,
-                                      abs_y <= 1000  ~ 100,
-                                      abs_y <= 5000  ~ 500,
-                                      abs_y <= 20000 ~ 1000,
-                                      TRUE           ~ 5000)
+      tick_size <- calculate_tick_size(abs_y = abs_y, max_ticks = 12, nice_values = c(1,2,5))
       
       if(display_as == "Percentage") {
         
