@@ -49,7 +49,8 @@
 <span>  lower_multiplier <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  upper_multiplier <span class="op">=</span> <span class="fl">1.5</span>,</span>
 <span>  last_change_ref_index <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  single_bound_change <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  length_lower_change <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  length_upper_change <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  show_as_character <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -74,12 +75,12 @@
 <dd><p>Row index if last change through the UI was a reference value, otherwise 0</p></dd>
 
 
-<dt id="arg-single-bound-change">single_bound_change<a class="anchor" aria-label="anchor" href="#arg-single-bound-change"></a></dt>
-<dd><p>If last change was through the UI on a upper/lower bound it will be 1, otherwise will be &gt; 1 (many bounds changed via multiplier)</p></dd>
-
-
 <dt id="arg-show-as-character">show_as_character<a class="anchor" aria-label="anchor" href="#arg-show-as-character"></a></dt>
 <dd><p>When TRUE, coerce entire dataframe to characters</p></dd>
+
+
+<dt id="arg-single-bound-change">single_bound_change<a class="anchor" aria-label="anchor" href="#arg-single-bound-change"></a></dt>
+<dd><p>If last change was through the UI on a upper/lower bound it will be 1, otherwise will be &gt; 1 (many bounds changed via multiplier)</p></dd>
 
 </dl></div>
     <div class="section level2">

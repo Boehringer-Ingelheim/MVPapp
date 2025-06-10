@@ -4973,10 +4973,11 @@ update_batch_run_table <- function(param_df,
                                    lower_multiplier      = 0.5,
                                    upper_multiplier      = 1.5,
                                    last_change_ref_index = 0,
-                                   single_bound_change   = 0,
+                                   length_lower_change   = 0,
+                                   length_upper_change   = 0,
                                    show_as_character     = FALSE) {
   
-  # # Coerce all columns except "name" to numeric
+  # # Coerce all columns except "Name" to numeric
   starting_table <- param_df %>%
     dplyr::mutate(dplyr::across(-Name, as.numeric))
   
@@ -4985,6 +4986,8 @@ update_batch_run_table <- function(param_df,
   }
   
   # Default case is changing entire table
+  # A limitation is that changing lower bound and then modifying upper multiplier will update entire table (same goes for changing upper -> modifying lower multiplier)
+  # A workaround is not found, perhaps due to circular logic?
   all_params_table <- starting_table %>%
     dplyr::mutate(
       Lower = Reference * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 0.5, display_error = TRUE),
@@ -4996,11 +4999,16 @@ update_batch_run_table <- function(param_df,
   if(length(last_change_ref_index) == 1 && last_change_ref_index > 0) {
     all_params_table <- starting_table
     all_params_table$Lower[last_change_ref_index] <- all_params_table$Reference[last_change_ref_index] * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)
-    all_params_table$Upper[last_change_ref_index] <- all_params_table$Reference[last_change_ref_index] * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
+    all_params_table$Upper[last_change_ref_index] <- all_params_table$Reference[last_change_ref_index] * sanitize_numeric_input(upper_multiplier, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
   } 
   
-  # If last change was on a bound, don't update the entire table
-  if(single_bound_change == 1) {
+  # If last change was on a bound, don't update the entire table, however updating the table has some weird circular logic interaction
+  # The compromise is either 1) Multipliers stop working after changing reference value, or
+  # 2) When multipliers are changed, entire table gets updated. I think having 2) is more user-friendly if there is a reminder to ask users to edit bounds last
+  
+  if((length_lower_change == 1 & length_upper_change == 0) |
+     (length_lower_change == 0 & length_upper_change == 1)){
+    #message("no change")
     all_params_table <- starting_table
   }
   
@@ -5075,7 +5083,7 @@ tornado_plot <- function(df,
                          upper_color   = "#66C2A5", # "#7570B3",
                          metric_name   = "",
                          plot_title    = "",
-                         display_as    = TRUE,
+                         display_as    = "Percentage",
                          filter_rows   = 20,
                          display_text  = FALSE,
                          xlabname      = "",

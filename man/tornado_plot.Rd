@@ -14,7 +14,7 @@ tornado_plot(
   upper_color = "#66C2A5",
   metric_name = "",
   plot_title = "",
-  display_as = TRUE,
+  display_as = "Percentage",
   filter_rows = 20,
   display_text = FALSE,
   xlabname = "",

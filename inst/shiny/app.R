@@ -2186,6 +2186,7 @@ ui <- shiny::navbarPage(
                                p('For bug reports or general feedback, please ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/issues", "submit an issue on GitHub.", target = "_blank"), ''),
                                p(
                                  tags$ul(
+                                   tags$li("Batch runs: changing any multipliers will reset both upper and lower bounds together. Changing reference will reset whole table. Multipliers stop working when the table is filtered down to 1 row. Workaround with first adjusting the multipliers, then the reference, and then finally the bounds."),
                                    tags$li("Subplots for Individual Plots may become unevenly sized for interactive plots."),
                                    tags$li("Using 'outvars' would sometimes fail to display the plot. A current workaround is to re-define the outvars to a compartment name and then switching back."),
                                    tags$li("Model will crash if model code contains 'R_' pattern which does not refer to modelling rate."),
@@ -2217,7 +2218,7 @@ ui <- shiny::navbarPage(
                                title = 'Changelog', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
                                p('Please visit the ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/releases", "Github release page", target = "_blank"), ' for more information.'),
                                htmltools::br(),
-                               p('v0.3.0 (2025-06-09) - Parameter Sensitivity Analysis - Batch Runs (i.e. Tornado Plots). Fix slowness of plots when switching models with differing sample times. General improvements.'),
+                               p('v0.3.0 (2025-06-10) - Parameter Sensitivity Analysis - Batch Runs (i.e. Tornado Plots). Fix slowness of plots when switching models with differing sample times. General improvements.'),
                                p('v0.2.19 (2025-06-03) - Prevent bad parameter values from crashing the app. Re-worked median line bins to be based on quantiles. Bug fixes for box plot count labels. Better handling of NAs for Quantize X-axis. Built-in data filtering option to distinct by ID. More QoL options for NCA (safeguards and rounding). Minor re-factoring and QoL updates.'),
                                p('v0.2.18 (2025-04-21) - Tooltips for Select Time Intervals. Safeguards for too many samples. Bugfixes and improvements for NCA. Sorting option and flagging outliers option for individual plots. New template model (parallel zero/first-order absorption).'),
                                p('v0.2.17 (2025-03-13) - Quantized plots in Data Page. More template models (QE, MM TMDD) and minor corrections to existing models. More tooltips. Minor bugfixes.'),
@@ -5578,7 +5579,8 @@ server <- function(input, output, session) {
   tor_tab_orig_model_1         <- reactiveVal()
   tor_tab_new_model_1          <- reactiveVal()
   last_change_ref_model_1      <- reactiveVal(0)
-  single_bound_change_model_1  <- reactiveVal(0)
+  length_lower_change_model_1  <- reactiveVal(0)
+  length_upper_change_model_1  <- reactiveVal(0)
   batch_runs_model_1           <- reactiveVal(NULL)
   d_plot_title_tor_model_1     <- debounce(reactive({ input$plot_title_tor_model_1 }), debounce_timer_slow)
   d_xlab_tor_model_1           <- debounce(reactive({ input$xlab_tor_model_1 }), debounce_timer_slow)
@@ -5621,13 +5623,16 @@ server <- function(input, output, session) {
       lower_multiplier      = input$tor_lower_model_1,
       upper_multiplier      = input$tor_upper_model_1,
       last_change_ref_index = last_change_ref_model_1(),
-      single_bound_change   = single_bound_change_model_1(),
+      length_lower_change   = length_lower_change_model_1(),
+      length_upper_change   = length_upper_change_model_1(),
       show_as_character     = input$tor_show_digits_model_1
     )
 
     table_col_types <- ifelse(input$tor_show_digits_model_1, c("text", rep(ncol(all_params_table))), c("text", rep("numeric", ncol(all_params_table) -1)))
 
-    rhandsontable::rhandsontable(all_params_table, colTypes = table_col_types, contextMenu = FALSE) %>%
+    rhandsontable::rhandsontable(all_params_table,
+                                 colTypes = table_col_types,
+                                 contextMenu = FALSE) %>%
       rhandsontable::hot_col("Name", readOnly = TRUE,
                              renderer = "function(instance, td, row, col, prop, value, cellProperties) {
                       Handsontable.renderers.TextRenderer.apply(this, arguments);
@@ -5654,11 +5659,16 @@ server <- function(input, output, session) {
         last_change_ref_model_1(0)
       }
 
-      # Record if last change was made on a upper/lower bound, the length would be > 1 if entire table was updated due to changing multipliers
-      length_diff_bounds <- length(which(tmp$Lower != tor_tab_new_model_1()$Lower)) + length(which(tmp$Upper != tor_tab_new_model_1()$Upper))
-      single_bound_change_model_1(length_diff_bounds)
+      # Record if last change was made on a upper/lower bound
+      length_lower_change_model_1(length(which(tmp$Lower != tor_tab_new_model_1()$Lower)))
+      length_upper_change_model_1(length(which(tmp$Upper != tor_tab_new_model_1()$Upper)))
 
-      # Update tor_tab_new_model_1 with the modified table from the UI
+      if(show_debugging_msg) {
+        message("last_change_ref_model_1: ", last_change_ref_model_1())
+        message("length_lower_change_model_1: ", length_lower_change_model_1())
+        message("length_upper_change_model_1: ", length_upper_change_model_1())
+      }
+
       tor_tab_new_model_1(tmp)
     }
   })
@@ -5680,10 +5690,12 @@ server <- function(input, output, session) {
       parallel_n         = 100 # input$para_n,
     )
 
+    message("updating batch_runs")
+
     batch_runs_model_1(batch_runs)
 
     if(show_debugging_msg) {
-      message("batch_runs_model_1 updated")
+      glimpse(batch_runs_model_1())
     }
   })
 
@@ -5819,7 +5831,8 @@ server <- function(input, output, session) {
   tor_tab_orig_model_2         <- reactiveVal()
   tor_tab_new_model_2          <- reactiveVal()
   last_change_ref_model_2      <- reactiveVal(0)
-  single_bound_change_model_2  <- reactiveVal(0)
+  length_lower_change_model_2  <- reactiveVal(0)
+  length_upper_change_model_2  <- reactiveVal(0)
   batch_runs_model_2           <- reactiveVal(NULL)
   d_plot_title_tor_model_2     <- debounce(reactive({ input$plot_title_tor_model_2 }), debounce_timer_slow)
   d_xlab_tor_model_2           <- debounce(reactive({ input$xlab_tor_model_2 }), debounce_timer_slow)
@@ -5862,7 +5875,8 @@ server <- function(input, output, session) {
       lower_multiplier      = input$tor_lower_model_2,
       upper_multiplier      = input$tor_upper_model_2,
       last_change_ref_index = last_change_ref_model_2(),
-      single_bound_change   = single_bound_change_model_2(),
+      length_lower_change   = length_lower_change_model_2(),
+      length_upper_change   = length_upper_change_model_2(),
       show_as_character     = input$tor_show_digits_model_2
     )
 
@@ -5895,9 +5909,15 @@ server <- function(input, output, session) {
         last_change_ref_model_2(0)
       }
 
-      # Record if last change was made on a upper/lower bound, the length would be > 1 if entire table was updated due to changing multipliers
-      length_diff_bounds <- length(which(tmp$Lower != tor_tab_new_model_2()$Lower)) + length(which(tmp$Upper != tor_tab_new_model_2()$Upper))
-      single_bound_change_model_2(length_diff_bounds)
+      # Record if last change was made on a upper/lower bound
+      length_lower_change_model_2(length(which(tmp$Lower != tor_tab_new_model_2()$Lower)))
+      length_upper_change_model_2(length(which(tmp$Upper != tor_tab_new_model_2()$Upper)))
+
+      if(show_debugging_msg) {
+        message("last_change_ref_model_2: ", last_change_ref_model_2())
+        message("length_lower_change_model_2: ", length_lower_change_model_2())
+        message("length_upper_change_model_2: ", length_upper_change_model_2())
+      }
 
       # Update tor_tab_new_model_2 with the modified table from the UI
       tor_tab_new_model_2(tmp)
@@ -5924,7 +5944,7 @@ server <- function(input, output, session) {
     batch_runs_model_2(batch_runs)
 
     if(show_debugging_msg) {
-      message("batch_runs_model_2 updated")
+      glimpse(batch_runs_model_2())
     }
   })
 

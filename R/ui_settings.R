@@ -371,9 +371,9 @@ bspop_dp_checkbox     <- "By default the rounding uses significant digits. Check
 #' @export
 bspop_select_time_interval <- "(Optional) Select the desired time intervals to derive metrics shown on the left hand side of the page (e.g. for partial AUC). The original time scale is provided for selection, independent of whether any scaling of the x-axis from the Simulation page was performed.<br><br>Note: The time interval is inclusive on both ends (i.e. start time <= time interval <= end time)."
 #' @export
-label_batch_table     <- shiny::HTML(paste0("Batch Run Parameters: <i class='fa fa-question-circle' title='(Optional) Tweak any parameter value for batch runs. Changes to reference values will automatically update the corresponding bounds. Note: Changes will be lost when the original model updates from the \"Simulation\" page.' style='margin-left: 3px;'></i>"))
+label_batch_table     <- shiny::HTML(paste0("Batch Run Parameters: <i class='fa fa-question-circle' title='(Optional) Tweak any parameter value for batch runs. Changes to reference values will automatically update the corresponding bounds. Edit upper/lower bounds last to avoid values being reset. Note: Changes will be lost when the original model updates from the \"Simulation\" page.' style='margin-left: 3px;'></i>"))
 #' @export
-bspop_batch_table     <- '(Optional) Tweak any parameter value for batch runs. Changes to reference values will automatically update the corresponding bounds.<br><br>Note: Changes will be lost when the original model updates from the \"Simulation\" page.'
+bspop_batch_table     <- '(Optional) Tweak any parameter value for batch runs. Changes to reference values will automatically update the corresponding bounds. Edit upper/lower bounds last to avoid values being accidentally overwritten. Note: Changes will be lost when the original model updates from the \"Simulation\" page.'
 #' @export
 bspop_trim_tor         <- 'Filter the data to only display the top X number of parameters, sorted in order of impact on metric.'
 #label_trim_tor        <- shiny::HTML(paste0("Param Numbers: <i class='fa fa-question-circle' title='Filter the data to only display the top X number of parameters.' style='margin-left: 3px;'></i>"))
@@ -384,7 +384,7 @@ label_upper_multiplier <- "Upper Multiplier"
 #' @export
 label_tor_show_digits  <- 'Display Values Verbatim'
 #' @export
-bspop_tor_show_digits  <- 'Display all parameter values as-is (i.e. treating it as a character and not rounded to 2 dp in the UI).'
+bspop_tor_show_digits  <- 'Display all parameter values as-is (i.e. treating it as a character and not rounded to 2 dp in the UI).<br><br>Note: This option should be toggled before editing the table as values may reset.'
 #' @export
 label_tor_variable     <- 'Select Variable to Derive Metrics'
 #' @export
@@ -407,7 +407,7 @@ bspop_reset_reference <- 'Press to reset all reference values back to the origin
 #' @export
 bspop_generate_batch  <- 'Press to generate batch runs according to the Batch Run Parameters Table. The total number of simulations are 2 * number of parameters + 1 (the reference model).'
 #' @export
-bspop_batch_runs      <- 'Perform sensitivity analysis for all parameters to visualize the impact on exposure metrics (Tornado Plots). Parameters are pre-configured with a upper/lower bound (default: \u00B150%).<br><br>Press the "Batch Run" button after any further adjustments to the table below.' #<br><br>Note: could be time consuming for larger models and/or frequent sampling.'
+bspop_batch_runs      <- 'Perform sensitivity analysis for all parameters to visualize the impact on exposure metrics, ordered by relative importance (Tornado Plots). Parameters are pre-configured with a upper/lower bound (default: \u00B150%).<br><br>Press the "Batch Run" button after any further adjustments to the table below.' #<br><br>Note: could be time consuming for larger models and/or frequent sampling.'
 #' @export
 bspop_bounds          <- 'Pre-configures batch runs by multiplying the reference value of all parameter by this number as the upper/lower bound.<br><br>The Table can also be further fine-tuned (i.e. directly edit) for all values, including the reference value.'
 
