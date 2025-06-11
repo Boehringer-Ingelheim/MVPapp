@@ -1,6 +1,6 @@
 # Model Visualization Platform -------------------------------------------------
 #
-# Authors: Jin Gyu Kim (2023), Steve Choy (2023-2025)
+# Authors: Steve Choy (2023-2025), Jin Gyu Kim (2023)
 #
 #
 #-------------------------------------------------------------------------------
@@ -2186,7 +2186,7 @@ ui <- shiny::navbarPage(
                                p('For bug reports or general feedback, please ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/issues", "submit an issue on GitHub.", target = "_blank"), ''),
                                p(
                                  tags$ul(
-                                   tags$li("Batch runs: changing any multipliers will reset both upper and lower bounds together. Changing reference will reset whole table. Multipliers stop working when the table is filtered down to 1 row. Workaround with first adjusting the multipliers, then the reference, and then finally the bounds."),
+                                   tags$li("Batch runs: changing any multipliers will reset both upper and lower bounds together. Workaround with first adjusting the multipliers, then the reference, and then finally the bounds."),
                                    tags$li("Subplots for Individual Plots may become unevenly sized for interactive plots."),
                                    tags$li("Using 'outvars' would sometimes fail to display the plot. A current workaround is to re-define the outvars to a compartment name and then switching back."),
                                    tags$li("Model will crash if model code contains 'R_' pattern which does not refer to modelling rate."),
@@ -5585,6 +5585,8 @@ server <- function(input, output, session) {
   d_plot_title_tor_model_1     <- debounce(reactive({ input$plot_title_tor_model_1 }), debounce_timer_slow)
   d_xlab_tor_model_1           <- debounce(reactive({ input$xlab_tor_model_1 }), debounce_timer_slow)
   d_trim_tor_model_1           <- debounce(reactive({ input$trim_tor_model_1 }), debounce_timer_slow)
+  #slowed_lower_model_1         <- throttle(reactive({sanitize_numeric_input(input$tor_lower_model_1, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)}), debounce_timer_fast)
+  #slowed_upper_model_1         <- throttle(reactive({sanitize_numeric_input(input$tor_upper_model_1, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)}), debounce_timer_fast)
 
   observeEvent(inputted_model_1(), {
     updateSelectInput(session,
@@ -5620,24 +5622,34 @@ server <- function(input, output, session) {
 
     all_params_table <-  update_batch_run_table(
       param_df              = tor_tab_new_model_1(),
-      lower_multiplier      = input$tor_lower_model_1,
-      upper_multiplier      = input$tor_upper_model_1,
+      lower_multiplier      = input$tor_lower_model_1, # slowed_lower_model_1() # can throttle if really want to
+      upper_multiplier      = input$tor_upper_model_1, # slowed_upper_model_1() # can throttle if really want to
       last_change_ref_index = last_change_ref_model_1(),
       length_lower_change   = length_lower_change_model_1(),
-      length_upper_change   = length_upper_change_model_1(),
-      show_as_character     = input$tor_show_digits_model_1
+      length_upper_change   = length_upper_change_model_1()
     )
 
-    table_col_types <- ifelse(input$tor_show_digits_model_1, c("text", rep(ncol(all_params_table))), c("text", rep("numeric", ncol(all_params_table) -1)))
+    ## Reconverting types here to play nicely with rhandsontable, otherwise numerics do not get proper refresh
+    if(input$tor_show_digits_model_1) {
+      all_params_table <- all_params_table %>%
+        dplyr::mutate(dplyr::across(dplyr::everything(), as.character))
+    } else {
+      all_params_table <- all_params_table %>%
+        dplyr::mutate(dplyr::across(-Name, as.numeric))
+    }
 
-    rhandsontable::rhandsontable(all_params_table,
-                                 colTypes = table_col_types,
-                                 contextMenu = FALSE) %>%
+    tor_tab_new_model_1(all_params_table) # updating here such that changing reference will not reset whole table
+
+    final_table <- rhandsontable::rhandsontable(all_params_table,
+                                                #colTypes = table_col_types, # not used anymore as we handle column types outside
+                                                contextMenu = FALSE) %>%
       rhandsontable::hot_col("Name", readOnly = TRUE,
                              renderer = "function(instance, td, row, col, prop, value, cellProperties) {
                       Handsontable.renderers.TextRenderer.apply(this, arguments);
                       td.style.background = '#d3d3d3';  // Grey background
                     }")  # Disable editing for param
+
+    return(final_table)
   })
 
   output$tor_table_model_1 <- rhandsontable::renderRHandsontable({
@@ -5663,11 +5675,11 @@ server <- function(input, output, session) {
       length_lower_change_model_1(length(which(tmp$Lower != tor_tab_new_model_1()$Lower)))
       length_upper_change_model_1(length(which(tmp$Upper != tor_tab_new_model_1()$Upper)))
 
-      if(show_debugging_msg) {
-        message("last_change_ref_model_1: ", last_change_ref_model_1())
-        message("length_lower_change_model_1: ", length_lower_change_model_1())
-        message("length_upper_change_model_1: ", length_upper_change_model_1())
-      }
+      # if(show_debugging_msg) {
+      #   message("last_change_ref_model_1: ", last_change_ref_model_1())
+      #   message("length_lower_change_model_1: ", length_lower_change_model_1())
+      #   message("length_upper_change_model_1: ", length_upper_change_model_1())
+      # }
 
       tor_tab_new_model_1(tmp)
     }
@@ -5837,6 +5849,8 @@ server <- function(input, output, session) {
   d_plot_title_tor_model_2     <- debounce(reactive({ input$plot_title_tor_model_2 }), debounce_timer_slow)
   d_xlab_tor_model_2           <- debounce(reactive({ input$xlab_tor_model_2 }), debounce_timer_slow)
   d_trim_tor_model_2           <- debounce(reactive({ input$trim_tor_model_2 }), debounce_timer_slow)
+  #slowed_lower_model_2         <- throttle(reactive({sanitize_numeric_input(input$tor_lower_model_2, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)}), debounce_timer_fast)
+  #slowed_upper_model_2         <- throttle(reactive({sanitize_numeric_input(input$tor_upper_model_2, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)}), debounce_timer_fast)
 
   observeEvent(inputted_model_2(), {
     updateSelectInput(session,
@@ -5867,27 +5881,39 @@ server <- function(input, output, session) {
     tor_tab_new_model_2(tor_tab_orig_model_2())  # Reset to original values
   })
 
-  tor_tab_model_2 <- eventReactive(c(tor_tab_new_model_2(), input$tor_lower_model_2, input$tor_upper_model_2, input$tor_show_digits_model_2), {
+  tor_tab_model_2 <- eventReactive(c(tor_tab_new_model_2(), input$tor_lower_model_2, input$tor_upper_model_2, input$tor_show_digits_model_2) , {
     shiny::req(tor_tab_new_model_2())
 
     all_params_table <-  update_batch_run_table(
       param_df              = tor_tab_new_model_2(),
-      lower_multiplier      = input$tor_lower_model_2,
-      upper_multiplier      = input$tor_upper_model_2,
+      lower_multiplier      = input$tor_lower_model_2, # slowed_lower_model_2() # can throttle if really want to
+      upper_multiplier      = input$tor_upper_model_2, # slowed_upper_model_2() # can throttle if really want to
       last_change_ref_index = last_change_ref_model_2(),
       length_lower_change   = length_lower_change_model_2(),
-      length_upper_change   = length_upper_change_model_2(),
-      show_as_character     = input$tor_show_digits_model_2
+      length_upper_change   = length_upper_change_model_2()
     )
 
-    table_col_types <- ifelse(input$tor_show_digits_model_2, c("text", rep(ncol(all_params_table))), c("text", rep("numeric", ncol(all_params_table) -1)))
+    ## Reconverting types here to play nicely with rhandsontable, otherwise numerics do not get proper refresh
+    if(input$tor_show_digits_model_2) {
+      all_params_table <- all_params_table %>%
+        dplyr::mutate(dplyr::across(dplyr::everything(), as.character))
+    } else {
+      all_params_table <- all_params_table %>%
+        dplyr::mutate(dplyr::across(-Name, as.numeric))
+    }
 
-    rhandsontable::rhandsontable(all_params_table, colTypes = table_col_types, contextMenu = FALSE) %>%
+    tor_tab_new_model_2(all_params_table) # updating here such that changing reference will not reset whole table
+
+    final_table <- rhandsontable::rhandsontable(all_params_table,
+                                                #colTypes = table_col_types, # not used anymore as we handle column types outside
+                                                contextMenu = FALSE) %>%
       rhandsontable::hot_col("Name", readOnly = TRUE,
                              renderer = "function(instance, td, row, col, prop, value, cellProperties) {
                       Handsontable.renderers.TextRenderer.apply(this, arguments);
                       td.style.background = '#d3d3d3';  // Grey background
                     }")  # Disable editing for param
+
+    return(final_table)
   })
 
   output$tor_table_model_2 <- rhandsontable::renderRHandsontable({
@@ -5913,13 +5939,12 @@ server <- function(input, output, session) {
       length_lower_change_model_2(length(which(tmp$Lower != tor_tab_new_model_2()$Lower)))
       length_upper_change_model_2(length(which(tmp$Upper != tor_tab_new_model_2()$Upper)))
 
-      if(show_debugging_msg) {
-        message("last_change_ref_model_2: ", last_change_ref_model_2())
-        message("length_lower_change_model_2: ", length_lower_change_model_2())
-        message("length_upper_change_model_2: ", length_upper_change_model_2())
-      }
+      # if(show_debugging_msg) {
+      #   message("last_change_ref_model_2: ", last_change_ref_model_2())
+      #   message("length_lower_change_model_2: ", length_lower_change_model_2())
+      #   message("length_upper_change_model_2: ", length_upper_change_model_2())
+      # }
 
-      # Update tor_tab_new_model_2 with the modified table from the UI
       tor_tab_new_model_2(tmp)
     }
   })

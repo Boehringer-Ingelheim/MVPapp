@@ -128,11 +128,11 @@ After a model has been generated from the Simulation page, the impact of perturb
 
 #### Assessing All Structural Parameters
 
-Batch run simulations (i.e. assessing all parameters at the same time) can be generated from the "All Parameters" tab on the top-left side of the page, with **results available from just a single click**, visualized using [Tornado Plots](https://en.wikipedia.org/wiki/Tornado_diagram){target="_blank"}. This feature is particularly useful for complex models with up to hundreds of parameters to rank parameters of relative importance, e.g. QSP models.
+Batch run simulations (i.e. assessing all parameters at the same time) can be generated from the "All Parameters" tab on the top-left side of the page, with **results available from just a single click** and visualized using [Tornado Plots](https://en.wikipedia.org/wiki/Tornado_diagram){target="_blank"}. This feature is particularly useful for complex models with up to hundreds of parameters to rank parameters of relative importance, e.g. PBPK or QSP models.
 
 1. (Optional) Remove any parameters from the batch run using the "Fix parameters" option on the top-left side.
-2. By default, all parameters are perturbed based on ±50% of the original value, i.e. the reference model. Users may tweak the Lower and Upper Multipliers to quickly pre-configure the range easily. Each value can also be adjusted manually in the Batch Run Parameters Table below.
-    -   As the Table is updated dynamically, users are recommended to **first modify the multipliers, followed by the reference values, and then the lower/upper bounds as required**. Other edit orders may unintentionally reset the values.
+2. By default, all parameters are perturbed based on ±50% of the original value, i.e. the reference model. Users may tweak the Lower and Upper Multipliers to quickly pre-configure the range easily. Each value can also be adjusted manually in the Batch Run Parameters Table.
+    -   As the Table is updated dynamically, users are recommended to **first modify the multipliers, then the reference values, and lastly the lower/upper bounds, as required**. Other edit orders may unintentionally reset the values.
 3. Press the "Batch Run" button when ready. Each simulation will substitute one of its parameters univariately, while the rest of the parameters are unchanged based on the reference model (i.e. the total number of simulations are 2 * each parameter (lower and upper) + 1 (the reference model)).
 4. On the right hand side in the "Plotting Options", select the variable to summarize over (usually the PK/PD concentration variable). Afterwards, choose the exposure metric of interest from the "Select Metric" option (default metric is AUC, other supported metrics are Cmax, Cavg, Cmin, Clast, Tmax, and Tmin).
     -   Other graphical options such as displaying in different scales, effect size text labels, filtering parameters, and bioequivalence (80% - 125%) visual guide are provided.

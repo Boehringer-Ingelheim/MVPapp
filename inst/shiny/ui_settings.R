@@ -401,7 +401,7 @@ bspop_show_bioeq       <- 'Insert visual guide to represent the bioequivalence c
 label_show_bioeq       <- 'Bioequivalence'
 
 #' @export
-label_fix_parameters  <- shiny::HTML(paste0("Fix Parameters: <i class='fa fa-question-circle' title='(Optional) Remove any parameters from the list of runs, e.g. parameters that may not make physiological sense to adjust.' style='margin-left: 3px;'></i>"))
+label_fix_parameters  <- shiny::HTML(paste0("Fix Parameters: <i class='fa fa-question-circle' title='(Optional) Remove any parameters from the list of batch runs. Note: The entire table will be reset.' style='margin-left: 3px;'></i>"))
 #' @export
 bspop_reset_reference <- 'Press to reset all reference values back to the original model from \"Simulation\" page.'
 #' @export

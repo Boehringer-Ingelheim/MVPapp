@@ -225,11 +225,11 @@ previously defined model settings and making them available (i.e. in
 
 Batch run simulations (i.e. assessing all parameters at the same time)
 can be generated from the “All Parameters” tab on the top-left side of
-the page, with **results available from just a single click**,
+the page, with **results available from just a single click** and
 visualized using <a href="https://en.wikipedia.org/wiki/Tornado_diagram"
 target="_blank">Tornado Plots</a>. This feature is particularly useful
 for complex models with up to hundreds of parameters to rank parameters
-of relative importance, e.g. QSP models.
+of relative importance, e.g. PBPK or QSP models.
 
 1.  (Optional) Remove any parameters from the batch run using the “Fix
     parameters” option on the top-left side.
@@ -237,10 +237,10 @@ of relative importance, e.g. QSP models.
     original value, i.e. the reference model. Users may tweak the Lower
     and Upper Multipliers to quickly pre-configure the range easily.
     Each value can also be adjusted manually in the Batch Run Parameters
-    Table below.
+    Table.
     - As the Table is updated dynamically, users are recommended to
-      **first modify the multipliers, followed by the reference values,
-      and then the lower/upper bounds as required**. Other edit orders
+      **first modify the multipliers, then the reference values, and
+      lastly the lower/upper bounds, as required**. Other edit orders
       may unintentionally reset the values.
 3.  Press the “Batch Run” button when ready. Each simulation will
     substitute one of its parameters univariately, while the rest of the

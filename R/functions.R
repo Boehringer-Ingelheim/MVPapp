@@ -321,7 +321,7 @@ do_data_page_plot <- function(nmd,
   # Safeguard for blanks ("") since plotly has bugs with handling it
   nmd <- handle_blanks(nmd, y_axis)
   nmd <- handle_blanks(nmd, x_axis)
-
+  
   if (!is.null(facet_name) && facet_name[1] != "") {
     for (facet in facet_name) {
       if (facet != x_axis) {
@@ -329,7 +329,7 @@ do_data_page_plot <- function(nmd,
       }
     }
   }
-
+  
   if(color_by != "") {
     
     if(can_quantize & color_by == x_axis_orig) {
@@ -1217,7 +1217,7 @@ run_single_sim <- function(input_model_object,
   
   ### If reading in Databases:
   if(nsubj > 1 & !is.null(ext_db)) { # Note that ext_db is not NULL even for "None" option
-
+    
     # Joining ext_db with ev_df
     ev_df2 <- ev_df %>%
       mrgsolve::ev_rep((1:nrow(ext_db)))
@@ -1258,11 +1258,11 @@ run_single_sim <- function(input_model_object,
     input_model_object@digits <- 5 # how many sigdigs to output
     
     solved_output <- safely_qsim(input_model_object,
-                              data = ext_db_ev,
-                              obsonly = TRUE,
-                              tgrid = sampling_times,
-                              tad = TRUE,
-                              output = "df")
+                                 data = ext_db_ev,
+                                 obsonly = TRUE,
+                                 tgrid = sampling_times,
+                                 tad = TRUE,
+                                 output = "df")
     
     # mrgsim_q / qsim does not support carry_out cols, so merging back in here
     if(is.null(solved_output$error)) {
@@ -1291,7 +1291,7 @@ run_single_sim <- function(input_model_object,
     shiny::showNotification(paste0(solved_output$error, " Potentially due to non-sensible parameter values."), type = "error", duration = 10)
     solved_output <- NULL
   }
-    
+  
   return(solved_output) # Successful sims will be returned as df; otherwise a NULL is returned
   
 } # end of run_single_sim
@@ -2976,14 +2976,14 @@ plot_iiv_data_with_nm <- function(
         ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[y_mean]]), color = line_color_2, linewidth = 1.2, linetype = "dashed")
     }
   } # end of input_dataset2
-
+  
   ### Apply log axis if required
   if(log_x_axis) {
     p1 <- p1 +
       ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) +
       ggplot2::annotation_logticks(sides = "b")
   } else {
-      p1 <- smart_x_axis(p1, xlabel = xlabel)
+    p1 <- smart_x_axis(p1, xlabel = xlabel)
   }
   
   if(log_y_axis) {
@@ -3043,7 +3043,7 @@ extract_model_params <- function(input_model_object) {
 #-------------------------------------------------------------------------------
 
 update_model_object <- function(input_model_object, input_new_df, convert_colnames = FALSE) {
-
+  
   tmp1 <- as.data.frame(input_new_df)
   
   if(convert_colnames) {colnames(tmp1) <- c("name", "value")}
@@ -4957,12 +4957,11 @@ iterate_batch_runs <- function(batch_run_df,
 #'
 #' @title Update batch run parameter table
 #'
-#' @param param_df              Input dataframe containing mrgsolve parameter names and values ("reference", "lower", "upper") as characters
+#' @param param_df              Input dataframe containing mrgsolve parameter names and values ("Name", "Reference", "Lower", "Upper")
 #' @param lower_multiplier      lower bound multiplier
 #' @param upper_multiplier      upper bound multiplier
 #' @param last_change_ref_index Row index if last change through the UI was a reference value, otherwise 0
 #' @param single_bound_change   If last change was through the UI on a upper/lower bound it will be 1, otherwise will be > 1 (many bounds changed via multiplier)
-#' @param show_as_character     When TRUE, coerce entire dataframe to characters
 #'
 #' @importFrom dplyr mutate across everything
 #' @returns a df containing mrgsolve parameter names and values ("reference", "lower", "upper") as characters
@@ -4974,8 +4973,8 @@ update_batch_run_table <- function(param_df,
                                    upper_multiplier      = 1.5,
                                    last_change_ref_index = 0,
                                    length_lower_change   = 0,
-                                   length_upper_change   = 0,
-                                   show_as_character     = FALSE) {
+                                   length_upper_change   = 0
+) {
   
   # # Coerce all columns except "Name" to numeric
   starting_table <- param_df %>%
@@ -5005,6 +5004,7 @@ update_batch_run_table <- function(param_df,
   # If last change was on a bound, don't update the entire table, however updating the table has some weird circular logic interaction
   # The compromise is either 1) Multipliers stop working after changing reference value, or
   # 2) When multipliers are changed, entire table gets updated. I think having 2) is more user-friendly if there is a reminder to ask users to edit bounds last
+  # 3) - directly updating the tor_tab_new_model_1() reactive seems to have worked well such that changing bounds and then going back and changing reference does not update entire table
   
   if((length_lower_change == 1 & length_upper_change == 0) |
      (length_lower_change == 0 & length_upper_change == 1)){
@@ -5012,11 +5012,9 @@ update_batch_run_table <- function(param_df,
     all_params_table <- starting_table
   }
   
-  # # Coerce entire dataframe to character before displaying
-  if(show_as_character) {
-    all_params_table <- all_params_table %>%
-      dplyr::mutate(dplyr::across(dplyr::everything(), as.character))
-  }
+  # Coerce entire df to character before displaying, this is needed to always trigger the type change in tor_tab_model_1()
+  all_params_table <- all_params_table %>%
+    dplyr::mutate(dplyr::across(dplyr::everything(), as.character))
   
   return(all_params_table)
 }
