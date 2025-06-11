@@ -184,12 +184,12 @@
 <div class="section level4">
 <h4 id="assessing-all-structural-parameters">Assessing All Structural Parameters<a class="anchor" aria-label="anchor" href="#assessing-all-structural-parameters"></a>
 </h4>
-<p>Batch run simulations (i.e. assessing all parameters at the same time) can be generated from the “All Parameters” tab on the top-left side of the page, with <strong>results available from just a single click</strong>, visualized using <a href="https://en.wikipedia.org/wiki/Tornado_diagram" target="_blank" class="external-link">Tornado Plots</a>. This feature is particularly useful for complex models with up to hundreds of parameters to rank parameters of relative importance, e.g. QSP models.</p>
+<p>Batch run simulations (i.e. assessing all parameters at the same time) can be generated from the “All Parameters” tab on the top-left side of the page, with <strong>results available from just a single click</strong> and visualized using <a href="https://en.wikipedia.org/wiki/Tornado_diagram" target="_blank" class="external-link">Tornado Plots</a>. This feature is particularly useful for complex models with up to hundreds of parameters to rank parameters of relative importance, e.g. PBPK or QSP models.</p>
 <ol style="list-style-type: decimal">
 <li>(Optional) Remove any parameters from the batch run using the “Fix parameters” option on the top-left side.</li>
-<li>By default, all parameters are perturbed based on ±50% of the original value, i.e. the reference model. Users may tweak the Lower and Upper Multipliers to quickly pre-configure the range easily. Each value can also be adjusted manually in the Batch Run Parameters Table below.
+<li>By default, all parameters are perturbed based on ±50% of the original value, i.e. the reference model. Users may tweak the Lower and Upper Multipliers to quickly pre-configure the range easily. Each value can also be adjusted manually in the Batch Run Parameters Table.
 <ul>
-<li>As the Table is updated dynamically, users are recommended to <strong>first modify the multipliers, followed by the reference values, and then the lower/upper bounds as required</strong>. Other edit orders may unintentionally reset the values.</li>
+<li>As the Table is updated dynamically, users are recommended to <strong>first modify the multipliers, then the reference values, and lastly the lower/upper bounds, as required</strong>. Other edit orders may unintentionally reset the values.</li>
 </ul>
 </li>
 <li>Press the “Batch Run” button when ready. Each simulation will substitute one of its parameters univariately, while the rest of the parameters are unchanged based on the reference model (i.e. the total number of simulations are 2 * each parameter (lower and upper) + 1 (the reference model)).</li>

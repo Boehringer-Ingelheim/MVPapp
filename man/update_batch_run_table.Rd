@@ -10,20 +10,17 @@ update_batch_run_table(
   upper_multiplier = 1.5,
   last_change_ref_index = 0,
   length_lower_change = 0,
-  length_upper_change = 0,
-  show_as_character = FALSE
+  length_upper_change = 0
 )
 }
 \arguments{
-\item{param_df}{Input dataframe containing mrgsolve parameter names and values ("reference", "lower", "upper") as characters}
+\item{param_df}{Input dataframe containing mrgsolve parameter names and values ("Name", "Reference", "Lower", "Upper")}
 
 \item{lower_multiplier}{lower bound multiplier}
 
 \item{upper_multiplier}{upper bound multiplier}
 
 \item{last_change_ref_index}{Row index if last change through the UI was a reference value, otherwise 0}
-
-\item{show_as_character}{When TRUE, coerce entire dataframe to characters}
 
 \item{single_bound_change}{If last change was through the UI on a upper/lower bound it will be 1, otherwise will be > 1 (many bounds changed via multiplier)}
 }
