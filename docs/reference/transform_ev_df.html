@@ -9,7 +9,7 @@ group"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,14 +47,27 @@ group</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">transform_ev_df</span><span class="op">(</span><span class="va">ev_df</span>, <span class="va">model_dur</span>, <span class="va">model_rate</span>, <span class="va">pred_model</span>, debug <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">transform_ev_df</span><span class="op">(</span></span>
+<span>  <span class="va">mod</span>,</span>
+<span>  <span class="va">ev_df</span>,</span>
+<span>  <span class="va">model_dur</span>,</span>
+<span>  <span class="va">model_rate</span>,</span>
+<span>  <span class="va">pred_model</span>,</span>
+<span>  debug <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  wt_based_dosing <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  wt_name <span class="op">=</span> <span class="st">"WT"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-ev-df">ev_df<a class="anchor" aria-label="anchor" href="#arg-ev-df"></a></dt>
+<dl><dt id="arg-mod">mod<a class="anchor" aria-label="anchor" href="#arg-mod"></a></dt>
+<dd><p>mrgsolve model object</p></dd>
+
+
+<dt id="arg-ev-df">ev_df<a class="anchor" aria-label="anchor" href="#arg-ev-df"></a></dt>
 <dd><p>Input event dataframe</p></dd>
 
 
@@ -72,6 +85,14 @@ group</p>
 
 <dt id="arg-debug">debug<a class="anchor" aria-label="anchor" href="#arg-debug"></a></dt>
 <dd><p>When TRUE, outputs debugging messages</p></dd>
+
+
+<dt id="arg-wt-based-dosing">wt_based_dosing<a class="anchor" aria-label="anchor" href="#arg-wt-based-dosing"></a></dt>
+<dd><p>When TRUE, tries to apply weight-based dosing</p></dd>
+
+
+<dt id="arg-wt-name">wt_name<a class="anchor" aria-label="anchor" href="#arg-wt-name"></a></dt>
+<dd><p>Name of weight parameter in the model</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -5,9 +5,20 @@
 \title{Helper function to handle ev_df transformations
 group}
 \usage{
-transform_ev_df(ev_df, model_dur, model_rate, pred_model, debug = FALSE)
+transform_ev_df(
+  mod,
+  ev_df,
+  model_dur,
+  model_rate,
+  pred_model,
+  debug = FALSE,
+  wt_based_dosing = FALSE,
+  wt_name = "WT"
+)
 }
 \arguments{
+\item{mod}{mrgsolve model object}
+
 \item{ev_df}{Input event dataframe}
 
 \item{model_dur}{When TRUE, models duration}
@@ -17,6 +28,10 @@ transform_ev_df(ev_df, model_dur, model_rate, pred_model, debug = FALSE)
 \item{pred_model}{When TRUE, the model is a PRED model}
 
 \item{debug}{When TRUE, outputs debugging messages}
+
+\item{wt_based_dosing}{When TRUE, tries to apply weight-based dosing}
+
+\item{wt_name}{Name of weight parameter in the model}
 }
 \value{
 a cleaned event dataframe

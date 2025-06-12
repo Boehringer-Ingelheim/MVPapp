@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,6 +48,8 @@
 <span>  <span class="va">batch_run_df</span>,</span>
 <span>  <span class="va">input_model_object</span>,</span>
 <span>  pred_model <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  wt_based_dosing <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  wt_name <span class="op">=</span> <span class="st">"WT"</span>,</span>
 <span>  <span class="va">ev_df</span>,</span>
 <span>  model_dur <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  model_rate <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -75,6 +77,14 @@
 
 <dt id="arg-pred-model">pred_model<a class="anchor" aria-label="anchor" href="#arg-pred-model"></a></dt>
 <dd><p>Default FALSE. set to TRUE to set ev_df CMT to 0</p></dd>
+
+
+<dt id="arg-wt-based-dosing">wt_based_dosing<a class="anchor" aria-label="anchor" href="#arg-wt-based-dosing"></a></dt>
+<dd><p>When TRUE, will try to use weight-based dosing</p></dd>
+
+
+<dt id="arg-wt-name">wt_name<a class="anchor" aria-label="anchor" href="#arg-wt-name"></a></dt>
+<dd><p>Name of weight parameter in model to multiply dose amt by</p></dd>
 
 
 <dt id="arg-ev-df">ev_df<a class="anchor" aria-label="anchor" href="#arg-ev-df"></a></dt>

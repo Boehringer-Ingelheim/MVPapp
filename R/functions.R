@@ -1169,6 +1169,8 @@ safely_mrgsim_df <- purrr::safely(mrgsolve::mrgsim_df)
 #' @param input_model_object    mrgmod object
 #' @param pred_model            Default FALSE. set to TRUE to set ev_df CMT to 0
 #' @param ev_df                 ev() dataframe containing dosing info
+#' @param wt_based_dosing       When TRUE, will try to use weight-based dosing
+#' @param wt_name               Name of weight parameter in the model to multiply dose amount by
 #' @param model_dur             Default FALSE, set to TRUE to model duration inside the code
 #' @param model_rate            Default FALSE, set to TRUE to model rate inside the code
 #' @param sampling_times        A vector of sampling times (note: not a tgrid object)
@@ -1191,6 +1193,8 @@ safely_mrgsim_df <- purrr::safely(mrgsolve::mrgsim_df)
 run_single_sim <- function(input_model_object,
                            pred_model         = FALSE,
                            ev_df,
+                           wt_based_dosing    = FALSE,
+                           wt_name            = "WT",
                            model_dur          = FALSE,
                            model_rate         = FALSE,
                            sampling_times,
@@ -1213,16 +1217,22 @@ run_single_sim <- function(input_model_object,
     return(NULL)
   }
   
-  ev_df <- transform_ev_df(ev_df, model_dur, model_rate, pred_model, debug)
+  if(nsubj <= 1) { # if nsubj > 1, we will transform dose amounts with external patient weights later
+    ev_df <- transform_ev_df(input_model_object, ev_df, model_dur, model_rate, pred_model, debug,
+                             wt_based_dosing = wt_based_dosing, wt_name = wt_name)
+  }
   
   ### If reading in Databases:
   if(nsubj > 1 & !is.null(ext_db)) { # Note that ext_db is not NULL even for "None" option
-    
+
     # Joining ext_db with ev_df
     ev_df2 <- ev_df %>%
       mrgsolve::ev_rep((1:nrow(ext_db)))
     
-    ext_db_ev <- data.table::merge.data.table(ev_df2, ext_db, by = "ID", all.x = TRUE)
+    ext_db_ev_prewt <- data.table::merge.data.table(ev_df2, ext_db, by = "ID", all.x = TRUE)
+
+    ext_db_ev <- transform_ev_df(input_model_object, ext_db_ev_prewt, model_dur, model_rate, pred_model, debug,
+                                 wt_based_dosing = wt_based_dosing, wt_name = wt_name)
     
     set.seed(seed) # Setting seed outside mrgsim to ensure reproducibility
     
@@ -3916,7 +3926,8 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
 #' @description
 #' This is the main function to supply dosing regimens to simulations.
 #' If there are no valid dose amounts from any dosing regimens, a dummy mrgsolve::ev()
-#' object is created to supply a dose of 0 to be used for simulations.
+#' object is created to supply a dose of 0 to be used for simulations. Note that
+#' weight-based dosing is handled later inside transform_ev_df()
 #'
 #' @param amt1 Dose Amount Regimen 1
 #' @param delay_time1 Delay Time Regimen 1
@@ -3949,7 +3960,6 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
 #' @param total5 Total Doses Regimen 5
 #' @param ii5 Interdose Interval Regimen 5
 #' @param mw_conversion MW conversion value
-#' @param wt_multiplication_value Weight multiplication value
 #' @param create_dummy_ev Default TRUE, to create dummy ev if there are no valid
 #' dose amounts, set to FALSE to not create one
 #' @param debug set to TRUE to show debug messages
@@ -3967,7 +3977,6 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
                                      amt4, delay_time4, cmt4, tinf4, total4, ii4,
                                      amt5, delay_time5, cmt5, tinf5, total5, ii5,
                                      mw_conversion = 1,
-                                     wt_multiplication_value = 1,
                                      create_dummy_ev = TRUE,
                                      debug = FALSE
 ) {
@@ -3977,7 +3986,7 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
   
   dosing_scheme_1 <- mrgsolve::ev(amt     =  dplyr::if_else(sanitize_numeric_input(total1, allow_zero = TRUE, as_integer = TRUE) <= 0,
                                                             0,
-                                                            sanitize_numeric_input(amt1) * mw_conversion * wt_multiplication_value),
+                                                            sanitize_numeric_input(amt1) * mw_conversion),
                                   time    =  sanitize_numeric_input(delay_time1),
                                   cmt     =  cmt1,
                                   tinf    =  sanitize_numeric_input(tinf1),
@@ -3986,7 +3995,7 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
   )
   dosing_scheme_2 <- mrgsolve::ev(amt     =  dplyr::if_else(sanitize_numeric_input(total2, allow_zero = TRUE, as_integer = TRUE) <= 0,
                                                             0,
-                                                            sanitize_numeric_input(amt2) * mw_conversion * wt_multiplication_value),
+                                                            sanitize_numeric_input(amt2) * mw_conversion),
                                   time    =  sanitize_numeric_input(delay_time2),
                                   cmt     =  cmt2,
                                   tinf    =  sanitize_numeric_input(tinf2),
@@ -3995,7 +4004,7 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
   )
   dosing_scheme_3 <- mrgsolve::ev(amt     =  dplyr::if_else(sanitize_numeric_input(total3, allow_zero = TRUE, as_integer = TRUE) <= 0,
                                                             0,
-                                                            sanitize_numeric_input(amt3) * mw_conversion * wt_multiplication_value),
+                                                            sanitize_numeric_input(amt3) * mw_conversion),
                                   time    =  sanitize_numeric_input(delay_time3),
                                   cmt     =  cmt3,
                                   tinf    =  sanitize_numeric_input(tinf3),
@@ -4004,7 +4013,7 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
   )
   dosing_scheme_4 <- mrgsolve::ev(amt     =  dplyr::if_else(sanitize_numeric_input(total4, allow_zero = TRUE, as_integer = TRUE) <= 0,
                                                             0,
-                                                            sanitize_numeric_input(amt4) * mw_conversion * wt_multiplication_value),
+                                                            sanitize_numeric_input(amt4) * mw_conversion),
                                   time    =  sanitize_numeric_input(delay_time4),
                                   cmt     =  cmt4,
                                   tinf    =  sanitize_numeric_input(tinf4),
@@ -4013,7 +4022,7 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
   )
   dosing_scheme_5 <- mrgsolve::ev(amt     =  dplyr::if_else(sanitize_numeric_input(total5, allow_zero = TRUE, as_integer = TRUE) <= 0,
                                                             0,
-                                                            sanitize_numeric_input(amt5) * mw_conversion * wt_multiplication_value),
+                                                            sanitize_numeric_input(amt5) * mw_conversion),
                                   time    =  sanitize_numeric_input(delay_time5),
                                   cmt     =  cmt5,
                                   tinf    =  sanitize_numeric_input(tinf5),
@@ -4789,20 +4798,39 @@ handle_blanks <- function(df, column_name) {
 #' @title Helper function to handle ev_df transformations
 #' group
 #'
+#' @param mod             mrgsolve model object
 #' @param ev_df           Input event dataframe
 #' @param model_dur       When TRUE, models duration
 #' @param model_rate      When TRUE, models rate
 #' @param pred_model      When TRUE, the model is a PRED model
 #' @param debug           When TRUE, outputs debugging messages
+#' @param wt_based_dosing When TRUE, tries to apply weight-based dosing
+#' @param wt_name         Name of weight parameter in the model
 #'
-#' @importFrom dplyr mutate select any_of
+#' @importFrom dplyr mutate select any_of sym
 #' @importFrom mrgsolve as.ev
 #' @returns a cleaned event dataframe
 #' @export
 #-------------------------------------------------------------------------------
 
 # Helper function to handle ev_df transformations
-transform_ev_df <- function(ev_df, model_dur, model_rate, pred_model, debug = FALSE) {
+transform_ev_df <- function(mod, ev_df, model_dur, model_rate, pred_model, debug = FALSE,
+                            wt_based_dosing = FALSE, wt_name = "WT") {
+  
+  if (wt_based_dosing && wt_name %in% names(mrgsolve::param(mod))) {
+    if(wt_name %in% names(ev_df)) { # Use external database weights when available
+      ev_df <- ev_df %>%
+        as.data.frame() %>%
+        dplyr::mutate(amt = amt * !!dplyr::sym(wt_name)) %>%
+        mrgsolve::as.ev()
+    } else {
+      wt_multiplication_value <- mrgsolve::param(mod)[[wt_name]]
+      ev_df <- ev_df %>%
+        as.data.frame() %>%
+        dplyr::mutate(amt = amt * wt_multiplication_value) %>%
+        mrgsolve::as.ev()
+    }
+  }
   
   if (model_dur) { # modeling duration, it cannot coexist with tinf
     if(debug) {message("Applying model_dur transformation")}
@@ -4840,6 +4868,8 @@ transform_ev_df <- function(ev_df, model_dur, model_rate, pred_model, debug = FA
 #' @param batch_run_df          Input batch run dataframe containing "Name", "Reference", "Lower", "Upper"
 #' @param input_model_object    mrgmod object
 #' @param pred_model            Default FALSE. set to TRUE to set ev_df CMT to 0
+#' @param wt_based_dosing       When TRUE, will try to use weight-based dosing
+#' @param wt_name               Name of weight parameter in model to multiply dose amt by
 #' @param ev_df                 ev() dataframe containing dosing info
 #' @param model_dur             Default FALSE, set to TRUE to model duration inside the code
 #' @param model_rate            Default FALSE, set to TRUE to model rate inside the code
@@ -4860,6 +4890,8 @@ transform_ev_df <- function(ev_df, model_dur, model_rate, pred_model, debug = FA
 iterate_batch_runs <- function(batch_run_df,
                                input_model_object,
                                pred_model         = FALSE,
+                               wt_based_dosing    = FALSE,
+                               wt_name            = "WT",
                                ev_df,
                                model_dur          = FALSE,
                                model_rate         = FALSE,
@@ -4928,6 +4960,8 @@ iterate_batch_runs <- function(batch_run_df,
       
       tmp <- run_single_sim(
         input_model_object = this_model_object,
+        wt_based_dosing    = wt_based_dosing,
+        wt_name            = wt_name,
         pred_model         = pred_model,
         ev_df              = ev_df,
         model_dur          = model_dur,

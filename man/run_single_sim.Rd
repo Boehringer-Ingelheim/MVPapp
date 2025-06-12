@@ -8,6 +8,8 @@ run_single_sim(
   input_model_object,
   pred_model = FALSE,
   ev_df,
+  wt_based_dosing = FALSE,
+  wt_name = "WT",
   model_dur = FALSE,
   model_rate = FALSE,
   sampling_times,
@@ -27,6 +29,10 @@ run_single_sim(
 \item{pred_model}{Default FALSE. set to TRUE to set ev_df CMT to 0}
 
 \item{ev_df}{ev() dataframe containing dosing info}
+
+\item{wt_based_dosing}{When TRUE, will try to use weight-based dosing}
+
+\item{wt_name}{Name of weight parameter in the model to multiply dose amount by}
 
 \item{model_dur}{Default FALSE, set to TRUE to model duration inside the code}
 

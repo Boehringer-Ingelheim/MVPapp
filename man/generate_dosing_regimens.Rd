@@ -36,7 +36,6 @@ generate_dosing_regimens(
   total5,
   ii5,
   mw_conversion = 1,
-  wt_multiplication_value = 1,
   create_dummy_ev = TRUE,
   debug = FALSE
 )
@@ -104,8 +103,6 @@ generate_dosing_regimens(
 
 \item{mw_conversion}{MW conversion value}
 
-\item{wt_multiplication_value}{Weight multiplication value}
-
 \item{create_dummy_ev}{Default TRUE, to create dummy ev if there are no valid
 dose amounts, set to FALSE to not create one}
 
@@ -117,5 +114,6 @@ A mrgsolve::ev event object
 \description{
 This is the main function to supply dosing regimens to simulations.
 If there are no valid dose amounts from any dosing regimens, a dummy mrgsolve::ev()
-object is created to supply a dose of 0 to be used for simulations.
+object is created to supply a dose of 0 to be used for simulations. Note that
+weight-based dosing is handled later inside transform_ev_df()
 }

@@ -8,6 +8,8 @@ iterate_batch_runs(
   batch_run_df,
   input_model_object,
   pred_model = FALSE,
+  wt_based_dosing = FALSE,
+  wt_name = "WT",
   ev_df,
   model_dur = FALSE,
   model_rate = FALSE,
@@ -26,6 +28,10 @@ iterate_batch_runs(
 \item{input_model_object}{mrgmod object}
 
 \item{pred_model}{Default FALSE. set to TRUE to set ev_df CMT to 0}
+
+\item{wt_based_dosing}{When TRUE, will try to use weight-based dosing}
+
+\item{wt_name}{Name of weight parameter in model to multiply dose amt by}
 
 \item{ev_df}{ev() dataframe containing dosing info}
 

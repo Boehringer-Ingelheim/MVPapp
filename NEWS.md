@@ -1,3 +1,10 @@
+# MVPapp 0.3.1 (2025-06-12)
+
+## Bugfixes
+
+* Weight-based dosing now correctly apply for batch runs and variability simulations (#6)
+
+
 # MVPapp 0.3.0 (2025-06-09)
 
 ## Features

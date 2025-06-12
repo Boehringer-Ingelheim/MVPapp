@@ -2190,12 +2190,12 @@ ui <- shiny::navbarPage(
                                    tags$li("Subplots for Individual Plots may become unevenly sized for interactive plots."),
                                    tags$li("Using 'outvars' would sometimes fail to display the plot. A current workaround is to re-define the outvars to a compartment name and then switching back."),
                                    tags$li("Model will crash if model code contains 'R_' pattern which does not refer to modelling rate."),
-                                   tags$li("Weight-based dosing is not propagated in IIV models."),
+                                   #tags$li("Weight-based dosing is not propagated in IIV models."),
                                    tags$li("When 'Model Duration' is checked and then a dose is inserted into a compartment where the appropriate syntax (e.g. 'D_[CMT]') is not present, the app will crash. Workaround with providing a miniscule amount to D_[CMT] (e.g. D_GUT = 0.0001)"),
                                    #tags$li("Bad inputs to parameter values (e.g. negative values when there isn't supposed to be one) may crash the app."),
                                    tags$li("Graphical issues when using the Show AUC option with the Log Y axis option."),
                                    tags$li("Maximum upload dataset size is currently limited to 100 MB."),
-                                   tags$li("Recommended minimum resolution is 1920 * 1080 pixels in full screen mode.")
+                                   tags$li("Recommended minimum resolution is 1920 * 1080 pixels in full screen mode at 100% size.")
                                  )
                                )
            ),
@@ -2218,6 +2218,7 @@ ui <- shiny::navbarPage(
                                title = 'Changelog', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
                                p('Please visit the ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/releases", "Github release page", target = "_blank"), ' for more information.'),
                                htmltools::br(),
+                               p('v0.3.1 (2025-06-11) - Weight-based dosing now apply for batch runs and variability plots.'),
                                p('v0.3.0 (2025-06-10) - Parameter Sensitivity Analysis - Batch Runs (i.e. Tornado Plots). Fix slowness of plots when switching models with differing sample times. General improvements.'),
                                p('v0.2.19 (2025-06-03) - Prevent bad parameter values from crashing the app. Re-worked median line bins to be based on quantiles. Bug fixes for box plot count labels. Better handling of NAs for Quantize X-axis. Built-in data filtering option to distinct by ID. More QoL options for NCA (safeguards and rounding). Minor re-factoring and QoL updates.'),
                                p('v0.2.18 (2025-04-21) - Tooltips for Select Time Intervals. Safeguards for too many samples. Bugfixes and improvements for NCA. Sorting option and flagging outliers option for individual plots. New template model (parallel zero/first-order absorption).'),
@@ -3712,7 +3713,6 @@ server <- function(input, output, session) {
       amt4 = input$amt4, delay_time4 = input$delay_time4, cmt4 = input$cmt4_model_1, tinf4 = input$tinf4, total4 = input$total4, ii4 = input$ii4,
       amt5 = input$amt5, delay_time5 = input$delay_time5, cmt5 = input$cmt5_model_1, tinf5 = input$tinf5, total5 = input$total5, ii5 = input$ii5,
       mw_conversion = mw_conversion_model_1(),
-      wt_multiplication_value = wt_multiplication_model_1(),
       create_dummy_ev = TRUE,
       debug = show_debugging_msg
     )
@@ -3729,16 +3729,6 @@ server <- function(input, output, session) {
     }
     return(conversion)
   }, label = 'mw_conversion_model_1')
-
-  wt_multiplication_model_1 <- reactive({
-    wt_multiplication_value <- 1
-    if(model_1_is_valid()) {
-      if(input$wt_based_dosing_checkbox & input$wt_based_dosing_name %in% names(mrgsolve::param(inputted_model_1()))) {
-        wt_multiplication_value <- input[[input$wt_based_dosing_name]] # E.g. "input$WT"
-      }
-    }
-    return(wt_multiplication_value)
-  }, label = 'wt_multiplication_model_1')
 
   ### Update cmt from the model ----
   observeEvent(inputted_model_1(), {
@@ -3883,6 +3873,8 @@ server <- function(input, output, session) {
           sim_output <-
             run_single_sim(
               input_model_object = changed_reacted_param_model_1(),
+              wt_based_dosing    = input$wt_based_dosing_checkbox,
+              wt_name            = input$wt_based_dosing_name,
               pred_model         = model_1_is_pred(),
               ev_df              = dosing_regimen_model_1(),
               model_dur          = model_duration_argument_model_1(),
@@ -4076,7 +4068,6 @@ server <- function(input, output, session) {
       amt4 = input$amt4_2, delay_time4 = input$delay_time4_2, cmt4 = input$cmt4_model_2, tinf4 = input$tinf4_2, total4 = input$total4_2, ii4 = input$ii4_2,
       amt5 = input$amt5_2, delay_time5 = input$delay_time5_2, cmt5 = input$cmt5_model_2, tinf5 = input$tinf5_2, total5 = input$total5_2, ii5 = input$ii5_2,
       mw_conversion = mw_conversion_model_2(),
-      wt_multiplication_value = wt_multiplication_model_2(),
       create_dummy_ev = TRUE,
       debug = show_debugging_msg
     )
@@ -4094,16 +4085,6 @@ server <- function(input, output, session) {
     }
     return(conversion2)
   }, label = 'mw_conversion_model_2')
-
-  wt_multiplication_model_2 <- reactive({
-    wt_multiplication_value2 <- 1
-    if(model_2_is_valid()) {
-      if(input$wt_based_dosing_checkbox_2 & input$wt_based_dosing_name_2 %in% names(mrgsolve::param(inputted_model_2()))) {
-        wt_multiplication_value2 <- input[[paste0(input$wt_based_dosing_name_2, '_model_2')]] # E.g. input$WT_model_2
-      }
-    }
-    return(wt_multiplication_value2)
-  }, label = 'wt_multiplication_model_2')
 
   ### Update cmt from the model ----
   observeEvent(inputted_model_2(), {
@@ -4246,6 +4227,8 @@ server <- function(input, output, session) {
           sim_output <-
             run_single_sim(
               input_model_object = changed_reacted_param_model_2(),
+              wt_based_dosing    = input$wt_based_dosing_checkbox_2,
+              wt_name            = input$wt_based_dosing_name_2,
               pred_model         = model_2_is_pred(),
               ev_df              = dosing_regimen_model_2(),
               model_dur          = model_duration_argument_model_2(),
@@ -4777,43 +4760,6 @@ server <- function(input, output, session) {
     return(new_model_max)
   }, label = 'applied_param_max_model_1')
 
-  ### Handling edge case where WT is a param and WT-based dosing is used, which
-  ### necessitates a unique wt_multiplication_value for each model
-
-  wt_multiplication_min_model_1 <- reactive({
-    shiny::req(applied_param_min_model_1())
-    wt_multiplication_value <- 1
-    if(model_1_is_valid()) {
-      if(input$wt_based_dosing_checkbox & input$wt_based_dosing_name %in% names(mrgsolve::param(applied_param_min_model_1()))) {
-        wt_multiplication_value <- mrgsolve::param(applied_param_min_model_1())[[input$wt_based_dosing_name]] # E.g. "input$WT"
-      }
-    }
-    return(wt_multiplication_value)
-  }, label = 'wt_multiplication_min_model_1')
-
-  wt_multiplication_mid_model_1 <- reactive({
-    shiny::req(applied_param_mid_model_1())
-    wt_multiplication_value <- 1
-    if(model_1_is_valid()) {
-      if(input$wt_based_dosing_checkbox & input$wt_based_dosing_name %in% names(mrgsolve::param(applied_param_mid_model_1()))) {
-        wt_multiplication_value <- mrgsolve::param(applied_param_mid_model_1())[[input$wt_based_dosing_name]] # E.g. "input$WT"
-      }
-    }
-    return(wt_multiplication_value)
-  }, label = 'wt_multiplication_mid_model_1')
-
-  wt_multiplication_max_model_1 <- reactive({
-    shiny::req(applied_param_max_model_1())
-    wt_multiplication_value <- 1
-    if(model_1_is_valid()) {
-      if(input$wt_based_dosing_checkbox & input$wt_based_dosing_name %in% names(mrgsolve::param(applied_param_max_model_1()))) {
-        wt_multiplication_value <- mrgsolve::param(applied_param_max_model_1())[[input$wt_based_dosing_name]] # E.g. "input$WT"
-      }
-    }
-    return(wt_multiplication_value)
-  }, label = 'wt_multiplication_max_model_1')
-
-
   dosing_regimen_min_model_1 <- reactive({
     shiny::req(applied_param_min_model_1())
     dose_regimen <- generate_dosing_regimens(
@@ -4823,7 +4769,6 @@ server <- function(input, output, session) {
       amt4 = input$amt4, delay_time4 = input$delay_time4, cmt4 = input$cmt4_model_1, tinf4 = input$tinf4, total4 = input$total4, ii4 = input$ii4,
       amt5 = input$amt5, delay_time5 = input$delay_time5, cmt5 = input$cmt5_model_1, tinf5 = input$tinf5, total5 = input$total5, ii5 = input$ii5,
       mw_conversion = mw_conversion_model_1(),
-      wt_multiplication_value = wt_multiplication_min_model_1(),
       create_dummy_ev = TRUE,
       debug = show_debugging_msg
     )
@@ -4839,7 +4784,6 @@ server <- function(input, output, session) {
       amt4 = input$amt4, delay_time4 = input$delay_time4, cmt4 = input$cmt4_model_1, tinf4 = input$tinf4, total4 = input$total4, ii4 = input$ii4,
       amt5 = input$amt5, delay_time5 = input$delay_time5, cmt5 = input$cmt5_model_1, tinf5 = input$tinf5, total5 = input$total5, ii5 = input$ii5,
       mw_conversion = mw_conversion_model_1(),
-      wt_multiplication_value = wt_multiplication_mid_model_1(),
       create_dummy_ev = TRUE,
       debug = show_debugging_msg
     )
@@ -4855,7 +4799,6 @@ server <- function(input, output, session) {
       amt4 = input$amt4, delay_time4 = input$delay_time4, cmt4 = input$cmt4_model_1, tinf4 = input$tinf4, total4 = input$total4, ii4 = input$ii4,
       amt5 = input$amt5, delay_time5 = input$delay_time5, cmt5 = input$cmt5_model_1, tinf5 = input$tinf5, total5 = input$total5, ii5 = input$ii5,
       mw_conversion = mw_conversion_model_1(),
-      wt_multiplication_value = wt_multiplication_max_model_1(),
       create_dummy_ev = TRUE,
       debug = show_debugging_msg
     )
@@ -4869,6 +4812,8 @@ server <- function(input, output, session) {
       run_single_sim(
         input_model_object = applied_param_min_model_1(),
         pred_model         = model_1_is_pred(),
+        wt_based_dosing    = input$wt_based_dosing_checkbox,
+        wt_name            = input$wt_based_dosing_name,
         ev_df = dosing_regimen_min_model_1(),
         model_dur = model_duration_argument_model_1(),
         model_rate= model_rate_argument_model_1(),
@@ -4886,6 +4831,8 @@ server <- function(input, output, session) {
       run_single_sim(
         input_model_object = applied_param_mid_model_1(),
         pred_model         = model_1_is_pred(),
+        wt_based_dosing    = input$wt_based_dosing_checkbox,
+        wt_name            = input$wt_based_dosing_name,
         ev_df = dosing_regimen_mid_model_1(),
         model_dur = model_duration_argument_model_1(),
         model_rate= model_rate_argument_model_1(),
@@ -4904,6 +4851,8 @@ server <- function(input, output, session) {
       run_single_sim(
         input_model_object = applied_param_max_model_1(),
         pred_model         = model_1_is_pred(),
+        wt_based_dosing    = input$wt_based_dosing_checkbox,
+        wt_name            = input$wt_based_dosing_name,
         ev_df = dosing_regimen_max_model_1(),
         model_dur = model_duration_argument_model_1(),
         model_rate= model_rate_argument_model_1(),
@@ -5282,42 +5231,6 @@ server <- function(input, output, session) {
     return(new_model_max)
   }, label = 'applied_param_max_model_2')
 
-  ### Handling edge case where WT is a param and WT-based dosing is used, which
-  ### necessitates a unique wt_multiplication_value for each model
-
-  wt_multiplication_min_model_2 <- reactive({
-    shiny::req(applied_param_min_model_2())
-    wt_multiplication_value <- 1
-    if(model_2_is_valid()) {
-      if(input$wt_based_dosing_checkbox_2 & input$wt_based_dosing_name_2 %in% names(mrgsolve::param(applied_param_min_model_2()))) {
-        wt_multiplication_value <- mrgsolve::param(applied_param_min_model_2())[[input$wt_based_dosing_name_2]] # E.g. "input$WT"
-      }
-    }
-    return(wt_multiplication_value)
-  }, label = 'wt_multiplication_min_model_1')
-
-  wt_multiplication_mid_model_2 <- reactive({
-    shiny::req(applied_param_mid_model_2())
-    wt_multiplication_value <- 1
-    if(model_2_is_valid()) {
-      if(input$wt_based_dosing_checkbox_2 & input$wt_based_dosing_name_2 %in% names(mrgsolve::param(applied_param_mid_model_2()))) {
-        wt_multiplication_value <- mrgsolve::param(applied_param_mid_model_2())[[input$wt_based_dosing_name_2]] # E.g. "input$WT"
-      }
-    }
-    return(wt_multiplication_value)
-  }, label = 'wt_multiplication_mid_model_2')
-
-  wt_multiplication_max_model_2 <- reactive({
-    shiny::req(applied_param_max_model_2())
-    wt_multiplication_value <- 1
-    if(model_2_is_valid()) {
-      if(input$wt_based_dosing_checkbox_2 & input$wt_based_dosing_name_2 %in% names(mrgsolve::param(applied_param_max_model_2()))) {
-        wt_multiplication_value <- mrgsolve::param(applied_param_max_model_2())[[input$wt_based_dosing_name_2]] # E.g. "input$WT"
-      }
-    }
-    return(wt_multiplication_value)
-  }, label = 'wt_multiplication_max_model_2')
-
   dosing_regimen_min_model_2 <- reactive({
     shiny::req(applied_param_min_model_2())
     dose_regimen <- generate_dosing_regimens(
@@ -5327,7 +5240,6 @@ server <- function(input, output, session) {
       amt4 = input$amt4_2, delay_time4 = input$delay_time4_2, cmt4 = input$cmt4_model_2, tinf4 = input$tinf4_2, total4 = input$total4_2, ii4 = input$ii4_2,
       amt5 = input$amt5_2, delay_time5 = input$delay_time5_2, cmt5 = input$cmt5_model_2, tinf5 = input$tinf5_2, total5 = input$total5_2, ii5 = input$ii5_2,
       mw_conversion = mw_conversion_model_2(),
-      wt_multiplication_value = wt_multiplication_min_model_2(),
       create_dummy_ev = TRUE,
       debug = show_debugging_msg
     )
@@ -5343,7 +5255,6 @@ server <- function(input, output, session) {
       amt4 = input$amt4_2, delay_time4 = input$delay_time4_2, cmt4 = input$cmt4_model_2, tinf4 = input$tinf4_2, total4 = input$total4_2, ii4 = input$ii4_2,
       amt5 = input$amt5_2, delay_time5 = input$delay_time5_2, cmt5 = input$cmt5_model_2, tinf5 = input$tinf5_2, total5 = input$total5_2, ii5 = input$ii5_2,
       mw_conversion = mw_conversion_model_2(),
-      wt_multiplication_value = wt_multiplication_mid_model_2(),
       create_dummy_ev = TRUE,
       debug = show_debugging_msg
     )
@@ -5359,7 +5270,6 @@ server <- function(input, output, session) {
       amt4 = input$amt4_2, delay_time4 = input$delay_time4_2, cmt4 = input$cmt4_model_2, tinf4 = input$tinf4_2, total4 = input$total4_2, ii4 = input$ii4_2,
       amt5 = input$amt5_2, delay_time5 = input$delay_time5_2, cmt5 = input$cmt5_model_2, tinf5 = input$tinf5_2, total5 = input$total5_2, ii5 = input$ii5_2,
       mw_conversion = mw_conversion_model_2(),
-      wt_multiplication_value = wt_multiplication_max_model_2(),
       create_dummy_ev = TRUE,
       debug = show_debugging_msg
     )
@@ -5374,6 +5284,8 @@ server <- function(input, output, session) {
       run_single_sim(
         input_model_object = applied_param_min_model_2(),
         pred_model         = model_2_is_pred(),
+        wt_based_dosing    = input$wt_based_dosing_checkbox_2,
+        wt_name            = input$wt_based_dosing_name_2,
         ev_df = dosing_regimen_min_model_2(),
         model_dur = model_duration_argument_model_2(),
         model_rate= model_rate_argument_model_2(),
@@ -5410,6 +5322,8 @@ server <- function(input, output, session) {
       run_single_sim(
         input_model_object = applied_param_max_model_2(),
         pred_model         = model_2_is_pred(),
+        wt_based_dosing    = input$wt_based_dosing_checkbox_2,
+        wt_name            = input$wt_based_dosing_name_2,
         ev_df = dosing_regimen_max_model_2(),
         model_dur = model_duration_argument_model_2(),
         model_rate= model_rate_argument_model_2(),
@@ -5690,6 +5604,8 @@ server <- function(input, output, session) {
     batch_runs <- iterate_batch_runs(
       batch_run_df       = tor_tab_new_model_1(),
       input_model_object = changed_reacted_param_model_1(),
+      wt_based_dosing    = input$wt_based_dosing_checkbox,
+      wt_name            = input$wt_based_dosing_name,
       pred_model         = model_1_is_pred(),
       ev_df              = dosing_regimen_model_1(),
       model_dur          = model_duration_argument_model_1(),
@@ -5954,6 +5870,8 @@ server <- function(input, output, session) {
     batch_runs <- iterate_batch_runs(
       batch_run_df       = tor_tab_new_model_2(),
       input_model_object = changed_reacted_param_model_2(),
+      wt_based_dosing    = input$wt_based_dosing_checkbox_2,
+      wt_name            = input$wt_based_dosing_name_2,
       pred_model         = model_2_is_pred(),
       ev_df              = dosing_regimen_model_2(),
       model_dur          = model_duration_argument_model_2(),
@@ -6845,6 +6763,8 @@ server <- function(input, output, session) {
         run_single_sim(
           input_model_object = changed_matrix_model_1(),
           pred_model         = model_1_is_pred(),
+          wt_based_dosing    = input$wt_based_dosing_checkbox,
+          wt_name            = input$wt_based_dosing_name,
           ev_df              = dosing_regimen_model_1(),
           model_dur          = model_duration_argument_model_1(),
           model_rate         = model_rate_argument_model_1(),
@@ -7585,6 +7505,8 @@ server <- function(input, output, session) {
         run_single_sim(
           input_model_object = changed_matrix_model_2(),
           pred_model         = model_2_is_pred(),
+          wt_based_dosing    = input$wt_based_dosing_checkbox_2,
+          wt_name            = input$wt_based_dosing_name_2,
           ev_df              = dosing_regimen_model_2(),
           model_dur          = model_duration_argument_model_2(),
           model_rate         = model_rate_argument_model_2(),
@@ -8026,7 +7948,6 @@ server <- function(input, output, session) {
       )
     }
   )
-
 } # end of server
 
 shinyApp(ui, server)
