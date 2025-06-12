@@ -15,7 +15,12 @@ debug_mode <- FALSE
 #######################
 if(debug_mode) {
 
-  source("packages.R") # Loading packages here to side-step JS compatibility issues
+  #source("packages.R") # Loading packages here to side-step JS compatibility issues
+
+  library(shiny) # 1.7.5.1
+  library(shinyBS) # 0.61.1 # this needs to be reloaded to make popovers work
+  library(dplyr) # 1.1.3 # required for data code editor
+  library(mrgsolve) # 1.5.2 # required for sim code editor
 
   default_options <- options()
   options(scipen=3) # Set the penalty to a high value to avoid scientific notation, this value is good up until 3e-07 / 1e+08
@@ -24,23 +29,31 @@ if(debug_mode) {
 
   # Pre-loads external patient databases ('cdc.expand', 'who.expand', 'nhanes.filtered')
   # The raw data used to create .rda is available on Github inside 'data-raw' folder
-  source("databases.R")
-  source("ui_settings.R")       # List of UI settings e.g. labels and descriptions
-  source("code_templates.R")    # List of example mrgsolve models
-  source("functions.R")         # List of helper functions required for the app
+  load(system.file("data/nhanes.filtered.rda", package = "MVPapp"))
+  load(system.file("data/who.expand.rda", package = "MVPapp"))
+  load(system.file("data/cdc.expand.rda", package = "MVPapp"))
 
-  ## Start-up options for the App
-  #source("config.R")   # options - handled below
+  source(system.file("R/ui_settings.R", package = "MVPapp"))       # List of UI settings e.g. labels and descriptions
+  source(system.file("R/code_templates.R", package = "MVPapp"))    # List of example mrgsolve models
+  source(system.file("R/functions.R", package = "MVPapp"))         # List of helper functions required for the app
+
+  # Previous method of duplicating files from R/ folder to inst/shiny (does not require MVPapp to be installed)
+  # source("databases.R")
+  # source("ui_settings.R")       # List of UI settings e.g. labels and descriptions
+  # source("code_templates.R")    # List of example mrgsolve models
+  # source("functions.R")         # List of helper functions required for the app
+
+  ## Start-up options for the App when not running through run_mvp()
   show_debugging_msg  = TRUE
-  authentication_code = NULL
+  authentication_code = NA_character_
   insert_watermark    = TRUE
   internal_version    = TRUE
-  pw_models_path      = NULL  # "passworded_models_example.R"
+  pw_models_path      = NA_character_  # "passworded_models_example.R"
   use_bi_styling      = FALSE
 }
 #######################
 
-if(!is.null(pw_models_path)) {
+if(!is.na(pw_models_path)) {
   source(pw_models_path)
 }
 
@@ -2316,7 +2329,7 @@ ui <- shiny::navbarPage(
 # server ----
 server <- function(input, output, session) {
 
-  if(!is.null(authentication_code)) {
+  if(!is.na(authentication_code)) {
     # Function to show the authentication modal
     show_auth_modal <- function() {
       showModal(modalDialog(
@@ -5618,8 +5631,6 @@ server <- function(input, output, session) {
       parallel_n         = 100 # input$para_n,
     )
 
-    message("updating batch_runs")
-
     batch_runs_model_1(batch_runs)
 
     if(show_debugging_msg) {
@@ -5903,8 +5914,6 @@ server <- function(input, output, session) {
         ) %>% mutate(.varname = input$tor_var_model_2)
       }
     }
-    message("tor_summary_model_2")
-    head(tor_summary) %>% print()
 
     return(tor_summary)
   }, label = "batch runs summary data model 1")

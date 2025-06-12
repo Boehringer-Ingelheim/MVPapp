@@ -22,7 +22,9 @@ update_batch_run_table(
 
 \item{last_change_ref_index}{Row index if last change through the UI was a reference value, otherwise 0}
 
-\item{single_bound_change}{If last change was through the UI on a upper/lower bound it will be 1, otherwise will be > 1 (many bounds changed via multiplier)}
+\item{length_lower_change}{Length of lower bound changes}
+
+\item{length_upper_change}{Length of upper bound changes}
 }
 \value{
 a df containing mrgsolve parameter names and values ("reference", "lower", "upper") as characters

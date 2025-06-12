@@ -4,10 +4,31 @@
 \alias{run_mvp}
 \title{Launch Model Visualization Platform App}
 \usage{
-run_mvp(appDir = system.file("shiny", package = "MVPapp"), ...)
+run_mvp(
+  appDir = system.file("shiny", package = "MVPapp"),
+  show_debugging_msg = FALSE,
+  authentication_code = NA_character_,
+  insert_watermark = TRUE,
+  internal_version = TRUE,
+  use_bi_styling = FALSE,
+  pw_models_path = NA_character_,
+  ...
+)
 }
 \arguments{
 \item{appDir}{the directory of the application to run.}
+
+\item{show_debugging_msg}{Logical. Default FALSE. Set to TRUE to output verbose working messages in the console, useful for debugging.}
+
+\item{authentication_code}{Character. Default NA_character_. Provide a string (e.g., password) to password-lock the entire app.}
+
+\item{insert_watermark}{Logical. Default TRUE. Set to FALSE to remove "For Internal Use Only" text in simulated plots.}
+
+\item{internal_version}{Logical. Default TRUE. Setting to FALSE may allow generation of NCA reports when hosted on AWS with different access rights.}
+
+\item{use_bi_styling}{Logical. Default FALSE. Set to TRUE to insert BI logo.}
+
+\item{pw_models_path}{Character. Default NA_character_. Provide a path to source password-gated models.}
 
 \item{...}{\code{\link[shiny:runApp]{shiny::runApp()}} parameters, \code{\link[shiny:shinyApp]{shiny::shinyApp()}} parameters,
 or parameters to pass to the Shiny app.}
@@ -19,32 +40,6 @@ global environment. This function will attempt to clean up any objects placed
 into the global environment on exit. If objects exist prior to calling this
 function (i.e. \code{exists(OBJECT)} returns TRUE) then the value will be reset
 to it's state prior to calling \code{run_mvp}.
-}
-\details{
-The settings below are not technically arguments,
-however when provided will toggle the app behavior:
-\itemize{
-\item \code{show_debugging_msg} Logical. Default \code{FALSE}. Set to \code{TRUE} to output verbose
-working messages in the console, could be useful for debugging.
-\item \code{authentication_code} Default \code{NULL}. Provide a string (i.e. password) to
-password-lock the entire app.
-\item \code{insert_watermark} Logical. Default \code{TRUE}. Set to \code{FALSE} to remove
-"For Internal Use Only" text in simulated plots.
-\item \code{internal_version} Logical. Default \code{TRUE}. Setting to \code{FALSE} may allow
-generation of NCA reports when hosted on AWS with different access rights.
-\item \code{use_bi_styling} Logical. Default \code{FALSE}. Set to TRUE to insert BI logo.
-\item \code{pw_models_path} Default \code{NULL}. provide a path to source in password-gated
-models (see the \code{shiny/passworded_models_example.R} for ideas, and the
-vignette: \href{../doc/supply-passwords.html}{supply passworded models})
-}
-
-Note that these variables are provided internally by default and does not exist
-as an object - see examples below for its correct usage.
-
-If the user wishes to run the App outside of the function (e.g. preparing for
-deployment on Posit Connect), this can be done by accessing inst/shiny/app.R,
-which is located inside the folder of where the package was installed, and set
-debug_mode = TRUE (and setting these options there as required).
 }
 \note{
 Adapted from https://github.com/jbryer/ShinyDemo/blob/master/R/run_shiny_app.R

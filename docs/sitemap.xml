@@ -1,5 +1,6 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/404.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/LICENSE-text.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/LICENSE.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/articles/data-exploration.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/articles/index.html</loc></url>
@@ -7,6 +8,8 @@
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/authors.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/index.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/news/index.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/MVPbuildTooltipOrPopoverOptionsList.html</loc></url>
+<url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/MVPshinyBSDep.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/add_linear_regression_formula.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/add_watermark.html</loc></url>
 <url><loc>https://boehringer-ingelheim.github.io/MVPapp/reference/binary_cat_dist.html</loc></url>

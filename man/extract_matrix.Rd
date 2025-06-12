@@ -10,7 +10,7 @@ extract_matrix(
   remove_upper_tri = TRUE,
   remove_zero = TRUE,
   coerce_to_character = TRUE,
-  debug = show_debugging_msg
+  debug = FALSE
 )
 }
 \arguments{

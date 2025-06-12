@@ -101,8 +101,9 @@ model_switch_conditions <- function(input_model_select, mcode_model_choice) {
 #' @param session               Shiny session (don't change this)
 #' @param model_list            List of models (don't change this)                         
 #'                           
-#' input$model_select & input$model_select2 are updated as a side effect
-#' 
+#' @note input$model_select & input$model_select2 are updated as a side effect
+#' @importFrom shiny updateNumericInput updateCheckboxInput updateTextInput updateSelectizeInput
+#' @importFrom shiny updateSelectInput
 #' @returns a logical TRUE/FALSE if password is valid
 #' 
 #' *Note* this function will be re-defined if passworded models is sourced externally,

@@ -12,9 +12,7 @@ update_model_choices(input_password, session, model_list = model_examples_list)
 
 \item{session}{Shiny session (don't change this)}
 
-\item{model_list}{List of models (don't change this)
-
-input$model_select & input$model_select2 are updated as a side effect}
+\item{model_list}{List of models (don't change this)}
 }
 \value{
 a logical TRUE/FALSE if password is valid
@@ -25,4 +23,7 @@ i.e. when provided as an argument for run_mvp(pw_models_path = "path/to/your/pri
 \description{
 Shorthand function to update list of models and
 default values by input password
+}
+\note{
+input$model_select & input$model_select2 are updated as a side effect
 }

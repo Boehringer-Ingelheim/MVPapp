@@ -8,7 +8,7 @@ Description: Model Visualization Platform (MVP) is an intuitive and interactive 
     It is a flexible tool that allows users to explore model structures, parameters, dosing regimens, and compare with observations.
     The goal of MVP is to support initial model development and facilitate internal discussions more efficiently.
     Additional features include parameter sensitivity analysis, displaying NCA metrics using a time range defined by users, basic data exploration, variability assessment, and more.
-License: GPL (>= 3)
+License: file LICENSE
 URL: https://github.com/Boehringer-Ingelheim/MVP, https://boehringer-ingelheim.github.io/MVPapp/, https://ascpt.onlinelibrary.wiley.com/doi/10.1002/psp4.70023
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -33,6 +33,7 @@ Imports: bslib (>= 0.5.1),
          plotly (>= 4.10.1),
          purrr,
          rhandsontable (>= 0.3.8),
+         rlang,
          scales,
          shiny (>= 1.7.4.1),
          shinyAce,
@@ -48,12 +49,12 @@ Imports: bslib (>= 0.5.1),
          tidyr
 Suggests: readr,
           foreign,
-          mrgsolve (>= 1.5.2),
           knitr,
           rmarkdown
 Depends: R (>= 3.5.0)
 LazyData: true
 Collate: "utils-pipe.R"
+         "utils.R"
          "ui_settings.R"
          "code_templates.R"
          "functions.R"

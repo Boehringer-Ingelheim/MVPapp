@@ -9,7 +9,7 @@ reconstruct_matrices(
   input_matrix,
   name_of_matrix = "omega",
   coerce_to_numeric = TRUE,
-  debug = show_debugging_msg
+  debug = FALSE
 )
 }
 \arguments{

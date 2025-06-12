@@ -11,24 +11,13 @@
 #' function (i.e. \code{exists(OBJECT)} returns TRUE) then the value will be reset
 #' to it's state prior to calling \code{run_mvp}.
 #'
-#' @details
-#' The settings below are not technically arguments,
-#' however when provided will toggle the app behavior:
-#' * `show_debugging_msg` Logical. Default `FALSE`. Set to `TRUE` to output verbose
-#'  working messages in the console, could be useful for debugging.
-#' * `authentication_code` Default `NULL`. Provide a string (i.e. password) to
-#'  password-lock the entire app.
-#' * `insert_watermark` Logical. Default `TRUE`. Set to `FALSE` to remove
-#' "For Internal Use Only" text in simulated plots.
-#' * `internal_version` Logical. Default `TRUE`. Setting to `FALSE` may allow
-#' generation of NCA reports when hosted on AWS with different access rights.
-#' * `use_bi_styling` Logical. Default `FALSE`. Set to TRUE to insert BI logo.
-#' * `pw_models_path` Default `NULL`. provide a path to source in password-gated
-#' models (see the `shiny/passworded_models_example.R` for ideas, and the
-#' vignette: \href{../doc/supply-passwords.html}{supply passworded models})
-#'
-#' Note that these variables are provided internally by default and does not exist
-#' as an object - see examples below for its correct usage.
+#' @param show_debugging_msg Logical. Default FALSE. Set to TRUE to output verbose working messages in the console, useful for debugging.
+#' @param authentication_code Character. Default NA_character_. Provide a string (e.g., password) to password-lock the entire app.
+#' @param insert_watermark Logical. Default TRUE. Set to FALSE to remove "For Internal Use Only" text in simulated plots.
+#' @param internal_version Logical. Default TRUE. Setting to FALSE may allow generation of NCA reports when hosted on AWS with different access rights.
+#' @param use_bi_styling Logical. Default FALSE. Set to TRUE to insert BI logo.
+#' @param pw_models_path Character. Default NA_character_. Provide a path to source password-gated models.
+#' @param ... Additional parameters to pass through to the app
 #'
 #' If the user wishes to run the App outside of the function (e.g. preparing for
 #' deployment on Posit Connect), this can be done by accessing inst/shiny/app.R,
@@ -53,49 +42,75 @@
 #' @seealso
 #' \code{vignette("supply-passwords", package = "MVPapp")}
 #' @export
-run_mvp <- function(appDir = system.file("shiny", package = "MVPapp"),
+run_mvp <- function(appDir              = system.file("shiny", package = "MVPapp"),
+                    show_debugging_msg  = FALSE,
+                    authentication_code = NA_character_,
+                    insert_watermark    = TRUE,
+                    internal_version    = TRUE,
+                    use_bi_styling      = FALSE,
+                    pw_models_path      = NA_character_,
                     ...) {
 
-  params <- list(...)
+  # Define internal defaults for parameters
+  show_debugging_msg  <- show_debugging_msg  %||% FALSE
+  authentication_code <- authentication_code %||% NA_character_
+  insert_watermark    <- insert_watermark    %||% TRUE
+  internal_version    <- internal_version    %||% TRUE
+  use_bi_styling      <- use_bi_styling      %||% FALSE
+  pw_models_path      <- pw_models_path      %||% NA_character_
+
+  # Create a list of the parameters
+  params <- list(
+    show_debugging_msg  = show_debugging_msg,
+    authentication_code = authentication_code,
+    insert_watermark    = insert_watermark,
+    internal_version    = internal_version,
+    use_bi_styling      = use_bi_styling,
+    pw_models_path      = pw_models_path
+  )
+
   shinyApp_args <- list()
-  runApp_args <- list()
+  runApp_args   <- list()
 
-  if(length(params) > 0) {
-    # If any parameter in ... exists elsewhere, save the original so
-    # we can reset it on.exit.
-    reset_params <- list()
+  # Handle additional parameters passed via ...
+  additional_params <- list(...)
+  runApp_params <- names(formals(shiny::runApp))
+  shinyApp_params <- names(formals(shiny::shinyApp))
 
-    runApp_params <- names(formals(shiny::runApp))
-    shinyApp_params <- names(formals(shiny::shinyApp))
+  runApp_args <- additional_params[names(additional_params) %in% runApp_params]
+  shinyApp_args <- additional_params[names(additional_params) %in% shinyApp_params]
+  app_args <- params[!names(params) %in% c(runApp_params, shinyApp_params)]
 
-    runApp_args <- params[names(params) %in% runApp_params]
-    shinyApp_args <- params[names(params) %in% shinyApp_params]
-    app_args <- params[!names(params) %in% c(runApp_params, shinyApp_params)]
-
-    for(i in names(app_args)) {
-      # if(exists(i, envir = parent.env(environment()))) {
-      # This seems to work better since exists(mtcars), for example, will
-      # always return TRUE and therefore would be left in the environment.
-      # This lists all objects available in the call stack.
-      if(i %in% ls_all()) {
+  # Set parameters in the global environment
+  reset_params <- list()
+  added_params <- character()  # Track which parameters are added to the global environment
+  for (i in names(params)) {
+    if (!is.null(params[[i]])) {
+      if (i %in% ls_all()) {
         reset_params[[i]] <- get(i)
       }
-      .GlobalEnv[[i]] <- app_args[[i]]
-    }
-
-    if(length(app_args) > 0) {
-      on.exit({
-        # Clean up the environment to leave it the way it was before.
-        rm(list = names(app_args), envir = .GlobalEnv)
-        for(i in names(reset_params)) {
-          .GlobalEnv[[i]] <- reset_params[[i]]
-        }
-      })
+      .GlobalEnv[[i]] <- params[[i]]
+      added_params <- c(added_params, i)  # Track added parameter
     }
   }
 
+  # Ensure cleanup on exit
+  on.exit({
+    # Remove only the objects that were added
+    if (length(added_params) > 0) {
+      rm(list = added_params, envir = .GlobalEnv)
+    }
+    # Restore pre-existing objects
+    for (i in names(reset_params)) {
+      .GlobalEnv[[i]] <- reset_params[[i]]
+    }
+  }, add = TRUE)
+
   # Loading packages here to side-step JS compatibility issues
-  source(file = file.path(appDir, "packages.R"))
+  library(shiny) # 1.7.5.1
+  library(shinyBS) # 0.61.1 # this needs to be reloaded to make popovers work
+  library(dplyr) # 1.1.3 # required for data code editor
+  library(mrgsolve) # 1.5.2 # required for sim code editor
 
   default_options <- options()
   options(scipen=3) # Set the penalty to a high value to avoid scientific notation, this value is good up until 3e-07 / 1e+08

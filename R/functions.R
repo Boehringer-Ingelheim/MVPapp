@@ -19,13 +19,13 @@ today_numeric  <- function() {
 #' @param df A dataframe
 #' @param x column name (string) of x-variable
 #' @param y column name (string) of y-variable
-#'
+#' @importFrom stats as.formula coef lm
 #' @returns A character string containing the expression of the R2 coefficient
 #' for use in ggplot labels or title
 #---------------------------------------------------------------------------
 
 lm_eqn_old <- function(df, x, y){
-  
+
   # Special handling of whether df is an object or a character string
   if(is.data.frame(df)) {
     df_plot <- df
@@ -34,10 +34,10 @@ lm_eqn_old <- function(df, x, y){
     df_plot <- get(df) # I.e. removes the quotation marks of the string to get the object
     df_name <- df
   }
-  
+
   string.name <- paste0(y, "~", x)
   m <- lm(as.formula(string.name), df_plot)
-  
+
   if(is.na(coef(m)[2])) {
     eq <- "" # no slope available
   } else {
@@ -46,28 +46,28 @@ lm_eqn_old <- function(df, x, y){
       #                  list(a = format(unname(coef(m)[1]), digits = 2),
       #                       b = format(unname(abs(coef(m)[2])), digits = 2),
       #                       r2 = format(summary(m)$r.squared, digits = 3)))
-      
+
       a <- format(unname(coef(m)[1]), digits = 2)
       b <- format(unname(abs(coef(m)[2])), digits = 2)
       r2 <- format(summary(m)$r.squared, digits = 3)
-      
+
       eq <- paste0("y = ", a, " - ", b, "\u00B7x, r\u00B2 = ", r2) # plotly unicode hack
-      
+
     } else {
       # eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2,
       #                  list(a = format(unname(coef(m)[1]), digits = 2),
       #                       b = format(unname(coef(m)[2]), digits = 2),
       #                       r2 = format(summary(m)$r.squared, digits = 3)))
-      
+
       a <- format(unname(coef(m)[1]), digits = 2)
       b <- format(unname(coef(m)[2]), digits = 2)
       r2 <- format(summary(m)$r.squared, digits = 3)
-      
+
       eq <- paste0("y = ", a, " + ", b, "\u00B7x, r\u00B2 = ", r2) # plotly unicode hack
     }
     #eq <- as.character(as.expression(eq)) # uncomment for normal ggplot
   }
-  
+
   return(eq)
 }
 
@@ -93,9 +93,9 @@ lm_eqn <- function(df, facet_name, x, y) {
   } else {
     df_stats <- df
   }
-  
+
   string_name <- paste0(y, "~", x)
-  
+
   if(x == y) { # workaround for when same variable is used for both y and x,
     # which returns an NA slope. It seems summarise can't handle this well
     df_stats <- df_stats %>%
@@ -103,7 +103,7 @@ lm_eqn <- function(df, facet_name, x, y) {
                        slope = 1,
                        intercept = 0)
   } else {
-    
+
     df_stats <- df_stats %>%
       dplyr::summarise(
         rsq = if(any(!is.na(!!dplyr::sym(y)))) { # safeguard for when there are no valid y-values to calculate lm
@@ -123,7 +123,7 @@ lm_eqn <- function(df, facet_name, x, y) {
         }
       )
   }
-  
+
   df_stats <- df_stats %>%
     dplyr::mutate(slope_direction = dplyr::if_else(slope >= 0, " + ", " - "),
                   label = dplyr::case_when(
@@ -139,7 +139,7 @@ lm_eqn <- function(df, facet_name, x, y) {
                       paste0("y = ", format(unname(intercept), digits = 2), " [mean]")
                   )
     )
-  
+
   return(df_stats)
 }
 
@@ -153,13 +153,14 @@ lm_eqn <- function(df, facet_name, x, y) {
 #'
 #' @returns A ggplot object with the formula placed on the top
 #' @importFrom ggplot2 ggplot_build annotate
+#' @importFrom stats median
 #' @export
 #-------------------------------------------------------------------------------
 add_linear_regression_formula <- function(p) {
   data <- ggplot2::ggplot_build(p)$data[[1]]
   med_x <- median(data$x, na.rm = TRUE)
   max_y <- max(data$y, na.rm = TRUE)
-  
+
   p + ggplot2::annotate("text",
                         x = med_x,
                         y = max_y,
@@ -184,42 +185,42 @@ add_linear_regression_formula <- function(p) {
 generate_log_breaks <- function(base_values, start, end) {
   powers      <- seq(from = start, to = end)
   breaks      <- rep(0, length(base_values) * length(powers))
-  
+
   for (i in seq_along(powers)) {
     breaks[((i - 1) * length(base_values) + 1):(i * length(base_values))] <- base_values * 10^powers[i]
   }
-  
+
   return(breaks)
 }
 
-#' @export
+#' @keywords internal
 logbreaks_y <- generate_log_breaks(c(1,3), -10, 10) %>% signif(digits = 2)
-#' @export
+#' @keywords internal
 logbreaks_x <- logbreaks_y
-#' @export
+#' @keywords internal
 logbreaks_y_log10 <- generate_log_breaks(c(1), -10, 10) %>% signif(digits = 2)
-#' @export
+#' @keywords internal
 logbreaks_x_log10 <- logbreaks_y_log10
-#' @export
+#' @keywords internal
 logbreaks_y_minor <- generate_log_breaks(c(1:9), -10, 10) %>% signif(digits = 2)
-#' @export
+#' @keywords internal
 logbreaks_x_minor <- logbreaks_y_minor
 
-#' @export
+#' @keywords internal
 log10_axis_label <- rep("", length(logbreaks_y_minor))
-#' @export
+#' @keywords internal
 log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks_y_minor)[seq(1, length(logbreaks_y_minor), 9)] # every 9th tick is labelled
 
 
 #-------------------------------------------------------------------------------
 #' @name do_data_page_plot
 #' @title Quick Plot for Data Exploration
-#' 
+#'
 #' @description
 #' This is the main function for plotting uploaded datasets. It is designed to be
-#' flexible enough to handle continuous/continuous, discrete/continuous, and 
+#' flexible enough to handle continuous/continuous, discrete/continuous, and
 #' discrete/discrete type of data to cover most use cases.
-#' 
+#'
 #'
 #' @param nmd The NONMEM dataset for plotting (requires ID, TIME, DV at minimum)
 #' @param filter_cmt Filter by this CMT
@@ -250,6 +251,7 @@ log10_axis_label[seq(1, length(logbreaks_y_minor), 9)] <- as.character(logbreaks
 #' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap geom_boxplot label_both vars
 #' @importFrom ggplot2 scale_color_manual
 #' @importFrom scales hue_pal
+#' @importFrom stats setNames time
 #' @importFrom dplyr filter distinct sym group_by summarise across all_of count ungroup mutate
 #' @importFrom tibble glimpse
 #' @export
@@ -280,13 +282,13 @@ do_data_page_plot <- function(nmd,
   if(debug) {
     message(paste0("Creating data_page_plot"))
   }
-  
+
   nmd <- nmd %>% dplyr::ungroup() # Safeguard to always ungroup() the data
-  
+
   x_label     <- x_axis
   x_axis_orig <- x_axis
   can_quantize<- FALSE
-  
+
   if(num_quantiles > 0) {
     if(is.numeric(nmd[[x_axis_orig]])) {
       boxplot <- TRUE # all conditions met to quantize and use box plot
@@ -295,33 +297,33 @@ do_data_page_plot <- function(nmd,
       if(debug) {print(knitr::kable(nmd_q))}
       nmd    <- categorize_xvar(df = nmd, quantiles_df = nmd_q, xvar = x_axis_orig)
       if(debug) {print(knitr::kable(nmd %>% count(Quantile)))}
-      
+
       # Replace x_axis argument with the newly created "QUANTILES"
       x_label  <- paste0(x_axis, " Quantiles")
       x_axis   <- "Quantile" # Replaced original x_axis
-      
+
     } else {
       shiny::showNotification(paste0("ERROR: Cannot quantize ", x_axis_orig, " as it is not a continuous variable"), type = "error", duration = 10)
     }
   } # Automatically convert plot into a box plot
-  
+
   if(filter_cmt != 'NULL') {
     nmd <- nmd %>% dplyr::filter(CMT %in% filter_cmt)
   }
-  
+
   if ('EVID' %in% names(nmd)) {
     nmd <- nmd %>% dplyr::filter(EVID == 0)
     shiny::showNotification(paste0("Dosing rows (EVID >= 1) are excluded from the general plot."), type = "message", duration = 10)
   }
-  
+
   if(debug) {
     message(paste0("Testing for blanks"))
   }
-  
+
   # Safeguard for blanks ("") since plotly has bugs with handling it
   nmd <- handle_blanks(nmd, y_axis)
   nmd <- handle_blanks(nmd, x_axis)
-  
+
   if (!is.null(facet_name) && facet_name[1] != "") {
     for (facet in facet_name) {
       if (facet != x_axis) {
@@ -329,13 +331,13 @@ do_data_page_plot <- function(nmd,
       }
     }
   }
-  
+
   if(color_by != "") {
-    
+
     if(can_quantize & color_by == x_axis_orig) {
       color_by <- "Quantile" # Replaced original color_by
     }
-    
+
     if(all(is.na(nmd[[color_by]]))) {
       shiny::showNotification(paste0("WARNING: All values are NA in ", color_by, ". No coloring performed."), type = "warning", duration = 10)
     } else {
@@ -343,21 +345,21 @@ do_data_page_plot <- function(nmd,
       # Only applicable if the column is character type as int columns with NAs will fail
       nmd <- handle_blanks(nmd, color_by)
       nmd[[color_by]] <- as.factor(nmd[[color_by]])
-      
+
       # Create a named vector of colors - this is required to be consistent with ind plots if some pages don't have all factor levels during color_by
       n <- nlevels(nmd[[color_by]])
       color_map <- scales::hue_pal()(n)
       named_color_vector <- setNames(color_map, levels(nmd[[color_by]]))
     }
   }
-  
+
   if(color_by != "" && !boxplot & !all(is.na(nmd[[color_by]]))) {
     a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID, color = !!dplyr::sym(color_by))) +
       ggplot2::scale_color_manual(values = named_color_vector)
   } else {
     a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID))
   }
-  
+
   if(boxplot) {
     if(length(unique(nmd[[x_axis]])) > boxplot_x_threshold) {
       a <- ggplot2::ggplot() +
@@ -369,36 +371,36 @@ do_data_page_plot <- function(nmd,
     if(num_quantiles == 0) {
       nmd[[x_axis]] <- as.factor(nmd[[x_axis]])
     }
-    
+
     if(is.character(nmd[[y_axis]]) || length(unique(nmd[[y_axis]])) <= discrete_threshold ) { # ... or if there are <= discrete_threshold unique values of y-axis
       shiny::showNotification(paste0("WARNING: Treating Y-axis as discrete as it is a character type, or there are <=", discrete_threshold ," unique Y values."), type = "warning", duration = 10)
-      treat_y_axis_as_discrete <- TRUE 
+      treat_y_axis_as_discrete <- TRUE
       nmd[[y_axis]] <- as.factor(nmd[[y_axis]])
     } else {
       treat_y_axis_as_discrete <- FALSE
       nmd[[y_axis]] <- as.numeric(nmd[[y_axis]])
     }
-    
+
     ### Trim data to retain unique IDs or not, dependent on quantize
     if(!can_quantize) {
       nmd <- nmd %>% dplyr::distinct(ID, .keep_all = TRUE)
     }
-    
+
     if(color_by != "" && !all(is.na(nmd[[color_by]]))) {
       a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], color = !!dplyr::sym(color_by))) +
         ggplot2::scale_color_manual(values = named_color_vector)
     } else {
       a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]]))
     }
-    
+
     # Calculate the number of observations for each category
-    df_count <- nmd 
-    
+    df_count <- nmd
+
     if(!is.null(facet_name[1]) && facet_name[1] != "") {
       if(!(x_axis %in% facet_name)) {
         if(treat_y_axis_as_discrete) {
           df_count <- df_count %>%
-            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis), !!!dplyr::syms(facet_name))      
+            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis), !!!dplyr::syms(facet_name))
         } else {
           df_count <- df_count %>%
             dplyr::count(!!dplyr::sym(x_axis), !!!dplyr::syms(facet_name))
@@ -407,91 +409,91 @@ do_data_page_plot <- function(nmd,
         shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
         if(treat_y_axis_as_discrete) {
           df_count <- df_count %>%
-            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))          
+            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))
         } else {
           df_count <- df_count %>%
             dplyr::count(!!dplyr::sym(x_axis))
         }
       }
     } else { ## end of valid facet_name
-      
+
       if(treat_y_axis_as_discrete) {
         df_count <- df_count %>%
-          dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))        
+          dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))
       } else {
         df_count <- df_count %>%
-          dplyr::count(!!dplyr::sym(x_axis)) 
+          dplyr::count(!!dplyr::sym(x_axis))
       }
     }
-    
+
     if(treat_y_axis_as_discrete) {
-      a <- a + 
+      a <- a +
         ggplot2::geom_count() + ggplot2::scale_size_area(max_size = 12)
-      
+
       if(label_size > 0) {
         a <- a +
-          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 0.5, size = label_size) 
+          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 0.5, size = label_size)
       }
-      
+
     } else {
-      a <- a + 
+      a <- a +
         ggplot2::geom_boxplot(varwidth = TRUE)
       if(label_size > 0) {
         if(can_quantize) { # For quantized plots, we are plotting all observations, not unique IDs
           a <- a +
-            ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("Nobs=", n),  group = NULL), color = "black", vjust = 2, size = label_size)          
+            ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("Nobs=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
         } else {
           a <- a +
             ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
         }
       }
     }
-    
+
   } else { # end of boxplot check
     a <- a + ggplot2::geom_point(alpha = 0.2) +
       ggplot2::geom_line(alpha = 0.2)
   }
-  
+
   a <- a + ggplot2::xlab(x_label) + # Using x_label to adapt name when Quantize
     ggplot2::ylab(y_axis) +
     ggplot2::theme_bw() +
     ggplot2::labs(color = color_by)
-  
+
   if(med_line & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) { # can only do median line when both x & y are numeric
-    
+
     nmd <- nmd %>%
       dplyr::mutate(
         binned_xvar = quantize(nmd[[x_axis]], levels = get_bin_times(nmd[[x_axis]], bin_num = 20, relative_threshold = 0.05))
       )
-    
+
     if(med_line_by == "") {
       a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL), fun = median, geom="line", colour = "black", alpha = 1.0)
     } else { # end of stat_summary_data_by NULL check
       a <- a + ggplot2::stat_summary(data = nmd, ggplot2::aes(x = binned_xvar, y = .data[[y_axis]], group = NULL, color = as.factor(.data[[med_line_by]])),
                                      fun = median, geom="line", alpha = 1.0)
     }
-    
+
   } # end of stat_summary_data_option
-  
+
   if(smoother & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) {
     a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), se = FALSE, linetype = "dashed")
   }
-  
+
   if(dolm & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) {
     # Calculate linear regression and R-squared value for each facet
     df_stats <- lm_eqn(df = nmd, facet_name = facet_name, x = x_axis, y = y_axis)
-    
+
     data <- ggplot2::ggplot_build(a)$data[[1]]
     med_x <- (min(data$x, na.rm = TRUE) + max(data$x, na.rm = TRUE))/2 # median works better for plotly, while min is better for ggplot
     max_y <- max(data$y, na.rm = TRUE)
-    
+
     a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), method = "lm", formula = y ~ x, se = FALSE, colour = "grey", show.legend = FALSE)
     if(label_size > 0) {
       a <- a + ggplot2::geom_text(data = df_stats, aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
-                                  hjust = 0.5, vjust = 1, show.legend = FALSE, size = label_size)      
+                                  hjust = 0.5, vjust = 1, show.legend = FALSE, size = label_size)
     }
   }
-  
+
   if (!is.null(facet_name[1]) && facet_name[1] != "") {
     if(x_axis %in% facet_name) {
       shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
@@ -505,34 +507,34 @@ do_data_page_plot <- function(nmd,
       }
     }
   }
-  
+
   if (logy & is.numeric(nmd[[y_axis]])) {
     a <- a +
       ggplot2::scale_y_log10(breaks = logbreaks_y, labels = logbreaks_y) +
       ggplot2::annotation_logticks(sides = "l")
   }
-  
+
   if (logx & is.numeric(nmd[[x_axis]]) & !boxplot) {
     a <- a +
       ggplot2::scale_x_log10(breaks = logbreaks_x, labels = logbreaks_x) +
       ggplot2::annotation_logticks(sides = "b")
   }
-  
+
   if (!is.null(plot_title)) {
     a <- a +
       ggplot2::ggtitle(plot_title)
   }
-  
+
   return(a)
 }
 
 #-------------------------------------------------------------------------------
 #' @name do_data_page_ind_plot
 #' @title Individual Plot for Data Exploration
-#' 
+#'
 #' @description
 #' This is the main function for plotting individual plots from uploaded datasets.
-#' It is designed to be flexible enough to handle continuous/continuous, discrete/continuous, and 
+#' It is designed to be flexible enough to handle continuous/continuous, discrete/continuous, and
 #' discrete/discrete type of data to cover most use cases.
 #'
 #' @param nmd The NONMEM dataset for plotting (requires ID, TIME, DV at minimum)
@@ -563,7 +565,7 @@ do_data_page_plot <- function(nmd,
 #' @param boxplot_x_threshold Throws an error when the unique values of x-axis exceeds this number
 #' @param error_text_color error text color for element text
 #' @param highlight_var variable name to be highlighted by a different shape
-#' @param highlight_var_values variable values associated with highlight_var to be highlighted 
+#' @param highlight_var_values variable values associated with highlight_var to be highlighted
 #' @param plot_dosing Plots dosing line and dose text when TRUE
 #' @param same_scale Uses fixed scales based on entire dataset when TRUE
 #' @param dose_col name of dose column, usually AMT or DOSE
@@ -575,12 +577,11 @@ do_data_page_plot <- function(nmd,
 #' @importFrom ggplot2 ggplot aes geom_point geom_line xlab ylab theme_bw labs scale_size_area
 #' @importFrom ggplot2 stat_summary stat_smooth scale_y_log10 scale_x_log10 after_stat geom_count
 #' @importFrom ggplot2 annotation_logticks ggtitle theme facet_wrap geom_boxplot label_both
-#' @importFrom ggplot2 scale_color_manual geom_rect coord_cartesian scale_fill_manual
+#' @importFrom ggplot2 scale_color_manual geom_rect coord_cartesian scale_fill_manual element_text element_blank
 #' @importFrom scales hue_pal
 #' @importFrom dplyr filter distinct sym syms group_by summarise across all_of count ungroup mutate any_of case_when rowwise
 #' @importFrom tibble glimpse
 #' @importFrom forcats fct_inorder
-#' @importFrom ggrepel geom_text_repel
 #' @importFrom purrr map_chr
 #' @export
 #-------------------------------------------------------------------------------
@@ -623,13 +624,13 @@ do_data_page_ind_plot <- function(nmd,
   if(debug) {
     message(paste0("Creating data_page_ind_plot"))
   }
-  
+
   nmd <- nmd %>% dplyr::ungroup() # Safeguard to always ungroup() the data
-  
+
   if(filter_cmt != 'NULL') {
     nmd <- nmd %>% dplyr::filter(CMT %in% filter_cmt)
   }
-  
+
   # Check if any columns are selected for sorting, otherwise uses ID as default
   if (length(sort_by) > 0) {
     # Dynamically create the labeling column (facet_label) based on sort_by
@@ -638,7 +639,7 @@ do_data_page_ind_plot <- function(nmd,
     nmd <- nmd %>% dplyr::arrange(ID) %>%
       mutate(facet_label = paste0("ID: ", ID))
   }
-  
+
   # Calculate outliers
   if(!is.null(strat_by) && strat_by != '' && !boxplot) {
     nmd <- categorize_outliers(df              = nmd,
@@ -647,10 +648,10 @@ do_data_page_ind_plot <- function(nmd,
                                strat_by        = strat_by,
                                debug           = debug)
   } # end of calculate outliers
-  
+
   # Create a new factor for ID with levels in the order they appear in the sorted data frame
   nmd$facet_label <- factor(nmd$facet_label, levels = unique(nmd$facet_label))
-  
+
   if(color_by != "") {
     if(all(is.na(nmd[[color_by]]))) {
       shiny::showNotification(paste0("WARNING: All values are NA in ", color_by, ". No coloring performed."), type = "warning", duration = 10)
@@ -659,28 +660,28 @@ do_data_page_ind_plot <- function(nmd,
       # Only applicable if the column is character type as int columns with NAs will fail
       nmd <- handle_blanks(nmd, color_by)
       nmd[[color_by]] <- as.factor(nmd[[color_by]])
-      
+
       # Create a named vector of colors - this is required to be consistent with ind plots if some pages don't have all factor levels during color_by
       n <- nlevels(nmd[[color_by]])
       color_map <- scales::hue_pal()(n)
       named_color_vector <- setNames(color_map, levels(nmd[[color_by]]))
     }
   }
-  
+
   # Safeguard for blanks ("") since plotly has bugs with handling it
   nmd <- handle_blanks(nmd, y_axis)
   nmd <- handle_blanks(nmd, x_axis)
-  
+
   # Calculating the entire dataset's limits to ensure consistency across pages for same_scale
   if(!is.character(nmd[[x_axis]])) {
     nmdx <- nmd %>%
-      filter(!!dplyr::sym(x_axis) != 0) 
+      filter(!!dplyr::sym(x_axis) != 0)
   } else {
     nmdx <- nmd
   }
   if(!is.character(nmd[[y_axis]])) {
     nmdy <- nmd %>%
-      filter(!!dplyr::sym(y_axis) != 0) 
+      filter(!!dplyr::sym(y_axis) != 0)
   } else {
     nmdy <- nmd
   }
@@ -688,7 +689,7 @@ do_data_page_ind_plot <- function(nmd,
   max_data_x_all  <- max(as.numeric(as.character(nmdx[[x_axis]])), na.rm = TRUE)
   min_data_y_all  <- min(as.numeric(as.character(nmdy[[y_axis]])), na.rm = TRUE)
   max_data_y_all  <- max(as.numeric(as.character(nmdy[[y_axis]])), na.rm = TRUE)
-  
+
   ## Handling doses
   if(plot_dosing && 'EVID' %in% names(nmd) & !boxplot & dose_col != "") {
     # Creating dummy variables - XVAR, YVAR, NAMT
@@ -697,7 +698,7 @@ do_data_page_ind_plot <- function(nmd,
     nmd$XVAR <- as.numeric(as.character(nmd[[x_axis]]))
     nmd$YVAR <- as.numeric(as.character(nmd[[y_axis]]))
     max_dose_all <- max(nmd$NAMT, na.rm = TRUE)
-    
+
     # Scaling the dose such that it is plotted nicely with the maximum dose at height dose_height of the maximum y variable
     # A new column SAMT (Scaled AMT) is created which will be used for plotting the geom_rect
     nmd <- nmd %>%
@@ -709,13 +710,13 @@ do_data_page_ind_plot <- function(nmd,
         min_yvar       = min(YVAR, na.rm = TRUE),
         max_yvar       = max(YVAR, na.rm = TRUE)) %>%
       ungroup()
-    
+
     # Safeguard for when a subject has no valid Y- or X-values
     # Replaces any bad IDs with no observations to NA
     nmd[(nmd==Inf | nmd == -Inf)] <- NA
-    
+
     dose_height     <- 0.5 # Changing how tall the doses should be in relation to the y variable (0.5 means max dose reaches middle of y_axis range)
-    
+
     nmd <- nmd %>%
       mutate(
         max_dose_all = max(NAMT, na.rm = TRUE),
@@ -732,19 +733,19 @@ do_data_page_ind_plot <- function(nmd,
         max_xvar     = dplyr::case_when(is.na(max_xvar) ~ max_data_x,
                                         TRUE            ~ max_xvar)
       )
-    
+
     if(same_scale) {
       nmd$scaling_factor <- max_data_y_all / max_dose_all * dose_height
     } else {
       nmd$scaling_factor <- ((nmd$max_yvar - nmd$min_yvar) * dose_height + nmd$min_yvar) / nmd$max_dose #nmd$max_dose_all doesn't work well
     }
-    
+
     nmd$SAMT           <- nmd$NAMT * nmd$scaling_factor
-    
+
   }
-  
+
   if(same_scale) { # Replace each subject's max and min values with the entire dataset's
-    
+
     nmd <- nmd %>%
       mutate(min_xvar = min_data_x_all,
              max_xvar = max_data_x_all,
@@ -752,7 +753,7 @@ do_data_page_ind_plot <- function(nmd,
              max_yvar = max_data_y_all
       )
   }
-  
+
   # Filter the data to be page Z, where each page has X rows * Y cols
   if(is.null(filter_id[1]) || filter_id[1] == '') { # selectizeInput with multiple choices are picky
     unique_ids         <- unique(nmd$ID)
@@ -763,45 +764,45 @@ do_data_page_ind_plot <- function(nmd,
   } else {
     nmd <- nmd %>% dplyr::filter(ID %in% filter_id)
   }
-  
-  
+
+
   if(plot_dosing && 'EVID' %in% names(nmd) & !boxplot & dose_col != "") {
     id_dose_expand <- nmd %>%
       filter(EVID == 1 | EVID == 4)
-    
+
     if(nrow(id_dose_expand) >= 1) { # Create "DOSETIME" column if there are any valid dosing rows, which will be used for plotting dose lines
       id_dose_expand <- id_dose_expand %>%
-        expand_addl_ii(., x_axis = x_axis, dose_col = dose_col) 
+        expand_addl_ii(., x_axis = x_axis, dose_col = dose_col)
     }
-    
+
     if(debug) {
       message("Dosing expanded:")
       dplyr::glimpse(id_dose_expand)
     }
-    
+
     # Gets unique dose amount rows
     #id_dose_unique <- id_dose_expand %>% distinct(ID, !!dplyr::sym(dose_col), .keep_all = TRUE)
     id_dose_unique <- id_dose_expand %>% distinct(facet_label, !!dplyr::sym(dose_col), .keep_all = TRUE)
     id_dose_unique[[dose_col]] <- as.numeric(as.character(id_dose_unique[[dose_col]])) # in case dose_col is picked for Color by
     id_dose_unique <- id_dose_unique %>% mutate(dosename = paste0(round(.[[dose_col]], digits = 2), dose_units))
-    
+
   }
-  
+
   # Retain EVID == 0 for plotting
   if('EVID' %in% colnames(nmd)) {
     nmd <- nmd %>% filter(EVID == 0)
   }
-  
+
   # Start of ggplot initialization
   if(color_by != "" && !boxplot & !all(is.na(nmd[[color_by]]))) {
     a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID, color = !!dplyr::sym(color_by))) +
       ggplot2::scale_color_manual(values = named_color_vector)
-    
+
   } else {
     a <- ggplot2::ggplot(data = nmd, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], group = ID))
-    
+
   }
-  
+
   if(boxplot) {
     if(length(unique(nmd[[x_axis]])) > boxplot_x_threshold) {
       a <- ggplot2::ggplot() +
@@ -811,32 +812,32 @@ do_data_page_ind_plot <- function(nmd,
       return(a)
     }
     nmd[[x_axis]] <- as.factor(nmd[[x_axis]])
-    
+
     if(is.character(nmd[[y_axis]]) || length(unique(nmd[[y_axis]])) <= discrete_threshold ) { # ... or if there are <= discrete_threshold unique values of y-axis
       shiny::showNotification(paste0("WARNING: Treating Y-axis as discrete as it is a character type, or there are <=", discrete_threshold ," unique Y values."), type = "warning", duration = 10)
-      treat_y_axis_as_discrete <- TRUE 
+      treat_y_axis_as_discrete <- TRUE
       nmd[[y_axis]] <- as.factor(nmd[[y_axis]])
     } else {
       treat_y_axis_as_discrete <- FALSE
       nmd[[y_axis]] <- as.numeric(nmd[[y_axis]])
     }
-    
+
     if(color_by != "" && !all(is.na(nmd[[color_by]]))) {
       a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], color = !!dplyr::sym(color_by))) +
         ggplot2::scale_color_manual(values = named_color_vector)
     } else {
       a <- ggplot2::ggplot(data = nmd %>% dplyr::distinct(ID, .keep_all = TRUE), ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]]))
     }
-    
+
     # Calculate the number of observations for each category
     df_count <- nmd %>%
       dplyr::distinct(ID, .keep_all = TRUE)
-    
+
     if(facet_name != "") {
       if(facet_name != x_axis) {
         if(treat_y_axis_as_discrete) {
           df_count <- df_count %>%
-            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis), !!dplyr::sym(facet_name))      
+            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis), !!dplyr::sym(facet_name))
         } else {
           df_count <- df_count %>%
             dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(facet_name))
@@ -845,48 +846,48 @@ do_data_page_ind_plot <- function(nmd,
         shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
         if(treat_y_axis_as_discrete) {
           df_count <- df_count %>%
-            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))          
+            dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))
         } else {
           df_count <- df_count %>%
             dplyr::count(!!dplyr::sym(x_axis))
         }
       }
     } else { ## end of valid facet_name
-      
+
       if(treat_y_axis_as_discrete) {
         df_count <- df_count %>%
-          dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))        
+          dplyr::count(!!dplyr::sym(x_axis), !!dplyr::sym(y_axis))
       } else {
         df_count <- df_count %>%
-          dplyr::count(!!dplyr::sym(x_axis)) 
+          dplyr::count(!!dplyr::sym(x_axis))
       }
     }
-    
+
     if(treat_y_axis_as_discrete) {
-      a <- a + 
+      a <- a +
         ggplot2::geom_count() + ggplot2::scale_size_area(max_size = 12)
-      
+
       if(label_size > 0) {
         a <- a +
-          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 2, size = label_size) 
+          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 2, size = label_size)
       }
-      
+
     } else {
-      a <- a + 
+      a <- a +
         ggplot2::geom_boxplot(varwidth = TRUE)
       if(label_size > 0) {
         a <- a +
           ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
       }
     }
-    
+
   } else { # end of boxplot check
-    
+
     ## Dosing lines
     if(plot_dosing && ("EVID" %in% colnames(nmd)) & dose_col != "" & !boxplot) {
       if('DOSETIME' %in% colnames(id_dose_expand)) { # If DOSETIME is not present that means expansion has failed - then don't do anything
         id_dose_expand$INFDUR <- id_dose_expand$DOSETIME # Infusion Duration is the same as dose time unless rate is supplied
-        
+
         # Extends geom_rect by infusion rates
         if("RATE" %in% colnames(id_dose_expand)) {
           if(any(subset(id_dose_expand, !is.na(RATE))$RATE > 0)) {
@@ -900,9 +901,9 @@ do_data_page_ind_plot <- function(nmd,
               )
           }
         }
-        
+
         linecolour <- "#ED5C42A0"
-        
+
         a <- a +
           ggplot2::geom_vline(data = id_dose_expand, aes(xintercept = DOSETIME), alpha = 0.1) +
           ggplot2::geom_rect(data   = id_dose_expand, aes(
@@ -916,52 +917,52 @@ do_data_page_ind_plot <- function(nmd,
             color = linecolour,
             show.legend = FALSE
           )
-        
+
         ## Dosing text
-        if(require(ggrepel)) {
-          a <- a + ggrepel::geom_text_repel(data = id_dose_unique, aes(x = .data[[x_axis]], y = SAMT, label = dosename, color = NULL),
-                                            alpha = 0.8,
-                                            size = label_size)
-        } else {
+        # if(require(ggrepel)) {
+        #   a <- a + ggrepel::geom_text_repel(data = id_dose_unique, aes(x = .data[[x_axis]], y = SAMT, label = dosename, color = NULL),
+        #                                     alpha = 0.8,
+        #                                     size = label_size)
+        # } else {
           a <- a + ggplot2::geom_text(data = id_dose_unique, aes(x = .data[[x_axis]], y = SAMT, label = dosename, group = NULL, color = NULL),
                                       hjust = 1, vjust = 1, show.legend = FALSE, size = label_size, alpha = 0.8)
-        }
+        #}
       } # End of DOSETIME column check
     } # End of dosing lines
-    
+
     ### LLOQ
-    
+
     # LLOQ line
     if(lloq_name != '' && lloq_name %in% colnames(nmd)) {
       nmd[[lloq_name]] <- as.numeric(as.character(nmd[[lloq_name]]))
       a <- a + ggplot2::geom_hline(yintercept = unique(nmd[[lloq_name]]), colour = "orange", linetype = "dashed", size = 0.5, alpha = 0.5)
     }
-    
+
     a <- a + ggplot2::geom_point(data = nmd, alpha = 1) +
       ggplot2::geom_line(data = nmd, alpha = 0.7)
-    
+
     # Highlighting variable value(s)
     if(!is.null(highlight_var) && highlight_var != "" && !is.null(highlight_var_values[1]) && highlight_var_values[1] != "") {
       nmd_highlight <- nmd %>% dplyr::filter(!!dplyr::sym(highlight_var) %in% highlight_var_values)
       a <- a +
         geom_point(data = nmd_highlight, shape = 8, size = 4, alpha = 1, color = "red") # big red asterix shape
     }
-    
+
   }
-  
+
   a <- a + ggplot2::xlab(x_axis) +
     ggplot2::ylab(y_axis) +
     ggplot2::theme_bw() +
     ggplot2::labs(color = color_by)
-  
+
   # median line and smoother not relevant for ind plots
-  
+
   if(dolm & is.numeric(nmd[[x_axis]]) & is.numeric(nmd[[y_axis]]) & !boxplot) {
     # Calculate linear regression and R-squared value for each facet
     df_stats <- lm_eqn(df = nmd, facet_name = facet_name, x = x_axis, y = y_axis)
-    
+
     data <- ggplot2::ggplot_build(a)$data[[1]]
-    
+
     if(same_scale) {
       med_x <- (min_data_x_all + max_data_x_all) / 2
       max_y <- max_data_y_all
@@ -969,14 +970,14 @@ do_data_page_ind_plot <- function(nmd,
       med_x <- (min(data$x, na.rm = TRUE) + max(data$x, na.rm = TRUE))/2 # median works better for plotly, while min is better for ggplot
       max_y <- max(data$y, na.rm = TRUE)
     }
-    
+
     a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), method = "lm", formula = y ~ x, se = FALSE, colour = "grey", show.legend = FALSE)
     if(label_size > 0) {
       a <- a + ggplot2::geom_text(data = df_stats, aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
-                                  hjust = 0.5, vjust = 1, show.legend = FALSE, size = label_size)      
+                                  hjust = 0.5, vjust = 1, show.legend = FALSE, size = label_size)
     }
   }
-  
+
   if (facet_name != "") {
     if(facet_name == x_axis) {
       shiny::showNotification("ERROR: Facet variable cannot be the same as X-axis.", type = "error", duration = 10)
@@ -992,58 +993,58 @@ do_data_page_ind_plot <- function(nmd,
         if(same_scale) {
           a <- a + ggplot2::facet_wrap(~facet_label, scales = "fixed") # labeller = ggplot2::label_both
         } else {
-          a <- a + ggplot2::facet_wrap(~facet_label, scales = "free") # labeller = ggplot2::label_both  
+          a <- a + ggplot2::facet_wrap(~facet_label, scales = "free") # labeller = ggplot2::label_both
         }
       }
     }
   }
-  
+
   if (logy & is.numeric(nmd[[y_axis]])) {
     a <- a +
       ggplot2::scale_y_log10(breaks = logbreaks_y, labels = logbreaks_y) +
       ggplot2::annotation_logticks(sides = "l")
   }
-  
+
   if (logx & is.numeric(nmd[[x_axis]]) & !boxplot) {
     a <- a +
       ggplot2::scale_x_log10(breaks = logbreaks_x, labels = logbreaks_x) +
       ggplot2::annotation_logticks(sides = "b")
   }
-  
+
   if(same_scale) { ## coord_cartesian not well supported with log scales?
-    
+
     if(plot_dosing && ("EVID" %in% colnames(nmd)) & dose_col != "" & !boxplot) { # Gets the largest of either doses per individual or last observation time
       cc_xlim <- c(min(min_data_x_all, min(id_dose_expand$DOSETIME)),
                    max(max_data_x_all, max(id_dose_expand$DOSETIME)))
     } else {
       cc_xlim <- c(min_data_x_all, max_data_x_all)
     }
-    
+
     cc_ylim <- c(min_data_y_all, # lower bound of y is not 0 to avoid log scale issues
-                 max_data_y_all) 
-    
+                 max_data_y_all)
+
     # if(logy & is.numeric(nmd[[y_axis]])) {
     #   cc_ylim <- log10(cc_ylim)
     # }
-    # 
+    #
     # if(logx & is.numeric(nmd[[x_axis]])) {
     #   cc_xlim <- log10(cc_xlim)
     # }
-    
+
     if(debug) {
       message(paste0("cc_ylim: ", cc_ylim))
       message(paste0("cc_xlim: ", cc_xlim))
     }
-    
+
     a <- a + ggplot2::coord_cartesian(xlim = cc_xlim ,
                                       ylim = cc_ylim)
   } # end of same_scale
-  
+
   if (!is.null(plot_title)) {
     a <- a +
       ggplot2::ggtitle(plot_title)
   }
-  
+
   return(a)
 }
 
@@ -1098,34 +1099,34 @@ draw_correlation_plot <- function(input_df,
     message("Creating correlation plot")
   }
   corr_data_id <- input_df %>% dplyr::distinct(ID, .keep_all = TRUE)
-  
+
   if(color_sep %in% names(corr_data_id)) {
     cov_columnsf <- unique(c(corr_variables, color_sep)) # add the colour separator
   } else {
     cov_columnsf <- c(corr_variables)
   }
-  
+
   #corr_data_id_trimmed <- corr_data_id[, cov_columnsf] %>% as.data.frame() # strange error
   corr_data_id_trimmed <- corr_data_id %>% dplyr::select(dplyr::all_of(cov_columnsf)) %>% as.data.frame()
-  
+
   ##### If a column has less than the number of unique values as specified in catcov_threshold, it will automatically be turned into a factor
   for(i in 1:length(corr_data_id_trimmed)) {
     if(length(unique(corr_data_id_trimmed[[i]])) < catcov_threshold) {
       corr_data_id_trimmed[i] <- as.factor(unlist(corr_data_id_trimmed[i]))
     }
   }
-  
+
   mapping <- if(color_sep %in% names(corr_data_id)) {
     ggplot2::aes(color = as.factor(.data[[color_sep]]), alpha = 0.5)
   } else {
     ggplot2::aes(alpha = 0.5)
   }
-  
+
   corr_plot <- GGally::ggpairs(corr_data_id_trimmed, cardinality_threshold = 30,
                                mapping = mapping,
                                lower = list(continuous = GGally::wrap(lowerFn, method = "lm"))) +
     ggplot2::theme_bw()
-  
+
   return(corr_plot)
 }
 
@@ -1208,7 +1209,7 @@ run_single_sim <- function(input_model_object,
                            parallel_n         = 200#,
                            #number_of_cores    = 8L # uses future_mrgsim_d as mc_mrgsim_d doesn't work in Shiny
 ) {
-  
+
   # Early exit if input_model_object is NULL
   if (is.null(input_model_object)) {
     if (debug) {
@@ -1216,26 +1217,26 @@ run_single_sim <- function(input_model_object,
     }
     return(NULL)
   }
-  
+
   if(nsubj <= 1) { # if nsubj > 1, we will transform dose amounts with external patient weights later
     ev_df <- transform_ev_df(input_model_object, ev_df, model_dur, model_rate, pred_model, debug,
                              wt_based_dosing = wt_based_dosing, wt_name = wt_name)
   }
-  
+
   ### If reading in Databases:
   if(nsubj > 1 & !is.null(ext_db)) { # Note that ext_db is not NULL even for "None" option
 
     # Joining ext_db with ev_df
     ev_df2 <- ev_df %>%
       mrgsolve::ev_rep((1:nrow(ext_db)))
-    
+
     ext_db_ev_prewt <- data.table::merge.data.table(ev_df2, ext_db, by = "ID", all.x = TRUE)
 
     ext_db_ev <- transform_ev_df(input_model_object, ext_db_ev_prewt, model_dur, model_rate, pred_model, debug,
                                  wt_based_dosing = wt_based_dosing, wt_name = wt_name)
-    
+
     set.seed(seed) # Setting seed outside mrgsim to ensure reproducibility
-    
+
     # if(parallel_sim & nsubj >= parallel_n) {
     #   shiny::showNotification(paste0("Performing simulations in parallel (N >= ", parallel_n, ")..."), type = "message", duration = 10)
     #   options(mc.cores = number_of_cores)
@@ -1264,23 +1265,23 @@ run_single_sim <- function(input_model_object,
     #system.time()
     #
     #} else {
-    
+
     input_model_object@digits <- 5 # how many sigdigs to output
-    
+
     solved_output <- safely_qsim(input_model_object,
                                  data = ext_db_ev,
                                  obsonly = TRUE,
                                  tgrid = sampling_times,
                                  tad = TRUE,
                                  output = "df")
-    
+
     # mrgsim_q / qsim does not support carry_out cols, so merging back in here
     if(is.null(solved_output$error)) {
       solved_output$result <- data.table::merge.data.table(solved_output$result, ext_db, by = "ID", all.x = TRUE)
-    } 
+    }
     #} # not using parallel
   } # end of multiple nsubj sims
-  
+
   ### If single subject (or bad number of subjects input)
   if(nsubj <= 1) {
     solved_output <- input_model_object %>%
@@ -1290,7 +1291,7 @@ run_single_sim <- function(input_model_object,
                        tgrid  = sampling_times,
                        tad    = TRUE)
   }
-  
+
   if(is.null(solved_output$error)) {
     solved_output <- solved_output$result %>%
       dplyr::rename(TIME    = time) %>%
@@ -1301,9 +1302,9 @@ run_single_sim <- function(input_model_object,
     shiny::showNotification(paste0(solved_output$error, " Potentially due to non-sensible parameter values."), type = "error", duration = 10)
     solved_output <- NULL
   }
-  
+
   return(solved_output) # Successful sims will be returned as df; otherwise a NULL is returned
-  
+
 } # end of run_single_sim
 
 
@@ -1333,41 +1334,41 @@ sample_age_wt <- function(df_name     = "None",
                           upper.wt    = 100,
                           prop.male   = 0.5,
                           seed.number = 1234) {
-  
+
   set.seed(seed.number)
-  
+
   if(df_name == "None") {
     df.combined <- dplyr::tibble(ID = 1:nsubj)
     return(df.combined)
   }
-  
+
   df <- switch(df_name,
                "CDC" = cdc.expand,
                "WHO" = who.expand,
                "NHANES" = nhanes.filtered
   )
-  
+
   if(upper.agemo > max(df$AGEMO)) {
     stop("Requested upper bound of age exceeds what's available in the database.")
   }
-  
+
   if(lower.agemo < min(df$AGEMO)) {
     stop("Requested lower bound of age exceeds what's available in the database.")
   }
-  
+
   if(lower.agemo == upper.agemo) { # Allows singular age
     df.sexes <- df %>%
       dplyr::filter(AGEMO == lower.agemo)
-    
+
     if(nrow(df.sexes) == 0) { # CDC does not have exact whole months available
       df.sexes <- df %>% # Note we're using inclusive both ends to be more accurate of what the user wants
-        dplyr::filter(AGEMO >= (lower.agemo - 0.5), AGEMO <= (upper.agemo + 0.5)) 
+        dplyr::filter(AGEMO >= (lower.agemo - 0.5), AGEMO <= (upper.agemo + 0.5))
     }
   } else {
     df.sexes <- df %>%
       dplyr::filter(AGEMO >= lower.agemo, AGEMO < upper.agemo)
   }
-  
+
   if(lower.wt == upper.wt) { # Allows singular weight
     df.sexes <- df.sexes %>%
       dplyr::filter(WT == lower.wt)
@@ -1375,22 +1376,22 @@ sample_age_wt <- function(df_name     = "None",
     df.sexes <- df.sexes %>%
       dplyr::filter(WT >= lower.wt, WT < upper.wt)
   }
-  
+
   df.boys <- df.sexes %>%
     dplyr::filter(SEX == 0) %>%
     dplyr::slice_sample(n = ceiling(nsubj * prop.male), replace = FALSE)
-  
+
   df.girls <- df.sexes %>%
     dplyr::filter(SEX == 1) %>%
     dplyr::slice_sample(n = ceiling(nsubj * (1 - prop.male)), replace = FALSE)
-  
+
   df.combined <- rbind(df.boys, df.girls) %>%
     dplyr::slice_sample(n = nsubj, replace = FALSE) %>%
     dplyr::arrange(AGEMO) %>%
     dplyr::rename(AGE = AGEYR) %>%
     dplyr::mutate(BMI = round(WT / (HT/100)^2,2)) %>% # Check for non-sensible values
     dplyr::mutate(BSA = round(0.20247 * WT^0.425 * (HT/100)^0.725,2)) # Du Bois formula for BSA, height in m
-  
+
   return(cbind(dplyr::tibble(ID = 1:nsubj), df.combined))
 }
 
@@ -1413,6 +1414,7 @@ sample_age_wt <- function(df_name     = "None",
 #' @returns a dataframe with summary stats
 #' @importFrom dplyr mutate mutate_all distinct select sym summarise across
 #' @importFrom tidyr everything pivot_longer pivot_wider
+#' @importFrom stats median quantile sd
 #' @importFrom purrr modify_if
 #' @export
 #=============================================================================
@@ -1426,33 +1428,33 @@ calc_summary_stats <- function(orig_data,
                                id_colname = "ID",
                                comma_format = TRUE,
                                replace_non_numeric_to_NA = TRUE) {
-  
+
   data <- orig_data
-  
+
   if(convert_to_numeric) {
     # Convert all columns to numeric, replacing non-numeric characters with NA
     data <- orig_data %>%
       dplyr::mutate_all(function(x) as.numeric(as.character(x)))
-    
+
     # Replace non-numeric values with NA
     if(replace_non_numeric_to_NA) {
       data[orig_data != data] <- NA # numbers with long decimals are being recognized as NA?
     }
   }
-  
+
   if(id_colname %in% names(data)) {
     data <- data %>% dplyr::distinct(!!dplyr::sym(id_colname), .keep_all = TRUE)
     data <- data %>% dplyr::select(-!!dplyr::sym(id_colname))
   }
-  
+
   if(check_empty_rows & nrow(data) == 0) {
     tmp <- data
   } else {
-    
+
     # Using data.table which is much quicker
     # Convert the data to a data.table
     data <- data.table::setDT(data)
-    
+
     # Define list of metrics to summarise over
     stats_list <- list(
       "Min"       = function(x) min(x, na.rm = TRUE),
@@ -1467,14 +1469,14 @@ calc_summary_stats <- function(orig_data,
       "gMean"     = function(x) gm_mean(x),
       "gMean CV%" = function(x) gm_mean_cv(x)
     )
-    
+
     # Apply each operation to each column
     tmp <- data.table::rbindlist(lapply(names(stats_list), function(name) {
       data[, lapply(.SD, stats_list[[name]]), .SDcols = names(data)][, Statistic := name]
     })) %>%
       as.data.frame() %>%
       dplyr::select(Statistic, dplyr::everything())
-    
+
     # Apply rounding or sigdigs to the entire df
     if(sigdig) {
       tmp <- tmp %>% purrr::modify_if(is.numeric, ~signif(., dp))
@@ -1482,19 +1484,19 @@ calc_summary_stats <- function(orig_data,
       tmp <- tmp %>% purrr::modify_if(is.numeric, ~round(., dp))
     }
   }
-  
+
   if("AGEMO" %in% names(tmp)) {
     tmp <- tmp %>% dplyr::select(-AGEMO)
   }
-  
+
   if("SEX" %in% names(tmp)) {
     tmp <- tmp %>% dplyr::select(-SEX)
   }
-  
+
   if(comma_format) {
     # Define a formatter function
     comma_formatter <- function(x) format(x, big.mark = ",")
-    
+
     # Apply the formatter to all numeric columns
     for(col in names(tmp)) {
       if(is.numeric(tmp[[col]])) {
@@ -1502,17 +1504,17 @@ calc_summary_stats <- function(orig_data,
       }
     }
   }
-  
+
   # Convert all columns to character for easier display
   tmp <- tmp %>% dplyr::mutate_all(as.character)
-  
+
   # Convert such that each variable (column) is a row instead
   if(transpose) {
     tmp <- tmp %>%
       tidyr::pivot_longer(cols = -Statistic, names_to = "ColumnName", values_to = "value") %>%
       tidyr::pivot_wider(names_from = "Statistic", values_from = "value")
   }
-  
+
   return(tmp)
 }
 
@@ -1547,13 +1549,13 @@ calc_summary_stats_as_list <- function(nca_df, group_by_name,
                                        convert_to_numeric = FALSE,
                                        transpose = TRUE,
                                        id_colname = "ID") {
-  
+
   list_of_descriptive_stats_by_keys <- list() # initialize a list to store each df
-  
+
   if(group_by_name %in% names(nca_df)) {
     for(i in 1:length(unique(nca_df[[group_by_name]]))) {
       if(transpose) {
-        
+
         list_of_descriptive_stats_by_keys[[i]] <- calc_summary_stats(nca_df %>%
                                                                        dplyr::filter(!!dplyr::sym(group_by_name) == unique(nca_df[[group_by_name]])[i]) %>%
                                                                        dplyr::select(-!!dplyr::sym(group_by_name)),
@@ -1583,7 +1585,7 @@ calc_summary_stats_as_list <- function(nca_df, group_by_name,
                                    dplyr::filter(!!dplyr::sym(group_by_name) == unique(nca_df[[group_by_name]])[i]))) %>%
           dplyr::filter(Statistic %in% c("Min", "Mean", "Median", "Max", "CV%", "gMean", "gMean CV%")) %>%
           dplyr::select(Statistic, N, tidyr::everything())
-        
+
       }
     }
   } else { # if can't find the group_by_name
@@ -1612,7 +1614,7 @@ calc_summary_stats_as_list <- function(nca_df, group_by_name,
         dplyr::select(Statistic, N, tidyr::everything())
     }
   } # end of group_by_name big loop
-  
+
   return(list_of_descriptive_stats_by_keys)
 }
 
@@ -1674,15 +1676,15 @@ gm_mean_cv = function(x, na.rm = TRUE) {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 print_demog_plots <- function(data) {
-  
+
   data <- data %>% dplyr::mutate(SEX = dplyr::case_when(SEX == 0 ~ "Male",
                                                         SEX == 1 ~ "Female"))
-  
+
   p.age <- ggplot2::ggplot(data, ggplot2::aes(x = AGE, fill = SEX)) +
     ggplot2::scale_fill_manual(values = c("Male" = "lightblue", "Female" = "pink")) +
     ggplot2::theme_bw(base_size = 14) +
     ggplot2::labs(x = 'Age (years)', y = 'Count')
-  
+
   if(max(data$AGE) < 18) {
     p.age <- p.age +
       ggplot2::geom_histogram(colour= "white", binwidth = 1) + ggplot2::facet_grid(. ~ SEX)
@@ -1690,16 +1692,16 @@ print_demog_plots <- function(data) {
     p.age <- p.age +
       ggplot2::geom_histogram(colour= "white", binwidth = 5) + ggplot2::facet_grid(. ~ SEX)
   }
-  
+
   p.age <- p.age +
     ggplot2::theme(legend.position = "none") +  # Remove the legend
     ggplot2::theme(axis.title.y = ggplot2::element_blank())  # Remove the y-axis label
-  
+
   p.wt <- ggplot2::ggplot(data, ggplot2::aes(x = WT, fill = SEX)) +
     ggplot2::scale_fill_manual(values = c("Male" = "lightblue", "Female" = "pink")) +
     ggplot2::theme_bw(base_size = 14) +
     ggplot2::labs(x = 'Weight (kg)', y = '')
-  
+
   if(max(data$WT) < 75) {
     p.wt <- p.wt +
       ggplot2::geom_histogram(colour= "white", binwidth = 1) + ggplot2::facet_grid(. ~ SEX)
@@ -1707,11 +1709,11 @@ print_demog_plots <- function(data) {
     p.wt <- p.wt +
       ggplot2::geom_histogram(colour= "white", binwidth = 5) + ggplot2::facet_grid(. ~ SEX)
   }
-  
+
   p.wt <- p.wt +
     ggplot2::theme(legend.position = "none") + # Remove the legend
     ggplot2::theme(axis.title.y = ggplot2::element_blank())  # Remove the y-axis label
-  
+
   # Create a separate legend plot with custom colors
   legend_plot <- cowplot::get_legend(
     ggplot2::ggplot(data, ggplot2::aes(x = AGE, fill = SEX)) +
@@ -1719,10 +1721,10 @@ print_demog_plots <- function(data) {
       ggplot2::scale_fill_manual(values = c("Male" = "lightblue", "Female" = "pink"), name = "Sex") +
       ggplot2::guides(fill = ggplot2::guide_legend(ncol = 2, title = NULL))  # Set the number of columns in the legend
   )
-  
+
   # Combine the plots side by side
   plots <- cowplot::plot_grid(p.age, p.wt, ncol = 2)
-  
+
   # Combine the plots and the shared legend using plot_grid()
   if(length(unique(data$SEX)) == 2) {
     combined_plot <- cowplot::plot_grid(
@@ -1734,13 +1736,13 @@ print_demog_plots <- function(data) {
   } else { # Otherwise don't show legend
     combined_plot <- plots
   }
-  
+
   # p.sex <-ggplot2::ggplot(data)+
   #   #add_watermark() +
   #   ggplot2::geom_bar(ggplot2::aes(x=SEX),colour="white",fill='grey40')+
   #   ggplot2::labs(x='Sex', y='Frequency')+
   #   ggplot2::theme_bw(base_size = 14)
-  
+
   # Plotting EGFR - uncomment if required
   # p.egfr <- ggplot2::ggplot(data)+
   #   add_watermark() +
@@ -1748,9 +1750,9 @@ print_demog_plots <- function(data) {
   #   ggplot2::labs(x='eGFR (ml/min/1.73 m2)', y='Frequency')+
   #   ggplot2::theme_bw(base_size = 14) +
   #   ggplot2::scale_x_continuous(lim=c(0,150),breaks=c(0,15,30,60,90,120,150))
-  
+
   return(combined_plot) # requires gridExtra package, deprecated
-  
+
 } # End of print_demog_plots function
 
 #-------------------------------------------------------------------------------
@@ -1768,13 +1770,13 @@ print_demog_plots <- function(data) {
 
 print_cov_plot <- function(data, lo_percentile = 0.025, hi_percentile = 0.975) {
   x_string <- names(data)[1]
-  
+
   data_median <- round(quantile(data[[x_string]], probs = 0.5), 1)
   data_lo     <- round(quantile(data[[x_string]], probs = lo_percentile), 1)
   data_hi     <- round(quantile(data[[x_string]], probs = hi_percentile), 1)
-  
+
   title <- paste0("Median = ", data_median, ", [95%: ", data_lo, " - ", data_hi, "]")
-  
+
   plot_object <- ggplot2::ggplot(data, ggplot2::aes(x = .data[[x_string]])) +
     ggplot2::theme_bw(base_size = 14) +
     ggplot2::geom_histogram(alpha = 0.3, fill = "#FFB600", color = "black") +
@@ -1812,23 +1814,23 @@ print_cov_plot <- function(data, lo_percentile = 0.025, hi_percentile = 0.975) {
 
 compare_dist_histogram <- function(df, variable_name, variable_label,
                                    lo_percentile = 0.025, hi_percentile = 0.975) {
-  
+
   df <- df %>% dplyr::mutate(SEX = dplyr::case_when(SEX == 0 ~ "Male",
                                                     SEX == 1 ~ "Female"))
-  
+
   df_male   <- df %>% dplyr::filter(SEX == "Male")
   df_female <- df %>% dplyr::filter(SEX == "Female")
-  
+
   df_male_median <- round(quantile(df_male[[variable_name]], probs = 0.5), 1)
   df_male_lo     <- round(quantile(df_male[[variable_name]], probs = lo_percentile), 1)
   df_male_hi     <- round(quantile(df_male[[variable_name]], probs = hi_percentile), 1)
-  
+
   df_female_median <- round(quantile(df_female[[variable_name]], probs = 0.5), 1)
   df_female_lo     <- round(quantile(df_female[[variable_name]], probs = lo_percentile), 1)
   df_female_hi     <- round(quantile(df_female[[variable_name]], probs = hi_percentile), 1)
-  
+
   range_text    <- (hi_percentile - lo_percentile) * 100
-  
+
   plot_histo <- ggplot2::ggplot()+
     #add_watermark() +
     ggplot2::geom_histogram(data = df_male, ggplot2::aes(y=..count../sum(..count..) * 100, x= .data[[variable_name]]), fill='blue', binwidth = 5, alpha = 0.25) +
@@ -1849,8 +1851,8 @@ compare_dist_histogram <- function(df, variable_name, variable_label,
     ggplot2::labs(x = variable_label, y='Percentage of Population (%)',
                   caption = paste0('Blue = Male, Red = Female, Solid Line = Median, Dashed Line = ', range_text, '% range')) +
     ggplot2::theme_bw(base_size = 14) +
-    ggplot2::theme(plot.caption = element_text(size = 10))
-  
+    ggplot2::theme(plot.caption = ggplot2::element_text(size = 10))
+
   return(plot_histo)
 }
 
@@ -1875,12 +1877,12 @@ extract_matrix <- function(input_model_object,
                            remove_upper_tri    = TRUE,
                            remove_zero         = TRUE,
                            coerce_to_character = TRUE,
-                           debug               = show_debugging_msg) {
-  
+                           debug               = FALSE) {
+
   if(debug) {
     message("running extract_matrix()")
   }
-  
+
   if(name_of_matrix == "omega") {
     om <- mrgsolve::omat(input_model_object)
     names_list <- as.list(unlist(mrgsolve::labels(om))) # must use mrgsolve::labels
@@ -1888,7 +1890,7 @@ extract_matrix <- function(input_model_object,
       mrgsolve::omat() %>%
       mrgsolve::as.matrix() # must use mrgsolve::as.matrix, S4
   }
-  
+
   if(name_of_matrix == "sigma") {
     sm <- mrgsolve::smat(input_model_object)
     names_list <- as.list(unlist(mrgsolve::labels(sm))) # must use mrgsolve::labels
@@ -1896,11 +1898,11 @@ extract_matrix <- function(input_model_object,
       mrgsolve::smat() %>%
       mrgsolve::as.matrix() # must use mrgsolve::as.matrix, S4
   }
-  
+
   if(debug) {
     print(omsm_matrix)
   }
-  
+
   if(remove_upper_tri) {
     omsm_matrix[upper.tri(omsm_matrix, diag = FALSE)] <- NA_real_
   }
@@ -1909,18 +1911,18 @@ extract_matrix <- function(input_model_object,
     omsm_matrix[omsm_matrix == 0] <- NA_real_
     diag(omsm_matrix) <- diag_elements
   }
-  
+
   if(coerce_to_character) {
     omsm_matrix <- apply(omsm_matrix, c(1, 2), as.character) %>%
       matrix(., nrow = nrow(.), ncol= ncol(.))
   }
-  
+
   colnames(omsm_matrix) <- names_list
-  
+
   if(debug) {
     message("finish extract_matrix()")
   }
-  
+
   return(omsm_matrix)
 }
 
@@ -1952,61 +1954,61 @@ reconstruct_matrices <- function(input_model_object,
                                  input_matrix,
                                  name_of_matrix    = "omega",
                                  coerce_to_numeric = TRUE,
-                                 debug             = show_debugging_msg) {
-  
+                                 debug             = FALSE) {
+
   if(nrow(input_matrix) == 0) {
     if(debug) {
       message('no input matrix')
     }
     return(input_matrix)
   }
-  
+
   if(debug) {
     message('Reconstructing Matrix')
   }
-  
+
   ## Store how many matrices there are from the model object
   if(name_of_matrix == "omega") {
     number_of_matrices <- length(input_model_object$omega)
   }
-  
+
   if(name_of_matrix == "sigma") {
     number_of_matrices <- length(input_model_object$sigma)
   }
-  
+
   if(coerce_to_numeric) {
     input_matrix <- apply(input_matrix, c(1, 2), as.numeric) %>%
       matrix(., nrow = nrow(.), ncol= ncol(.))
   }
-  
+
   result        <- list()
   start_row_col <- 1
-  
+
   for(n in 1:number_of_matrices) {
-    
+
     if(name_of_matrix == "omega") {
       nrow_current_matrix <- nrow(input_model_object$omega[[n]])
     }
     if(name_of_matrix == "sigma") {
       nrow_current_matrix <- nrow(input_model_object$sigma[[n]])
     }
-    
+
     result[[n]] <- list()
-    
+
     end_row_col <- start_row_col + nrow_current_matrix - 1
     if(debug) {
       message("Current matrix: ", n, ", start row/col: ", start_row_col)
     }
     result[[n]] <- input_matrix[start_row_col:end_row_col, start_row_col:end_row_col]
-    
+
     # Mirror lower triangle to upper triangle
     lower_triangle <- lower.tri(result[[n]])
     result[[n]][!lower_triangle] <- t(result[[n]])[!lower_triangle]
     result[[n]][is.na(result[[n]])] <- 0 # Required for omat() as NA's don't work
     result[[n]] <- result[[n]] %>% as.matrix() # Required for 1x1 matrix otherwise it becomes a numeric
-    
+
     start_row_col <- start_row_col + nrow_current_matrix # advancing to new starting row/col for next matrix
-    
+
   } # end of number of matrix
   if(debug) {
     message('Matrix reconstruction complete')
@@ -2034,8 +2036,8 @@ update_variability <- function(input_model_object,
                                input_matrix,
                                name_of_matrix = "omega",
                                check_validity = TRUE,
-                               debug          = show_debugging_msg) {
-  
+                               debug          = FALSE) {
+
   if(check_validity) {
     matrix_is_valid <- check_matrix(input_model_object = input_model_object, input_matrix = input_matrix, debug = debug)
     if(!matrix_is_valid) {
@@ -2045,15 +2047,15 @@ update_variability <- function(input_model_object,
       return(input_model_object)
     } # model object is not updated if matrix is invalid
   }
-  
+
   if(name_of_matrix == "omega") {
     tmp <- input_model_object %>% mrgsolve::omat(input_matrix)
   }
-  
+
   if(name_of_matrix == "sigma") {
     tmp <- input_model_object %>% mrgsolve::smat(input_matrix)
   }
-  
+
   return(tmp)
 }
 
@@ -2082,7 +2084,7 @@ check_matrix <- function(input_model_object,
                          display_error = TRUE) {
   #print(input_matrix)
   for(i in 1:length(input_matrix)) {
-    
+
     if(check_diagonal) {
       if(any(diag(input_matrix[[i]]) < 0)) {
         if(display_error) {
@@ -2091,14 +2093,14 @@ check_matrix <- function(input_model_object,
         return(FALSE)
       }
     } # End of check diagonal
-    
+
     if(any(stringr::str_detect(input_model_object$code, "@correlation"))) {
       check_eigenvalues <- FALSE
-      
+
     } else {
       check_eigenvalues <- TRUE
     }
-    
+
     if(check_eigenvalues) { # check that the matrix must be positive semi-definite assuming '@correlation' is not used in ANY code
       if(debug) {
         message("No @correlation found, proceeding to checking eigenvalues")
@@ -2110,14 +2112,14 @@ check_matrix <- function(input_model_object,
         return(FALSE)
       }
     } # End of check eigenvalues
-    
+
     if(check_symmetry) {
       if (!all(identical(input_matrix[[i]], t(input_matrix[[i]])))) {
         return(FALSE)
       }
     } # End of check symmetry
   } # End of each matrix loop
-  
+
   if(debug) {
     message("Check matrix PASS")
   }
@@ -2226,11 +2228,11 @@ pknca_table <- function(input_simulated_table,
                         end_time   = NULL,
                         debug      = FALSE
 ) {
-  
+
   if(is.null(input_simulated_table)) {
     return(NULL)
   }
-  
+
   reactive_cmin <- paste0(output_conc, '_CMIN_ranged')
   reactive_cmax <- paste0(output_conc, '_CMAX_ranged')
   reactive_cavg <- paste0(output_conc, '_CAVG_ranged')
@@ -2239,7 +2241,7 @@ pknca_table <- function(input_simulated_table,
   reactive_cfbpct <- paste0(output_conc, '_CFBPCT_ranged')
   reactive_mcfbpct <- paste0(output_conc, '_MEANCFBPCT_ranged')
   reactive_nadirpct <- paste0(output_conc, '_NADIRPCT_ranged')
-  
+
   zero_tlast_cmin <- paste0(output_conc, '_CMIN_tlast')
   zero_tlast_cmax <- paste0(output_conc, '_CMAX_tlast')
   zero_tlast_cavg <- paste0(output_conc, '_CAVG_tlast')
@@ -2248,14 +2250,14 @@ pknca_table <- function(input_simulated_table,
   zero_tlast_cfbpct <- paste0(output_conc, '_CFBPCT_tlast')
   zero_tlast_mcfbpct <- paste0(output_conc, '_MEANCFBPCT_tlast')
   zero_tlast_nadirpct <- paste0(output_conc, '_NADIRPCT_tlast')
-  
+
   input_simulated_table$YVARNAME <- input_simulated_table[[output_conc]]
-  
+
   if (debug) {
     # message(head(input_simulated_table))
     # message(paste0(max(input_simulated_table$YVARNAME)[1]))
   }
-  
+
   metrics_table <- input_simulated_table %>%
     dplyr::mutate(CMIN = min(YVARNAME, na.rm = TRUE)[1],
                   CMAX = max(YVARNAME, na.rm = TRUE)[1],  ### First element if multiple values found
@@ -2265,13 +2267,13 @@ pknca_table <- function(input_simulated_table,
                   MEANCFBPCT = mean(CFBPCT, na.rm = TRUE), # only accurate if sampling points are equidistant
                   NADIRPCT = min(CFBPCT, na.rm = TRUE)[1]
     )
-  
+
   DVBL_overall <- metrics_table$DVBL[1] # Note: Baseline is always first ever TIME overall
-  
+
   metrics_table <- metrics_table %>%
     dplyr::mutate(TMAX = .$TIME[.$CMAX[1] == YVARNAME][1],
                   TMIN = .$TIME[.$CMIN[1] == YVARNAME][1])
-  
+
   metrics_table  <- metrics_table %>%
     dplyr::mutate(YLAG       = dplyr::lag(YVARNAME ),
                   XLAG       = dplyr::lag(TIME),
@@ -2280,7 +2282,7 @@ pknca_table <- function(input_simulated_table,
                   AUC_tlast    = sum(dYVAR)) %>%
     dplyr::ungroup() %>%
     dplyr::select(-ID, -tad, -TIMEADJ, -YLAG, -XLAG, -dYVAR, -DVBL)
-  
+
   if (debug) {
     # message(start_time)
     # message(end_time)
@@ -2289,7 +2291,7 @@ pknca_table <- function(input_simulated_table,
     # tmp2 <- input_simulated_table %>% dplyr::filter(TIME <= start_time)
     # message(dplyr::glimpse(tmp2))
   }
-  
+
   ### Repeat metrics for time range # note that the time range is inclusive on both ends
   metrics_table_time <- input_simulated_table %>% dplyr::filter(TIME >= start_time, TIME <= end_time) %>%
     dplyr::mutate(CMIN = min(YVARNAME, na.rm = TRUE)[1],
@@ -2299,11 +2301,11 @@ pknca_table <- function(input_simulated_table,
                   MEANCFBPCT = mean(CFBPCT, na.rm = TRUE), # only accurate if sampling points are equidistant
                   NADIRPCT = min(CFBPCT, na.rm = TRUE)[1]
     )
-  
+
   metrics_table_time <- metrics_table_time %>%
     dplyr::mutate(TMAX = .$TIME[.$CMAX[1] == YVARNAME][1], ### First element if multiple values found
                   TMIN = .$TIME[.$CMIN[1] == YVARNAME][1])
-  
+
   metrics_table_time  <- metrics_table_time %>%
     dplyr::mutate(YLAG          = dplyr::lag(YVARNAME ),
                   XLAG          = dplyr::lag(TIME),
@@ -2311,7 +2313,7 @@ pknca_table <- function(input_simulated_table,
                   dYVAR         = dplyr::if_else(is.na(dYVAR), 0, dYVAR),
                   AUC_ranged    = sum(dYVAR)) %>%
     dplyr::ungroup()
-  
+
   CMIN_time <-  metrics_table_time[["CMIN"]][1]
   CMAX_time <-  metrics_table_time[["CMAX"]][1]
   CAVG_time <-  metrics_table_time[["CAVG"]][1]
@@ -2321,7 +2323,7 @@ pknca_table <- function(input_simulated_table,
   CFBPCT_time <- dplyr::last(metrics_table_time[["CFBPCT"]])
   MCFBPCT_time <- metrics_table_time[["MEANCFBPCT"]][1]
   NADIRPCT_time <- metrics_table_time[["NADIRPCT"]][1]
-  
+
   metrics_table <- metrics_table %>%
     dplyr::mutate(!!reactive_cmin := CMIN_time,
                   !!reactive_cmax := CMAX_time,
@@ -2341,9 +2343,90 @@ pknca_table <- function(input_simulated_table,
                   !!zero_tlast_mcfbpct := MEANCFBPCT,
                   !!zero_tlast_nadirpct := NADIRPCT) %>%
     dplyr::select(-YVARNAME)
-  
+
   return(metrics_table)
 }
+
+#-------------------------------------------------------------------------------
+#' Exported from shinyBS:::buildTooltipOrPopoverOptionsList
+#' @keywords internal
+#-------------------------------------------------------------------------------
+MVPbuildTooltipOrPopoverOptionsList <- function (title, placement, trigger, options, content)
+{
+  if (is.null(options)) {
+    options = list()
+  }
+  if (!missing(content)) {
+    if (is.null(options$content)) {
+      options$content = shiny::HTML(content)
+    }
+  }
+  if (is.null(options$placement)) {
+    options$placement = placement
+  }
+  if (is.null(options$trigger)) {
+    if (length(trigger) > 1)
+      trigger = paste(trigger, collapse = " ")
+    options$trigger = trigger
+  }
+  if (is.null(options$title)) {
+    options$title = title
+  }
+  return(options)
+}
+
+#' Internal HTML Dependency for shinyBS
+#'
+#' This object represents the internal HTML dependency for the `shinyBS` package.
+#' It is used to include the required JavaScript and CSS files for `shinyBS` functionality
+#' without relying on unexported objects from the `shinyBS` package.
+#'
+#' @details
+#' The `shinyBSDep` object is a list that defines the HTML dependency for `shinyBS`.
+#' It includes metadata such as the name, version, source files, and other attributes.
+#' The object is stored internally to avoid direct use of `shinyBS:::shinyBSDep`,
+#' which is discouraged by CRAN guidelines.
+#'
+#' @format A list with the following elements:
+#' \describe{
+#'   \item{name}{Character string specifying the name of the dependency (`"shinyBS"`).}
+#'   \item{version}{Character string specifying the version of the dependency (`"0.61.1"`).}
+#'   \item{src}{A list specifying the source location of the dependency. Contains:
+#'     \itemize{
+#'       \item{\code{href}: Character string specifying the relative path (`"sbs"`).}
+#'     }
+#'   }
+#'   \item{meta}{\code{NULL}, indicating no metadata is provided.}
+#'   \item{script}{Character string specifying the JavaScript file (`"shinyBS.js"`).}
+#'   \item{stylesheet}{Character string specifying the CSS file (`"shinyBS.css"`).}
+#'   \item{head}{\code{NULL}, indicating no additional HTML is provided for the `<head>` section.}
+#'   \item{attachment}{\code{NULL}, indicating no attachments are provided.}
+#'   \item{package}{\code{NULL}, indicating no specific package is associated.}
+#'   \item{all_files}{Logical value (\code{TRUE}) indicating that all files are included.}
+#' }
+#'
+#' @note
+#' The `shinyBSDep` object is marked as internal and is not exported. It is intended
+#' for use within the package to avoid reliance on unexported objects from `shinyBS`.
+#'
+#' @keywords internal
+MVPshinyBSDep <- list(
+  name = "shinyBS",
+  version = "0.61.1",
+  src = list(
+    href = "sbs"
+  ),
+  meta = NULL,
+  script = "shinyBS.js",
+  stylesheet = "shinyBS.css",
+  head = NULL,
+  attachment = NULL,
+  package = NULL,
+  all_files = TRUE
+)
+
+# Set the class attribute
+attr(MVPshinyBSDep, "class") <- "html_dependency"
 
 #-------------------------------------------------------------------------------
 #' @name update_resistant_popover
@@ -2357,7 +2440,7 @@ pknca_table <- function(input_simulated_table,
 #-------------------------------------------------------------------------------
 
 update_resistant_popover <- function(id, title, content, placement = "bottom", trigger = "hover", options = NULL){
-  options = shinyBS:::buildTooltipOrPopoverOptionsList(title, placement, trigger, options, content)
+  options = MVPbuildTooltipOrPopoverOptionsList(title, placement, trigger, options, content)
   options = paste0("{'", paste(names(options), options, sep = "': '", collapse = "', '"), "'}")
   bsTag <- shiny::tags$script(shiny::HTML(paste0("
     $(document).ready(function() {
@@ -2370,7 +2453,7 @@ update_resistant_popover <- function(id, title, content, placement = "bottom", t
       observer.observe(target, { childList: true });
     });
   ")))
-  htmltools::attachDependencies(bsTag, shinyBS:::shinyBSDep)
+  htmltools::attachDependencies(bsTag, MVPshinyBSDep)
 }
 
 #-------------------------------------------------------------------------------
@@ -2396,23 +2479,23 @@ smart_x_axis <- function(p1,
                          xvar = "TIMEADJ",
                          xlabel,
                          debug = FALSE) {
-  
+
   if(is.null(max_x)) {
     # default case
     x_tick_size <- 1
-    
+
     # Extract the maximum value of the x-axis - by default this is expanded by 5%,
     # so we have to divide it back to arrive at the true range
     max_x <- ggplot2::ggplot_build(p1)$layout$panel_params[[1]]$x.range[[2]] / 1.05
     #message("Max x is ", max_x)
   }
-  
+
   if(debug) {
     message(paste0("Max X: ", max_x))
   }
-  
+
   if(!is.na(max_x) & is.finite(max_x)) { # prevents app crashing when time_unit input is empty
-    
+
     if(xlabel == "Time (hours)") {
       x_tick_size <- dplyr::case_when(max_x <=  4  ~ 0.5,
                                       max_x <= 12  ~ 1,
@@ -2424,7 +2507,7 @@ smart_x_axis <- function(p1,
                                       max_x <= 2016~ 168,
                                       TRUE         ~ 672)
     }
-    
+
     if(xlabel == "Time (days)") {
       x_tick_size <- dplyr::case_when(max_x <= 7   ~ 1,
                                       max_x <= 14  ~ 2,
@@ -2432,7 +2515,7 @@ smart_x_axis <- function(p1,
                                       max_x <= 84  ~ 14,
                                       TRUE         ~ 28)
     }
-    
+
     if(xlabel == "Time (weeks)") {
       x_tick_size <- dplyr::case_when(max_x <= 2  ~ 0.2,
                                       max_x <= 4  ~ 0.5,
@@ -2441,7 +2524,7 @@ smart_x_axis <- function(p1,
                                       max_x <= 52 ~ 4,
                                       TRUE        ~ 12)
     }
-    
+
     if(xlabel == "Time (months)") {
       x_tick_size <- dplyr::case_when(max_x <= 1  ~ 0.25,
                                       max_x <= 4  ~ 0.5,
@@ -2450,18 +2533,18 @@ smart_x_axis <- function(p1,
                                       max_x <= 48 ~ 4,
                                       TRUE        ~ 12)
     }
-    
+
     if(debug) {
       message(paste0("x_tick_size: ", x_tick_size))
     }
-    
+
     num_ticks <- ceiling(max_x / x_tick_size)
     if(num_ticks >= 25) {
       p1 <- p1 + ggplot2::scale_x_continuous(breaks = scales::pretty_breaks(n = 10))
     } else {
       p1 <- p1 + ggplot2::scale_x_continuous(breaks = seq(0, max_x + x_tick_size, by = x_tick_size))
     }
-    
+
   } # end of finite check
   return(p1)
 }
@@ -2521,28 +2604,28 @@ plot_data_with_nm <- function(
     title  = NULL,
     line_color_1 = "#F8766D",
     line_color_2 = "#7570B3") {
-  
+
   if (debug) {
     message("Running plot_data_with_nm()")
   }
-  
+
   if(!is.null(input_dataset1)) {
     p1 <- ggplot2::ggplot(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]))
   }
-  
+
   if(!is.null(input_dataset2)) {
     p1 <- ggplot2::ggplot(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]))
   }
-  
+
   if (!is.null(nonmem_dataset)) {
-    
+
     if ('EVID' %in% names(nonmem_dataset)) {
       nonmem_dataset <- nonmem_dataset %>% dplyr::filter(EVID == 0)
     }
-    
+
     if(!is.null(color_data_by) & color_data_by %in% names(nonmem_dataset)) {
       nonmem_dataset[[color_data_by]] <- as.factor(nonmem_dataset[[color_data_by]])
-      
+
       p1 <- p1 +
         ggplot2::geom_line(data = nonmem_dataset, ggplot2::aes(x=.data[[xvar]], y= .data[[nm_yvar]], group = ID, color = .data[[color_data_by]]), alpha = 0.2)
     } else {
@@ -2554,19 +2637,19 @@ plot_data_with_nm <- function(
         p1 <- p1 +
           ggplot2::geom_point(data = nonmem_dataset, ggplot2::aes(x=.data[[xvar]], y= .data[[nm_yvar]], group = ID, color = .data[[color_data_by]]), alpha = 0.2)
       } else {
-        
+
         p1 <- p1 +
           ggplot2::geom_point(data = nonmem_dataset, ggplot2::aes(x=.data[[xvar]], y= .data[[nm_yvar]], group = ID), color = 'grey', alpha = 0.2)
       }
     }
-    
+
     if(stat_summary_data_option) {
-      
+
       nonmem_dataset <- nonmem_dataset %>%
         dplyr::mutate(
           binned_xvar = quantize(nonmem_dataset[[xvar]], levels = get_bin_times(nonmem_dataset[[xvar]], bin_num = 20, relative_threshold = 0.05))
         )
-      
+
       if(stat_summary_data_by == "") {
         p1 <- p1 + ggplot2::stat_summary(data = nonmem_dataset, ggplot2::aes(x = binned_xvar, y = .data[[nm_yvar]]), fun = median, geom="line", colour = "black", alpha = 0.8)
       } else { # end of stat_summary_data_by NULL check
@@ -2575,29 +2658,29 @@ plot_data_with_nm <- function(
       }
     } # end of stat_summary_data_option
   } # end of nonmem_dataset
-  
+
   if(!is.null(input_dataset1)) {
     p1 <- p1 +
-      ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]), color = line_color_1) 
-    
+      ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]), color = line_color_1)
+
     if (geom_point_sim_option) {
       p1 <- p1 +
         ggplot2::geom_point(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]),  color = line_color_1)
     }
   }
-  
+
   if(!is.null(input_dataset2)) {
     p1 <- p1 +
       ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]), color = line_color_2)
-    
+
     if (geom_point_sim_option) {
       p1 <- p1 +
         ggplot2::geom_point(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]), color = line_color_2)
     }
   }
-  
-  
-  
+
+
+
   ## Apply log axis if required
   if(log_x_axis) {
     p1 <- p1 +
@@ -2607,20 +2690,20 @@ plot_data_with_nm <- function(
   } else {
     p1 <- smart_x_axis(p1, xlabel = xlabel, debug = debug)
   }
-  
+
   if(log_y_axis) {
     p1 <- p1 +
       #ggplot2::scale_y_log10(guide = "axis_logticks")#, labels=log_y_labels) # Doesn't display as nice
       ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
       ggplot2::annotation_logticks(sides = "l")
   }
-  
+
   p1 <- p1 +
     ggplot2::theme_bw() +
     ggplot2::labs(x = xlabel,
                   y = ylabel) +
     ggplot2::ggtitle(title)
-  
+
   if(!is.null(nonmem_dataset) & !is.null(color_data_by) & color_data_by %in% names(nonmem_dataset)) {
     p1 <- p1 +
       ggplot2::theme(legend.position = "right")
@@ -2628,11 +2711,11 @@ plot_data_with_nm <- function(
     p1 <- p1 +
       ggplot2::theme(legend.position = "none")
   }
-  
+
   if (debug) {
     message("plot_data_with_nm() OK")
   }
-  
+
   return(p1)
 }
 
@@ -2703,81 +2786,81 @@ plot_three_data_with_nm <- function(
     debug  = FALSE,
     title  = NULL
 ) {
-  
+
   if (debug) {
     message(paste0("x_min: : ", x_min))
     message(paste0("x_max: : ", x_max))
   }
-  
+
   if(is.null(c(input_dataset_min, input_dataset_mid, input_dataset_max))) {
     return(NULL)
   }
-  
+
   ## Mutating a new column programmatically to use the selected parameter name
   if(!is.null(input_dataset_min)) {
     df_min <- input_dataset_min %>% dplyr::mutate(ID = "Min", "{param_name}" := param_min_value)
   } else {
     df_min <- NULL
   }
-  
+
   if(!is.null(input_dataset_mid)) {
     df_mid <- input_dataset_mid %>% dplyr::mutate(ID = "Mid", "{param_name}" := param_mid_value)
   } else {
     df_mid <- NULL
   }
-  
+
   if(!is.null(input_dataset_max)) {
     df_max <- input_dataset_max %>% dplyr::mutate(ID = "Max", "{param_name}" := param_max_value)
   } else {
     df_max <- NULL
   }
-  
+
   ## Combining into a single dataset to easily facilitate legends in ggplot
   combined_input <- dplyr::bind_rows(df_min, df_mid, df_max)
   combined_input[[param_name]] <- as.factor(combined_input[[param_name]]) %>%
     forcats::fct_inorder()
-  
+
   ## assigning maximum x-value for later checks
   max_x_value <- max(combined_input[[xvar]])
-  
+
   # geom_ribbon input
   ribbon_id1 <- dplyr::filter(combined_input, ID == "Min" & .data[[xvar]] >= x_min & .data[[xvar]] <= x_max)
   ribbon_id2 <- dplyr::filter(combined_input, ID == "Mid" & .data[[xvar]] >= x_min & .data[[xvar]] <= x_max)
   ribbon_id3 <- dplyr::filter(combined_input, ID == "Max" & .data[[xvar]] >= x_min & .data[[xvar]] <= x_max)
-  
+
   p1 <- ggplot2::ggplot(data = combined_input, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]], group = ID, color = !!dplyr::sym(param_name))) #+
   #add_watermark()
-  
+
   if (!is.null(nonmem_dataset)) {
     if ('EVID' %in% names(nonmem_dataset)) {
       nonmem_dataset <- nonmem_dataset %>% dplyr::filter(EVID == 0)
     }
-    
+
     p1 <- p1 +
       ggplot2::geom_line(data = nonmem_dataset, ggplot2::aes(x= .data[[xvar]], y= .data[[nm_yvar]], group = ID, color = NULL), color = 'grey', alpha = 0.2)
     if (geom_point_data_option) {
       p1 <- p1 +
         ggplot2::geom_point(data = nonmem_dataset, ggplot2::aes(x= .data[[xvar]], y= .data[[nm_yvar]], group = ID, color = NULL), color = 'grey', alpha = 0.2)
     }
-    
+
     if(stat_summary_data_option) { # 2023-07-24 steve
-      
+
       nonmem_dataset <- nonmem_dataset %>%
         dplyr::mutate(
           binned_xvar = quantize(nonmem_dataset[[xvar]], levels = get_bin_times(nonmem_dataset[[xvar]], bin_num = 20, relative_threshold = 0.05))
         )
-      
+
       p1 <- p1 + ggplot2::stat_summary(data = nonmem_dataset, ggplot2::aes(x = binned_xvar, y = .data[[nm_yvar]], group = NULL, color = NULL), geom="line", fun = median, colour = "black", alpha = 0.8)
     } # end of stat_summary_data_option
   } # end of dataset check
-  
+
   if (geom_ribbon_option) {
     p1 <- p1 +
       ggplot2::geom_ribbon(data = ribbon_id1, ggplot2::aes(ymax = .data[[yvar]], ymin = 0), alpha = 0.3, fill = "#1B9E77") +
       ggplot2::geom_ribbon(data = ribbon_id2, ggplot2::aes(ymax = .data[[yvar]], ymin = 0), alpha = 0.4, fill = "#D95F02") +
       ggplot2::geom_ribbon(data = ribbon_id3, ggplot2::aes(ymax = .data[[yvar]], ymin = 0), alpha = 0.5, fill = "#7570B3")
   }
-  
+
   if(geom_vline_option) {
     if(x_min > min(combined_input[["TIMEADJ"]]) | x_max < max_x_value) { # Only plot vlines if the ranges are not default
       p1 <- p1 +
@@ -2785,7 +2868,7 @@ plot_three_data_with_nm <- function(
         ggplot2::geom_vline(xintercept = x_max, linetype = "longdash", alpha = 0.3)
     }
   }
-  
+
   p1 <- p1 +
     ggplot2::geom_line(alpha = 0.7) +
     ggplot2::theme_bw() +
@@ -2795,12 +2878,12 @@ plot_three_data_with_nm <- function(
     ggplot2::scale_color_brewer(palette = "Dark2") +
     #ggplot2::scale_colour_discrete(name  = param_name) +
     ggplot2::theme(legend.position="bottom")
-  
+
   if (geom_point_sim_option) {
     p1 <- p1 +
       ggplot2::geom_point(alpha = 0.7)
   }
-  
+
   ### Apply log axis if required
   if(log_x_axis) {
     p1<- p1 +
@@ -2809,18 +2892,18 @@ plot_three_data_with_nm <- function(
   } else {
     p1 <- smart_x_axis(p1, xlabel = xlabel)
   }
-  
+
   if(log_y_axis) {
     p1<- p1 +
       ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
       annotation_logticks(sides = "l")
   }
-  
+
   # Align legends to be right hand side since plotly always shows right hand side only
   p1 <- p1 +
     #ggplot2::theme(legend.justification = c(1, 1), legend.position = c(1, 1), legend.box.just = "right")
     theme(legend.position = "right")
-  
+
   return(p1)
 }
 
@@ -2896,44 +2979,44 @@ plot_iiv_data_with_nm <- function(
     show_y_intercept = FALSE,
     y_intercept_value = NULL
 ) {
-  
+
   if (debug) {
     message("Running plot_iiv_data_with_nm()")
   }
-  
+
   if(!is.null(input_dataset1)) {
     if(debug) {
       message('dataset1 provided')
     }
-    
+
     input_dataset1 <- input_dataset1 %>% dplyr::select(ID, dplyr::all_of(c(xvar, yvar)), median_yvar, mean_yvar, lower_yvar, upper_yvar) # Only include relevant columns to be plotted
-    
+
     p1 <- ggplot2::ggplot(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar]]))
   }
-  
+
   if(!is.null(input_dataset2)) {
     if(debug) {
       message('dataset2 provided')
     }
     input_dataset2 <- input_dataset2 %>% dplyr::select(ID, all_of(c(xvar, yvar_2)), median_yvar, mean_yvar, lower_yvar, upper_yvar) # Only include relevant columns to be plotted
-    
+
     p1 <- ggplot2::ggplot(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]]))
   }
-  
+
   if(show_x_intercept) {
     if(!is.null(x_intercept_value) & !is.na(x_intercept_value)) {
       p1 <- p1 +
         ggplot2::geom_vline(xintercept = x_intercept_value, linetype = "longdash", alpha = 0.3)
     }
   }
-  
+
   if(show_y_intercept) {
     if(!is.null(y_intercept_value) & !is.na(y_intercept_value)) {
       p1 <- p1 +
         ggplot2::geom_hline(yintercept = y_intercept_value, linetype = "longdash", alpha = 0.3)
     }
   }
-  
+
   if (!is.null(nonmem_dataset)) {
     if ('EVID' %in% names(nonmem_dataset)) {
       nonmem_dataset <- nonmem_dataset %>% dplyr::filter(EVID == 0)
@@ -2945,18 +3028,18 @@ plot_iiv_data_with_nm <- function(
       p1 <- p1 +
         ggplot2::geom_point(data = nonmem_dataset, ggplot2::aes(x=.data[[xvar]], y= .data[[nm_yvar]], group = ID), color = 'grey', alpha = 0.2)
     }
-    
+
     if(stat_summary_data_option) { # 2023-07-24 steve
-      
+
       nonmem_dataset <- nonmem_dataset %>%
         dplyr::mutate(
           binned_xvar = quantize(nonmem_dataset[[xvar]], levels = get_bin_times(nonmem_dataset[[xvar]], bin_num = 20, relative_threshold = 0.05))
         )
-      
+
       p1 <- p1 + ggplot2::stat_summary(data = nonmem_dataset, ggplot2::aes(x = binned_xvar, y = .data[[nm_yvar]]), fun = median, geom="line", colour = "black", alpha = 0.7)
     } # end of stat_summary_data_option
   } # end of nonmem_dataset
-  
+
   if(!is.null(input_dataset1)) {
     if(!show_ind_profiles) {
       p1 <- p1 +
@@ -2971,7 +3054,7 @@ plot_iiv_data_with_nm <- function(
         ggplot2::geom_line(data = input_dataset1, ggplot2::aes(x = .data[[xvar]], y = .data[[y_mean]]), color = line_color_1, linewidth = 1.2, linetype = "dashed")
     }
   } # end of input_dataset1
-  
+
   if(!is.null(input_dataset2)) {
     if(!show_ind_profiles) {
       p1 <- p1 +
@@ -2979,14 +3062,14 @@ plot_iiv_data_with_nm <- function(
         ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[y_median]]), color = line_color_2, linewidth = 1.2)
     } else {
       p1 <- p1 +
-        ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]], color = ID), alpha = 0.4) 
+        ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[yvar_2]], color = ID), alpha = 0.4)
     }
     if(show_y_mean) {
       p1 <- p1 +
         ggplot2::geom_line(data = input_dataset2, ggplot2::aes(x = .data[[xvar]], y = .data[[y_mean]]), color = line_color_2, linewidth = 1.2, linetype = "dashed")
     }
   } # end of input_dataset2
-  
+
   ### Apply log axis if required
   if(log_x_axis) {
     p1 <- p1 +
@@ -2995,24 +3078,24 @@ plot_iiv_data_with_nm <- function(
   } else {
     p1 <- smart_x_axis(p1, xlabel = xlabel)
   }
-  
+
   if(log_y_axis) {
     p1 <- p1 +
       ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
       ggplot2::annotation_logticks(sides = "l")
   }
-  
+
   p1 <- p1 +
     ggplot2::theme_bw() +
     ggplot2::labs(x = xlabel,
                   y = ylabel) +
     ggplot2::ggtitle(title) +
     ggplot2::theme(legend.position = "none")
-  
+
   if(debug) {
     message('iiv plot generated')
   }
-  
+
   return(p1)
 }
 
@@ -3029,6 +3112,7 @@ plot_iiv_data_with_nm <- function(
 #' @note
 #' Should be a tibble of 2 columns and X rows where X = number of params
 #' @importFrom tidyr pivot_longer everything
+#' @import mrgsolve
 #' @export
 #-------------------------------------------------------------------------------
 
@@ -3053,17 +3137,15 @@ extract_model_params <- function(input_model_object) {
 #-------------------------------------------------------------------------------
 
 update_model_object <- function(input_model_object, input_new_df, convert_colnames = FALSE) {
-  
   tmp1 <- as.data.frame(input_new_df)
-  
+
   if(convert_colnames) {colnames(tmp1) <- c("name", "value")}
-  
+
   tmp1 <- tmp1 %>%
     tidyr::pivot_wider(names_from = name, values_from = value) %>%
     as.list()
-  
+
   new_mod <- mrgsolve::param(input_model_object, tmp1)
-  
   return(new_mod)
 }
 
@@ -3102,17 +3184,17 @@ convert_to_plotly_watermark <- function(ggplot_object,
                                         debug       = FALSE,
                                         try_tooltip = FALSE,
                                         plotly_watermark = TRUE) {
-  
+
   if (debug) {
     message("Converting ggplot object to plotly")
   }
-  
+
   if(try_tooltip) {
     tmp <- plotly::ggplotly(ggplot_object, tooltip = "text")
   } else {
     tmp <- plotly::ggplotly(ggplot_object)
   }
-  
+
   tmp <- tmp %>%
     plotly::add_annotations(
       text = dplyr::if_else(plotly_watermark, "For Internal Use Only", ""),
@@ -3137,11 +3219,11 @@ convert_to_plotly_watermark <- function(ggplot_object,
                    displayModeBar = TRUE,
                    displaylogo = FALSE) #,
   #scrollZoom = TRUE,
-  
+
   if (debug) {
     message("Converting ggplot object to plotly successful.")
   }
-  
+
   return(tmp)
 }
 
@@ -3199,13 +3281,13 @@ sanitize_numeric_input <- function(numeric_input,
                                    legal_maximum = NULL,
                                    legal_minimum = NULL,
                                    display_error = FALSE) {
-  
+
   sanitized_input <- as.numeric(numeric_input)
-  
+
   if(as_integer) {
     sanitized_input <- as.integer(sanitized_input)
   }
-  
+
   # Handling NA's
   if(is.na(sanitized_input)) {
     if(allow_zero) {
@@ -3224,7 +3306,7 @@ sanitize_numeric_input <- function(numeric_input,
       return(sanitized_input)
     }
   }
-  
+
   # Handling zeroes
   if(sanitized_input == 0) {
     if(allow_zero) {
@@ -3238,7 +3320,7 @@ sanitize_numeric_input <- function(numeric_input,
       return(sanitized_input)
     }
   }
-  
+
   # Handling negative numbers
   if(sanitized_input < 0) {
     if(allow_zero) {
@@ -3257,7 +3339,7 @@ sanitize_numeric_input <- function(numeric_input,
       return(sanitized_input)
     }
   }
-  
+
   if(!is.null(legal_maximum)) {
     if(sanitized_input > legal_maximum) {
       if(display_error) {
@@ -3270,7 +3352,7 @@ sanitize_numeric_input <- function(numeric_input,
       return(sanitized_input)
     }
   }
-  
+
   if(!is.null(legal_minimum)) {
     if(sanitized_input < legal_minimum) {
       if(display_error) {
@@ -3283,7 +3365,7 @@ sanitize_numeric_input <- function(numeric_input,
       return(sanitized_input)
     }
   }
-  
+
   return(sanitized_input)
 }
 
@@ -3304,7 +3386,7 @@ sanitize_numeric_input <- function(numeric_input,
 #-------------------------------------------------------------------------------
 
 create_value_box <- function(input_dataset, name_ends_with, value_box_subtitle, width = infoBox_width, color, sigdig = 4, dp = FALSE) {
-  
+
   if(is.null(input_dataset)) {
     metric_value <- NA_real_
   } else {
@@ -3312,13 +3394,13 @@ create_value_box <- function(input_dataset, name_ends_with, value_box_subtitle, 
       dplyr::select(dplyr::ends_with(name_ends_with)) %>%
       unique()  # %>%
   }
-  
+
   if(dp) {
     metric_value <- metric_value %>% round(digits = as.integer(sigdig))
   } else {
     metric_value <- metric_value %>% signif(digits = as.integer(sigdig))
   }
-  
+
   created_box <- shinydashboard::valueBox(
     value = tags$p(style = font_size, metric_value),
     subtitle = value_box_subtitle,
@@ -3346,14 +3428,14 @@ check_and_combine_df <- function(model_1_is_valid,
                                  model_2_is_valid,
                                  input_df_1 = NULL,
                                  input_df_2 = NULL) {
-  
+
   if(model_1_is_valid & model_2_is_valid) {
-    
+
     common_columns <- dplyr::intersect(names(input_df_1), names(input_df_2))
     combined_model <- dplyr::full_join(input_df_1, input_df_2, by = common_columns)
-    
+
     return(combined_model)
-    
+
   } else if (model_1_is_valid) {
     return(input_df_1)
   } else if (model_2_is_valid) {
@@ -3388,26 +3470,26 @@ pct_above_y_at_x <- function(model_is_valid = FALSE,
                              x_name  = "TIME",
                              x_value = NA,
                              return_number_ids = FALSE) {
-  
+
   if(!model_is_valid | is.null(x_value) | is.null(y_value)) {
     return(NA)
   }
-  
+
   if(model_is_valid & !is.na(y_value) & !is.na(x_value) ) {
-    
+
     input_df_filtered <- input_df %>%
       dplyr::filter(!!dplyr::sym(y_name)  > y_value,
                     !!dplyr::sym(x_name) == x_value)
-    
+
     number_of_ids_in_df          <- length(unique(input_df$ID))
     number_of_ids_in_df_filtered <- length(unique(input_df_filtered$ID))
-    
+
     if(return_number_ids) {
       return(number_of_ids_in_df_filtered)
     } else {
       return(round(number_of_ids_in_df_filtered/number_of_ids_in_df * 100,1))
     }
-    
+
   } else {
     return(NA)
   }
@@ -3427,18 +3509,18 @@ pct_above_y_at_x <- function(model_is_valid = FALSE,
 
 create_alert <- function(ppm_name = "Firstname Lastname",
                          ppm_email = "dummy.email@company.com") {
-  
+
   email_html <- paste0("<a href='mailto:",
                        ppm_email,
                        "?subject=Model%20Visualization%20Platform%20(MVP)%20Usage'>",
                        ppm_name,
                        "</a>")
-  
+
   warning_text <- paste0("The unlocked model is provided for exploratory purposes only.<br>Please consult with your Project Pharmacometrician (PPM), ",
                          email_html,
                          ", for more information.<br><br>",
                          "<b><font color='red'>Usage of any output produced in this App without the PPM's prior knowledge and approval is strictly prohibited.</font></b>")
-  
+
   password_alert <- shinyalert::shinyalert(
     title = "Disclaimer",
     text = warning_text,
@@ -3455,7 +3537,7 @@ create_alert <- function(ppm_name = "Firstname Lastname",
     imageUrl = "",
     animation = TRUE
   )
-  
+
   return(password_alert)
 }
 
@@ -3525,7 +3607,7 @@ split_data_frame <- function(df, N = 4) {
   } else if (N > nrow(df)) { # This may be redundant as n.cores already have a safeguard
     stop("N must be less than nrows(df)")
   }
-  
+
   # split the data.frame into a list
   res <- split(df, cut(seq_len(nrow(df)), N, labels = FALSE))
   return(res)
@@ -3544,14 +3626,14 @@ split_data_frame <- function(df, N = 4) {
 #' @export
 #-------------------------------------------------------------------------------
 binary_cat_dist <- function(n = 20, percent = 50, catvalue1 = 1, catvalue2 = 0) {
-  
+
   # Calculate the number of 1s and 2s
   n_in_first  <- round(n * percent/100)
   n_in_second <- n - n_in_first
-  
+
   # Generate the vector
   vec <- sample(c(rep(catvalue1, n_in_first), rep(catvalue2, n_in_second)))
-  
+
   return(vec)
 }
 
@@ -3570,7 +3652,7 @@ binary_cat_dist <- function(n = 20, percent = 50, catvalue1 = 1, catvalue2 = 0) 
 #-------------------------------------------------------------------------------
 
 check_cov_name <- function(orig_name, replaced_name = "DUMMY", list_of_reserved_strings = c("AGE", "AGEMO", "SEX", "WT", "BMI", "BSA")) {
-  
+
   if (orig_name %in% list_of_reserved_strings) {
     new_name <- replaced_name
     shiny::showNotification(paste0("WARNING: Covariate name is reserved. Will show up as ", replaced_name, " instead."), type = "warning", duration = 10)
@@ -3636,9 +3718,9 @@ add_watermark <- function(watermark_toggle = TRUE,
                           #   "left" | "right" | "center" | "centre" | "top" | "bottom"
                           #   can also be given as vector of length 2, first horizontal, then vertical
 ) {
-  
+
   if(watermark_toggle) {
-    
+
     watermark_grob <- grid::grob(
       lab = lab, cl = "watermark",
       col = col, alpha = alpha, fontface = fontface,
@@ -3711,15 +3793,15 @@ drawDetails.watermark <- function(x, ...) {
 #' @export
 #-------------------------------------------------------------------------------
 
-tblNCA_progress <- function (concData, key = "Subject", colTime = "Time", colConc = "conc", 
-                             dose = 0, adm = "Extravascular", dur = 0, doseUnit = "mg", 
-                             timeUnit = "h", concUnit = "ug/L", down = "Linear", R2ADJ = 0, 
-                             MW = 0, SS = FALSE, iAUC = "", excludeDelta = 1, show_progress = TRUE) 
+tblNCA_progress <- function (concData, key = "Subject", colTime = "Time", colConc = "conc",
+                             dose = 0, adm = "Extravascular", dur = 0, doseUnit = "mg",
+                             timeUnit = "h", concUnit = "ug/L", down = "Linear", R2ADJ = 0,
+                             MW = 0, SS = FALSE, iAUC = "", excludeDelta = 1, show_progress = TRUE)
 {
   class(concData) = "data.frame"
   nKey = length(key)
   for (i in 1:nKey) {
-    if (sum(is.na(concData[, key[i]])) > 0) 
+    if (sum(is.na(concData[, key[i]])) > 0)
       stop(paste(key[i], "has NA value, which is not allowed!"))
   }
   IDs = unique(as.data.frame(concData[, key], ncol = nKey))
@@ -3735,23 +3817,23 @@ tblNCA_progress <- function (concData, key = "Subject", colTime = "Time", colCon
     for (i in 1:nID) {
       if(show_progress) {setProgress(value = i / nID, detail = paste0("Subject ", i, "/", nID))}
       strHeader = paste0(key[1], "=", IDs[i, 1])
-      strCond = paste0("concData[concData$", key[1], "=='", 
+      strCond = paste0("concData[concData$", key[1], "=='",
                        IDs[i, 1], "'")
       if (nKey > 1) {
         for (j in 2:nKey) {
-          strCond = paste0(strCond, " & concData$", key[j], 
+          strCond = paste0(strCond, " & concData$", key[j],
                            "=='", IDs[i, j], "'")
-          strHeader = paste0(strHeader, ", ", key[j], "=", 
+          strHeader = paste0(strHeader, ", ", key[j], "=",
                              IDs[i, j])
         }
       }
       strCond = paste0(strCond, ",]")
       tData = eval(parse(text = strCond))
       if (nrow(tData) > 0) {
-        tRes = sNCA(tData[, colTime], tData[, colConc], dose = dose[i], 
-                    adm = adm, dur = dur, doseUnit = doseUnit, timeUnit = timeUnit, 
-                    concUnit = concUnit, R2ADJ = R2ADJ, down = down, 
-                    MW = MW, SS = SS, iAUC = iAUC, Keystring = strHeader, 
+        tRes = sNCA(tData[, colTime], tData[, colConc], dose = dose[i],
+                    adm = adm, dur = dur, doseUnit = doseUnit, timeUnit = timeUnit,
+                    concUnit = concUnit, R2ADJ = R2ADJ, down = down,
+                    MW = MW, SS = SS, iAUC = iAUC, Keystring = strHeader,
                     excludeDelta = excludeDelta)
         Res = rbind(Res, tRes)
       }
@@ -3776,6 +3858,7 @@ tblNCA_progress <- function (concData, key = "Subject", colTime = "Time", colCon
 #' @inheritParams ncar::pdfNCA
 #' @importFrom ncar pdfNCA
 #' @importFrom NonCompart sNCA tblNCA
+#' @importFrom graphics axis close.screen lines par points screen split.screen
 #' @export
 #-------------------------------------------------------------------------------
 
@@ -3786,29 +3869,29 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
                        excludeDelta = 1, watermark = TRUE, internal_version = TRUE, debug_msg = TRUE,
                        show_progress = TRUE)
 {
-  
+
   if(debug_msg) {
     message(fileName)
     message(getwd())
   }
-  
+
   if(!internal_version) { # Workaround for AWS hosting
     #fileName <- paste0("/tmp/", fileName) # didn't work
     setwd("/tmp") # Trying setwd method
   }
-  
+
   if(debug_msg) {
     message(getwd())
   }
-  
+
   class(concData) = "data.frame"
   defPar = par(no.readonly = TRUE)
-  
+
   if(debug_msg) {
     message("Trying to open pdf device")
   }
   ncar::PrepPDF(fileName)
-  
+
   ncar::AddPage()
   ncar::Text1(1, 1, "Individual Noncompartmental Analysis Result (Non-Validated)",
               Cex = 1.2)
@@ -3865,38 +3948,38 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
       ncar::Text1(1, 1, strHeader, Cex = 1)
       screen(ScrNo[2])
       par(oma = c(1, 1, 1, 1), mar = c(4, 4, 3, 1), adj = 0.5)
-      
+
       if(watermark) {
         grid::pushViewport(grid::viewport(angle = 50, name = "WM"))
         grid::grid.text("For Internal Use Only", x = unit(0.5, "npc"), y = unit(0.5, "npc"),
                         gp = grid::gpar(col = "grey", fontsize = 52, alpha = 0.5))
         grid::popViewport()
       }
-      
+
       plot(x, y, type = "b", cex = 0.7, xlim = c(0, maxx),
            ylim = c(0, maxy), xlab = paste0("Time (", timeUnit,
                                             ")"), ylab = paste0("Concentration (", concUnit,
                                                                 ")"))
-      
+
       screen(ScrNo[3])
       par(oma = c(1, 1, 1, 1), mar = c(4, 4, 3, 1), adj = 0.5)
       x0 = x[!is.na(y) & y > 0]
       y0 = y[!is.na(y) & y > 0]
       if (length(x0) > 0) {
-        
+
         if(watermark) {
           grid::pushViewport(grid::viewport(angle = 50, name = "WM"))
           grid::grid.text("For Internal Use Only", x = unit(0.5, "npc"), y = unit(0.5, "npc"),
                           gp = grid::gpar(col = "grey", fontsize = 52, alpha = 0.5))
           grid::popViewport()
         }
-        
+
         plot(x0, log10(y0), type = "b", cex = 0.7, xlim = c(0,
                                                             maxx), ylim = c(log10(miny), log10(maxy)),
              yaxt = "n", xlab = paste0("Time (", timeUnit,
                                        ")"), ylab = paste0("Concentration (log interval) (",
                                                            concUnit, ")"))
-        
+
         points(x[UsedPoints], log10(y[UsedPoints]), pch = 16)
         yticks = seq(round(min(log10(y0))), ceiling(max(log10(y0))))
         ylabels = sapply(yticks, function(i) as.expression(bquote(10^.(i))))
@@ -3916,13 +3999,13 @@ pdfNCA_wm <- function (fileName = "Temp-NCA.pdf", concData, key = "Subject",
   }
   par(defPar)
   ncar::ClosePDF()
-  
+
 }
 
 #-------------------------------------------------------------------------------
 #' @name generate_dosing_regimens
 #' @title Generate Dosing Regimens
-#' 
+#'
 #' @description
 #' This is the main function to supply dosing regimens to simulations.
 #' If there are no valid dose amounts from any dosing regimens, a dummy mrgsolve::ev()
@@ -3980,10 +4063,10 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
                                      create_dummy_ev = TRUE,
                                      debug = FALSE
 ) {
-  
+
   # Special handling of amt to treat a user-input of dose number 0 to insert a dummy amount of 0,
   # As mrgsolve::ev does not allow zero doses
-  
+
   dosing_scheme_1 <- mrgsolve::ev(amt     =  dplyr::if_else(sanitize_numeric_input(total1, allow_zero = TRUE, as_integer = TRUE) <= 0,
                                                             0,
                                                             sanitize_numeric_input(amt1) * mw_conversion),
@@ -4029,14 +4112,14 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
                                   total   =  sanitize_numeric_input(total5, allow_zero = FALSE, as_integer = TRUE),
                                   ii      =  sanitize_numeric_input(ii5, allow_zero = FALSE)
   )
-  
+
   total_doses <- c(dosing_scheme_1, dosing_scheme_2, dosing_scheme_3,
                    dosing_scheme_4, dosing_scheme_5) %>%
     as.data.frame() %>%
     dplyr::arrange(time) %>%
     dplyr::filter(amt > 0) %>%
     mrgsolve::as.ev()
-  
+
   if(create_dummy_ev) {
     if(nrow(total_doses) == 0) {
       total_doses <- mrgsolve::ev(amt   = 0,
@@ -4045,28 +4128,28 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
                                   tinf  = 0,
                                   total = 1,
                                   ii    = 0)
-      
+
     }
   }
-  
+
   if(debug) {
     message("Dosing regimen generated")
   }
-  
+
   return(total_doses)
 }
 
 #-------------------------------------------------------------------------------
 #' @name search_id_col
 #' @title Search for Likely ID Columns
-#' 
+#'
 #' @description
 #' Searches through several common column names that could be used to create the
 #' "ID" column in the dataset, and push that to the first column of the dataset
-#' 
+#'
 #' @param orig_df The dataframe used for searching
 #' @param names_of_id_cols Likely column names, in order of search priority
-#' 
+#'
 #' @returns a dataframe
 #' @importFrom dplyr mutate select
 #' @export
@@ -4074,9 +4157,9 @@ generate_dosing_regimens <- function(amt1, delay_time1, cmt1, tinf1, total1, ii1
 
 search_id_col <- function(orig_df,
                           names_of_id_cols = c("SUBJIDN", "SUBJID", "USUBJID", "PTNO")) {
-  
+
   df <- orig_df
-  
+
   for(i in seq_along(names_of_id_cols)) {
     if('ID' %in% names(df)) {
       return(df)
@@ -4088,21 +4171,21 @@ search_id_col <- function(orig_df,
       }
     }
   } # end of loop
-  
+
   return(orig_df) # if can't find any
 }
 
 #-------------------------------------------------------------------------------
 #' @name search_time_col
 #' @title Search for Likely TIME Columns
-#' 
+#'
 #' @description
 #' Searches through several common column names that could be used to create the
 #' "TIME" column in the dataset
-#' 
+#'
 #' @param orig_df The dataframe used for searching
 #' @param names_of_time_cols Likely column names, in order of search priority
-#' 
+#'
 #' @returns a dataframe
 #' @importFrom dplyr mutate select
 #' @export
@@ -4110,9 +4193,9 @@ search_id_col <- function(orig_df,
 
 search_time_col <- function(orig_df,
                             names_of_time_cols = c("TAFD", "TSFD", "ATFD", "ATSD")) {
-  
+
   df <- orig_df
-  
+
   for(i in seq_along(names_of_time_cols)) {
     if('TIME' %in% names(df)) {
       return(df)
@@ -4124,7 +4207,7 @@ search_time_col <- function(orig_df,
       }
     }
   } # end of loop
-  
+
   return(orig_df) # if can't find any
 }
 
@@ -4135,12 +4218,12 @@ search_time_col <- function(orig_df,
 #' @description
 #' Expands ADDL and II dosing rows. If there are no ADDL and II columns, return
 #' original dataframe unchanged
-#' 
+#'
 #' @param data The dataframe used for expansion
 #' @param x_axis The x_axis variable, usually TIME or TAFD etc
 #' @param dose_col The dose variable, usually AMT or DOSE
 #' @param debug Show debugging messages
-#' 
+#'
 #' @returns a dataframe
 #' @importFrom dplyr filter mutate arrange rename rowwise ungroup
 #' @importFrom tidyr unnest
@@ -4148,23 +4231,23 @@ search_time_col <- function(orig_df,
 #-------------------------------------------------------------------------------
 
 expand_addl_ii <- function(data, x_axis, dose_col, debug = FALSE) {
-  
+
   data$DOSETIME <- as.numeric(as.character(data[[x_axis]])) # Still create DOSETIME if no ADDL II is found
-  
+
   # Check if necessary columns are present
   if(all(c("ADDL", "II", "EVID", x_axis, dose_col) %in% colnames(data))) {
-    
+
     data$ADDL <- as.integer(data$ADDL) # number of additional doses must be whole numbers
     data$II   <- as.numeric(data$II)
-    
+
     # Split data into rows with ADDL > 0 and others
     addl_rows <- data %>% dplyr::filter(ADDL > 0 & !is.na(II))
     non_addl_rows <- data %>%
       dplyr::filter(!(ADDL > 0 & !is.na(II)))
-    
+
     # message(paste0("nrow(addl_rows): ", nrow(addl_rows)))
     # message(paste0("nrow(non_addl_rows): ", nrow(non_addl_rows)))
-    
+
     # Process addl_rows to expand
     if(nrow(addl_rows) > 0) { # Edge case where entire dataset has ADDL == 0
       expanded_addl <- addl_rows %>%
@@ -4174,30 +4257,30 @@ expand_addl_ii <- function(data, x_axis, dose_col, debug = FALSE) {
           DOSETIME = list(DOSETIME + II * 0:ADDL)
         ) %>%
         tidyr::unnest(cols = c(DOSETIME)) %>%
-        dplyr::ungroup() 
+        dplyr::ungroup()
     } else {
       expanded_addl <- NULL
     }
-    
+
     # Combine with non_addl_rows and arrange by ID and TIME
     df <- dplyr::bind_rows(expanded_addl, non_addl_rows) %>%
       dplyr::mutate(ADDL = NA, II = NA) %>% # Clean up for clarity
-      dplyr::arrange(ID, DOSETIME) 
+      dplyr::arrange(ID, DOSETIME)
   } else {
     df <- data
   }
-  
+
   if("RATE" %in% colnames(df)) { # NAMT, SAMT, min_yvar is previously calculated
-    
+
     df$RATE <- as.numeric(as.character(data$RATE))
-    
-    df <- df %>% 
+
+    df <- df %>%
       select(ID, facet_label, DOSETIME, !!dplyr::sym(x_axis), !!dplyr::sym(dose_col), NAMT, SAMT, min_yvar, RATE)
   } else {
     df <- df %>%
       select(ID, facet_label, DOSETIME, !!dplyr::sym(x_axis), !!dplyr::sym(dose_col), NAMT, SAMT, min_yvar)
   }
-  
+
   return(df)
 }
 
@@ -4207,7 +4290,7 @@ expand_addl_ii <- function(data, x_axis, dose_col, debug = FALSE) {
 #'
 #' @description
 #' Useful to cut down datasets when they are large and unwieldy
-#' 
+#'
 #' @param data The dataframe used for trimming
 #' @param x_axis X-axis column name used for plotting
 #' @param y_axis Y-axis column name used for plotting
@@ -4221,7 +4304,7 @@ expand_addl_ii <- function(data, x_axis, dose_col, debug = FALSE) {
 #' @param ind_dose_colname (optional) Individual plot dose column name
 #' @param highlight_var (optional) highlight variable column name
 #' @param lloq_colname (optional) LLOQ column name
-#' 
+#'
 #' @returns a dataframe
 #' @importFrom dplyr select all_of filter mutate arrange rename rowwise ungroup
 #' @export
@@ -4240,79 +4323,79 @@ trim_columns <- function(data,
                          ind_dose_colname = "",
                          highlight_var = "",
                          lloq_colname = "") {
-  
+
   # Required columns that are needed to make the plots. Optional columns are added afterwards
   essential_columns <- c("ID",
                          x_axis,
                          y_axis
   )
-  
+
   if(!is.na(color) && color != "") {
     essential_columns <- c(essential_columns, color)
   }
-  
+
   if("CMT" %in% colnames(data)) {
     essential_columns <- c(essential_columns, "CMT")
   }
-  
+
   if(type_of_plot == "general_plot" | type_of_plot == "sim_plot") {
-    
+
     if(type_of_plot == "general_plot") {
       if(!is.null(facet_name[1]) && facet_name[1] != "") {
         essential_columns <- c(essential_columns, facet_name)
       }
     }
-    
+
     if(insert_med_line && med_line_by != '') {
       essential_columns <- c(essential_columns, med_line_by)
     }
-    
+
   } # end of "general_plot" or "sim_plot"
-  
+
   if(type_of_plot == "ind_plot") {
     if("EVID" %in% colnames(data)) {
       essential_columns <- c(essential_columns, "EVID")
     }
-    
+
     if(ind_dose_colname != "") {
       essential_columns <- c(essential_columns, ind_dose_colname)
     }
-    
+
     if(length(sort_by) > 0) {
       essential_columns <- c(essential_columns, unlist(sort_by))
     }
-    
+
     if(!is.na(strat_by) && strat_by != '') {
       essential_columns <- c(essential_columns, strat_by)
     }
-    
+
     if(all(c("ADDL", "II") %in% colnames(data))) {
       if(any(!is.na(data$ADDL))) { # Checks if there are any populated ADDL values despite the column is present
         essential_columns <- c(essential_columns, "ADDL", "II")
       }
     }
-    
+
     if("RATE" %in% colnames(data)) {
       if(any(subset(data, !is.na(RATE))$RATE > 0)) {
         essential_columns <- c(essential_columns, "RATE")
       }
     }
-    
+
     if(highlight_var != "") {
       essential_columns <- c(essential_columns, highlight_var)
     }
-    
+
     if(lloq_colname != "") {
       essential_columns <- c(essential_columns, lloq_colname)
     }
   } # End of "ind_plot" check
-  
+
   # Creates dataset used to plot and dropping any non-unique columns
-  data_to_plot <- data %>% 
+  data_to_plot <- data %>%
     dplyr::select(dplyr::all_of(unique(essential_columns)))
-  
+
   return(data_to_plot)
-  
+
 }
 
 #-------------------------------------------------------------------------------
@@ -4321,7 +4404,7 @@ trim_columns <- function(data,
 #' @title Function to calculate exposures from IIV output
 #'
 #' @param input_simulated_table  a dataframe (usually created from mrgsim)
-#' @param output_conc            y variable of interest to perform summary stats calc 
+#' @param output_conc            y variable of interest to perform summary stats calc
 #' @param start_time             start time interval for metrics
 #' @param end_time               end time interval for metrics
 #' @param carry_out              Provide a vector of column names to retain in the summary table
@@ -4339,15 +4422,15 @@ exposures_table <- function(input_simulated_table,
                             carry_out  = "ID",
                             debug      = FALSE
 ) {
-  
+
   input_simulated_table$YVARNAME <- input_simulated_table[[output_conc]]
-  
+
   base_columns      <- c("ID", "YVARNAME", "TIME")
   columns_to_select <- c(base_columns, carry_out)
-  
+
   input_simulated_table <- input_simulated_table %>%
     dplyr::select(dplyr::any_of(columns_to_select))
-  
+
   # if (debug) {
   #   message(start_time)
   #   message(end_time)
@@ -4356,7 +4439,7 @@ exposures_table <- function(input_simulated_table,
   #   tmp2 <- input_simulated_table %>% dplyr::filter(TIME <= start_time)
   #   message(dplyr::glimpse(tmp2))
   # }
-  
+
   metrics_table <- input_simulated_table %>% dplyr::filter(TIME >= start_time, TIME <= end_time) %>%
     dplyr::group_by(ID) %>%
     dplyr::mutate(Cmin  = min(YVARNAME, na.rm = TRUE)[1],
@@ -4365,14 +4448,14 @@ exposures_table <- function(input_simulated_table,
                   Clast = dplyr::last(YVARNAME, na_rm = TRUE)
     ) %>%
     dplyr::ungroup()
-  
+
   # Calculate TMAX in a separate table
   tmax_table <- metrics_table %>%
     dplyr::group_by(ID) %>%
     dplyr::summarise(Tmin = TIME[which.min(YVARNAME)[1]],
                      Tmax = TIME[which.max(YVARNAME)[1]]) %>% # First element if multiple values found
     dplyr::ungroup()
-  
+
   metrics_table <- left_join(metrics_table, tmax_table, by = "ID") %>%
     dplyr::group_by(ID) %>%
     dplyr::mutate(YLAG          = dplyr::lag(YVARNAME),
@@ -4381,13 +4464,13 @@ exposures_table <- function(input_simulated_table,
                   dYVAR         = dplyr::if_else(is.na(dYVAR), 0, dYVAR),
                   AUC           = sum(dYVAR)) %>%
     dplyr::ungroup()
-  
+
   list_of_exposures <- c("ID", "Cmin", "Cmax", "Cavg", "Clast", "AUC", "Tmax", "Tmin")
-  
+
   metrics_table_id <- metrics_table %>%
     dplyr::select(dplyr::any_of(c(list_of_exposures, carry_out))) %>%
-    dplyr::distinct(ID, .keep_all = TRUE)          
-  
+    dplyr::distinct(ID, .keep_all = TRUE)
+
   return(metrics_table_id)
 }
 
@@ -4397,7 +4480,7 @@ exposures_table <- function(input_simulated_table,
 #' @title Function to plot variability exposure data
 #'
 #' @param input_dataset        Input dataset of Model 1 and/or Model 2 that contains MODEL ID CMIN CAVG CMAX AUC
-#' @param yvar                 Name of Y-variable (exposure metric) to be plotted, string 
+#' @param yvar                 Name of Y-variable (exposure metric) to be plotted, string
 #' @param ylab                 Optional name for yvar
 #' @param model_1_name         Optional name for Model 1
 #' @param model_2_name         Optional name for Model 2
@@ -4425,30 +4508,30 @@ plot_iiv_exp_data <- function(input_dataset,
                               show_stats = TRUE,
                               xlab = '',
                               title = "") {
-  
+
   input_dataset$MODEL <- gsub("Model 1", model_1_name, input_dataset$MODEL)
   input_dataset$MODEL <- gsub("Model 2", model_2_name, input_dataset$MODEL)
   input_dataset$MODEL <- as.factor(input_dataset$MODEL) %>%
     forcats::fct_inorder()
-  
+
   # Define the colors for the models
   model_colors <- c()
-  
+
   # Check if "Model 1" exists in the data
   if (model_1_name %in% input_dataset$MODEL) {
     model_colors[model_1_name] <- model_1_color
   }
-  
+
   # Check if "Model 2" exists in the data
   if (model_2_name %in% input_dataset$MODEL) {
     model_colors[model_2_name] <- model_2_color
   }
-  
+
   p <- ggplot2::ggplot(data = input_dataset, aes(x = MODEL, y = .data[[yvar]], group = MODEL, fill = MODEL)) +
     ggplot2::theme_bw() +
     ggplot2::geom_boxplot(alpha = 0.5) +
     ggplot2::scale_fill_manual(values = model_colors)
-  
+
   if(show_stats) {
     # Calculate statistics for each group
     stats_df <- input_dataset %>%
@@ -4462,7 +4545,7 @@ plot_iiv_exp_data <- function(input_dataset,
                        lower05  = quantile(.data[[yvar]], probs = 0.05, na.rm = TRUE) %>% round(digits = 2),
                        minimum  = min(.data[[yvar]], na.rm = TRUE) %>% round(digits = 2)) %>%
       dplyr::ungroup()
-    
+
     p <- p +
       ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = maximum, label = paste("Max:", maximum)), vjust = -1) +
       ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = upper95, label = paste("95%:", upper95)), vjust = -1) +
@@ -4470,34 +4553,34 @@ plot_iiv_exp_data <- function(input_dataset,
       ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = median,  label = paste("Median:", median)), vjust = -1) +
       ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = lower05, label = paste("5%:", lower05)), vjust = -1) +
       ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = minimum, label = paste("Min:", minimum)), vjust = 1)
-    
-    # p <- p + 
+
+    # p <- p +
     #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = maximum, label = paste("Max:", maximum))) +
     #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = upper95, label = paste("95%:", upper95))) +
     #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = mean,    label = paste("Mean:", mean))) +
     #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = median,  label = paste("Median:", median))) +
     #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = lower05, label = paste("5%:", lower05))) +
-    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = minimum, label = paste("Min:", minimum)))      
-    
+    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = minimum, label = paste("Min:", minimum)))
+
   }
-  
+
   if(ylab != '') {
     p <- p + ggplot2::labs(x = "", y = ylab)
   } else {
     p <- p + ggplot2::labs(x = "", y = yvar)
   }
-  
+
   p <- p +
     ggplot2::ggtitle(title) +
     ggplot2::theme(legend.position = "none")
-  
+
   return(p)
 }
 
 #-------------------------------------------------------------------------------
 #' @name calculate_quantiles
 #'
-#' @title Function to split a continuous X-variable for a number of quantiles 
+#' @title Function to split a continuous X-variable for a number of quantiles
 #'
 #' @param df              Name of dataframe
 #' @param xvar            Name of x-axis variable to split by
@@ -4509,14 +4592,14 @@ plot_iiv_exp_data <- function(input_dataset,
 #-------------------------------------------------------------------------------
 
 calculate_quantiles <- function(df, xvar, num_quantiles) {
-  
+
   probs <- seq(1/as.numeric(num_quantiles), 1, length.out = as.numeric(num_quantiles))
-  
+
   for (i in seq_along(probs)) {
     df <- df %>%
       dplyr::mutate(!!paste0("Q", i) := quantile(.data[[xvar]], probs = probs[i], na.rm = TRUE))
   }
-  
+
   df %>%
     dplyr::select(starts_with("Q")) %>%
     dplyr::distinct()
@@ -4525,7 +4608,7 @@ calculate_quantiles <- function(df, xvar, num_quantiles) {
 #-------------------------------------------------------------------------------
 #' @name quantile_ranges_name
 #'
-#' @title Function that stores the names and ranges of quantiles as a 
+#' @title Function that stores the names and ranges of quantiles as a
 #' character string to be used in Figure footnotes etc (Not used)
 #'
 #' @param quantiles_df    Name of dataframe containing columns corresponding to number of quantiles
@@ -4560,21 +4643,22 @@ quantile_ranges_name <- function(quantiles_df, df_orig, xvar) {
 #' @importFrom purrr map2
 #' @importFrom dplyr case_when filter mutate sym syms summarise
 #' @importFrom forcats fct_relevel
+#' @importFrom rlang expr
 #' @returns a character string containing the quantile limits
 #' @export
 #-------------------------------------------------------------------------------
 
 categorize_xvar <- function(df, quantiles_df, xvar) {
-  
+
   # Check for any blanks / NAs in X-axis
   # if(any(is.na(df[[xvar]]))) {
   #   df <- df %>% filter(!is.na(!!dplyr::sym(xvar)))
   #   shiny::showNotification(paste0("WARNING: Some ", xvar, " values are NA and are removed prior to plotting."), type = "warning", duration = 10)
   # }
-  
+
   # print("before rename quantiles_df:")
   # print(knitr::kable(quantiles_df))
-  
+
   # Rename the quantile df to have limits inserted as part of the column name
   for(i in seq_along(quantiles_df)) {
     ending_bracket   <- "]" # Note that [ ] means inclusive intervals, ( ) means exclusive intervals
@@ -4587,29 +4671,29 @@ categorize_xvar <- function(df, quantiles_df, xvar) {
       names(quantiles_df)[i] <- paste0(names(quantiles_df)[i], starting_bracket, round(quantiles_df[[1,i-1]]), "-", round(quantiles_df[[1,i]]), ending_bracket)
     }
   }
-  
+
   # print("after rename quantiles_df:")
   # print(knitr::kable(quantiles_df))
-  
+
   conditions <- purrr::map2(
     quantiles_df,
     names(quantiles_df),
     ~rlang::expr(!!dplyr::sym(xvar) <= !!.x ~ !!.y)
   )
-  
+
   conditions <- c(rlang::expr(is.na(!!dplyr::sym(xvar)) ~ "NA"), conditions)
-  
+
   df <- df %>%
     dplyr::mutate(Quantile = dplyr::case_when(!!!conditions)) # triple-bang for list
-  
+
   # Rename NAs
   df <- df %>%
     dplyr::mutate(Quantile = dplyr::case_when(is.na(Quantile) ~ "NA", TRUE ~ Quantile))
-  
+
   # Reorder factor levels to place "NA" first
   df <- df %>%
     dplyr::mutate(Quantile = forcats::fct_relevel(Quantile, "NA", names(quantiles_df)))
-  
+
   return(df)
 }
 
@@ -4629,21 +4713,21 @@ categorize_xvar <- function(df, quantiles_df, xvar) {
 #-------------------------------------------------------------------------------
 
 create_facet_label <- function(df, sort_by) {
-  
+
   if(length(sort_by) == 1 && sort_by == "ID") { # Edge case
     df <- df %>%
       dplyr::mutate(facet_label = paste0("ID: ", ID))
   } else {
-    
+
     # Remove "ID" from sort_by if it exists
     sort_by <- setdiff(sort_by, "ID")
-    
+
     df <- df %>% dplyr::arrange(!!!dplyr::syms(sort_by))
-    
+
     # Group by ID, then slice to keep only the first row of each group
     df_first <- df %>%
       dplyr::distinct(ID, .keep_all = TRUE)
-    
+
     # Create the facet_label using the first row values of each ID group
     df_first <- df_first %>%
       dplyr::rowwise() %>%
@@ -4651,13 +4735,13 @@ create_facet_label <- function(df, sort_by) {
         facet_label = paste0("ID: ", ID, ", ", sapply(unlist(sort_by), function(col_name) {
           col_value <- dplyr::c_across(dplyr::all_of(col_name))
           paste0(col_name, ": ", col_value)
-        }) 
+        })
         %>% paste(collapse = ", ")
         )
       ) %>%
       dplyr::ungroup() %>%
       dplyr::select(ID, facet_label)
-    
+
     df <- dplyr::left_join(df, df_first, by = "ID")
   }
   return(df)
@@ -4685,25 +4769,25 @@ categorize_outliers <- function(df,
                                 y_axis,
                                 strat_by,
                                 debug = FALSE) {
-  
+
   # Remove the percentage sign and convert to numeric
   highlight_numeric <- as.numeric(gsub("%", "", highlight_range)) / 100
-  
+
   if(!is.character(df[[y_axis]])) {
     group_means <- df %>%
       dplyr::group_by(!!dplyr::sym(strat_by)) %>%
       dplyr::summarise(meanYVARGRP = mean(!!dplyr::sym(y_axis))) %>%
       dplyr::ungroup()
-    
+
     id_means <- df %>%
       dplyr::group_by(ID) %>%
       dplyr::summarise(meanYVARID = mean(!!dplyr::sym(y_axis))) %>%
       dplyr::ungroup()
-    
+
     # Join it back to main df
     df <- dplyr::left_join(df, group_means, by = strat_by)
     df <- dplyr::left_join(df, id_means,    by = "ID")
-    
+
     df <- df %>%
       dplyr::mutate(outlier_status = dplyr::case_when(
         meanYVARID > (meanYVARGRP * (1 + highlight_numeric)) ~ "Above",
@@ -4714,20 +4798,20 @@ categorize_outliers <- function(df,
     df <- df %>%
       dplyr::mutate(outlier_status = "Within")
   }
-  
+
   df <- df %>%
     dplyr::mutate(facet_label = dplyr::case_when(
       outlier_status == "Above" ~ paste0("**>", highlight_numeric * 100,"%** ", facet_label), # paste0(facet_label, " [>", highlight_numeric * 100, "%]")
       outlier_status == "Below" ~ paste0("**<", (1 - highlight_numeric) * 100,"%** ", facet_label), # paste0(facet_label, " [<", (1 - highlight_numeric) * 100, "%]")
       outlier_status == "Within"~ facet_label
     ))
-  
+
   if(debug) {
     message("categorize_outliers done")
     # Check levels in the data
     #print(levels(nmd$outlier_status))
   }
-  
+
   return(df)
 }
 
@@ -4747,16 +4831,16 @@ categorize_outliers <- function(df,
 #-------------------------------------------------------------------------------
 
 get_bin_times <- function(dfcol, bin_num = 20, relative_threshold = 0.05) {
-  
+
   # If number of unique times are less than 20, use that instead
   if(length(unique(as.numeric(dfcol))) < bin_num) {bin_num <- length(unique(as.numeric(dfcol)))}
-  
+
   # Determine the unique bin boundaries based on quantiles
   bin_times <- unique(quantile(as.numeric(dfcol), probs = seq(0, 1, length.out = bin_num + 1), na.rm = TRUE))
-  
+
   # Initialize the lumped bin times
   lumped_bin_times <- c(bin_times[1])  # Start with the first value
-  
+
   # Iterate through the bin times
   for (i in 2:length(bin_times)) {
     # Check the relative difference between the current value and the last value in lumped_bin_times
@@ -4764,8 +4848,8 @@ get_bin_times <- function(dfcol, bin_num = 20, relative_threshold = 0.05) {
       # If the relative difference exceeds the threshold, add the current value to lumped_bin_times
       lumped_bin_times <- c(lumped_bin_times, bin_times[i])
     }
-  }  
-  
+  }
+
   return(lumped_bin_times)
 }
 
@@ -4816,7 +4900,7 @@ handle_blanks <- function(df, column_name) {
 # Helper function to handle ev_df transformations
 transform_ev_df <- function(mod, ev_df, model_dur, model_rate, pred_model, debug = FALSE,
                             wt_based_dosing = FALSE, wt_name = "WT") {
-  
+
   if (wt_based_dosing && wt_name %in% names(mrgsolve::param(mod))) {
     if(wt_name %in% names(ev_df)) { # Use external database weights when available
       ev_df <- ev_df %>%
@@ -4831,7 +4915,7 @@ transform_ev_df <- function(mod, ev_df, model_dur, model_rate, pred_model, debug
         mrgsolve::as.ev()
     }
   }
-  
+
   if (model_dur) { # modeling duration, it cannot coexist with tinf
     if(debug) {message("Applying model_dur transformation")}
     ev_df <- ev_df %>%
@@ -4840,7 +4924,7 @@ transform_ev_df <- function(mod, ev_df, model_dur, model_rate, pred_model, debug
       dplyr::select(-tinf) %>%
       mrgsolve::as.ev()
   }
-  
+
   if (model_rate) {
     if(debug) {message("Applying model_rate transformation")}
     ev_df <- ev_df %>%
@@ -4849,14 +4933,14 @@ transform_ev_df <- function(mod, ev_df, model_dur, model_rate, pred_model, debug
       dplyr::select(-tinf) %>%
       mrgsolve::as.ev()
   }
-  
+
   if (pred_model) { # set all CMTs to zero as that is required for PRED models
     if(debug) {message("Applying pred_model transformation")}
     ev_df <- ev_df %>%
       dplyr::mutate(cmt = 0) %>%
       dplyr::select(-dplyr::any_of(c("tinf", "rate")))
   }
-  
+
   return(ev_df)
 }
 
@@ -4877,12 +4961,13 @@ transform_ev_df <- function(mod, ev_df, model_dur, model_rate, pred_model, debug
 #' @param divide_by             Divide the TIME by this value, used for scaling x-axis
 #' @param debug                 Default FALSE, set to TRUE to show more messages in console
 #' @param append_id_text        A string prefix to be inserted for each ID
+#' @param show_progress         When TRUE, shows shiny progress messages
 #' @param debug                 When TRUE, outputs debugging messages
 #' @param parallel_sim          Default TRUE, uses the future and mrgsim.parallel packages !Not implemented live!
 #' @param parallel_n            The number of subjects required before parallelization is used !Not implemented live!
 #'
 #' @importFrom dplyr mutate rename select bind_rows across
-#' @importFrom shiny withProgress setProgress 
+#' @importFrom shiny withProgress setProgress
 #' @returns a df mrgsolve output totaling 2 * params + 1 (reference) runs
 #' @export
 #-------------------------------------------------------------------------------
@@ -4903,61 +4988,61 @@ iterate_batch_runs <- function(batch_run_df,
                                parallel_sim       = FALSE,
                                parallel_n         = 200#,
 ) {
-  
+
   if(nrow(batch_run_df) == 0) {
     return(NULL)
   }
-  
+
   # Coerce all columns except "name" to numeric
   batch_run_df <- batch_run_df %>%
     dplyr::mutate(dplyr::across(-Name, as.numeric))
-  
+
   # Initiate empty list totaling 2 * params + 1 (reference) run
   list_of_runs  <- vector("list", nrow(batch_run_df) * 2 + 1)
   ref_run_df    <- batch_run_df #%>% dplyr::rename(value = Reference)
   nrow_batch_df <- nrow(batch_run_df)
-  
+
   shiny::withProgress(message = "Batch Run", value = 0, {
     for(i in 1:length(list_of_runs)) {
-      
+
       m <- i-1 # Offset by reference run
       # Replace bound value as reference before updating it
       this_run_df <- ref_run_df
-      
+
       if(i == 1) { # Reference run
         run_name      <- "ref"
         run_name_good <- "Reference"
         cat_name      <- "Reference"
         param_name    <- "Reference"
       } else {
-        
+
         # Check if this is the first half of bounds (i.e. replace values with lower bounds)
         if(m <= nrow_batch_df) {
-          
+
           this_run_df$Reference[m] <- this_run_df$Lower[m]
           run_name      <- paste0("lower", this_run_df$Name[m])
           run_name_good <- paste0("lower ", this_run_df$Name[m])
           cat_name      <- "Lower"
           param_name    <- this_run_df$Name[m]
-          
+
         } else { # Otherwise replace by upper bounds
-          
-          this_run_df$Reference[m - nrow_batch_df] <- this_run_df$Upper[m - nrow_batch_df] 
+
+          this_run_df$Reference[m - nrow_batch_df] <- this_run_df$Upper[m - nrow_batch_df]
           run_name      <- paste0("upper", this_run_df$Name[m - nrow_batch_df])
           run_name_good <- paste0("upper ", this_run_df$Name[m - nrow_batch_df])
           cat_name      <- "Upper"
           param_name    <- this_run_df$Name[m - nrow_batch_df]
         }
       }
-      
+
       this_model_object <- update_model_object(input_model_object, this_run_df %>% select(-Lower, -Upper), convert_colnames = TRUE)
-      
+
       if(debug) {
         message("Trying Batch run: ", run_name_good)
       }
-      
+
       if(show_progress) {shiny::setProgress(value = i / length(list_of_runs), detail = paste0(i, "/", length(list_of_runs)))}
-      
+
       tmp <- run_single_sim(
         input_model_object = this_model_object,
         wt_based_dosing    = wt_based_dosing,
@@ -4973,7 +5058,7 @@ iterate_batch_runs <- function(batch_run_df,
         parallel_sim       = parallel_sim,
         parallel_n         = parallel_n
       )
-      
+
       if(!is.null(tmp) && is.data.frame(tmp)) {
         tmp$.desc         <- run_name_good
         tmp$.cat          <- cat_name
@@ -4982,7 +5067,7 @@ iterate_batch_runs <- function(batch_run_df,
       }
     } # end of for-loop
   })
-  
+
   return(dplyr::bind_rows(list_of_runs))
 }
 
@@ -4995,7 +5080,8 @@ iterate_batch_runs <- function(batch_run_df,
 #' @param lower_multiplier      lower bound multiplier
 #' @param upper_multiplier      upper bound multiplier
 #' @param last_change_ref_index Row index if last change through the UI was a reference value, otherwise 0
-#' @param single_bound_change   If last change was through the UI on a upper/lower bound it will be 1, otherwise will be > 1 (many bounds changed via multiplier)
+#' @param length_lower_change   Length of lower bound changes
+#' @param length_upper_change   Length of upper bound changes
 #'
 #' @importFrom dplyr mutate across everything
 #' @returns a df containing mrgsolve parameter names and values ("reference", "lower", "upper") as characters
@@ -5009,15 +5095,15 @@ update_batch_run_table <- function(param_df,
                                    length_lower_change   = 0,
                                    length_upper_change   = 0
 ) {
-  
+
   # # Coerce all columns except "Name" to numeric
   starting_table <- param_df %>%
     dplyr::mutate(dplyr::across(-Name, as.numeric))
-  
+
   if(any(is.na(starting_table))) {
     return(starting_table)
   }
-  
+
   # Default case is changing entire table
   # A limitation is that changing lower bound and then modifying upper multiplier will update entire table (same goes for changing upper -> modifying lower multiplier)
   # A workaround is not found, perhaps due to circular logic?
@@ -5026,37 +5112,37 @@ update_batch_run_table <- function(param_df,
       Lower = Reference * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 0.5, display_error = TRUE),
       Upper = Reference * sanitize_numeric_input(upper_multiplier, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
     )
-  
+
   # If last change was on a reference value. Only the corresponding upper/lower bounds should be updated
   # Switching models could introduce more than one last_change_ref_model_1() so we're also checking against that
   if(length(last_change_ref_index) == 1 && last_change_ref_index > 0) {
     all_params_table <- starting_table
     all_params_table$Lower[last_change_ref_index] <- all_params_table$Reference[last_change_ref_index] * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)
     all_params_table$Upper[last_change_ref_index] <- all_params_table$Reference[last_change_ref_index] * sanitize_numeric_input(upper_multiplier, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
-  } 
-  
+  }
+
   # If last change was on a bound, don't update the entire table, however updating the table has some weird circular logic interaction
   # The compromise is either 1) Multipliers stop working after changing reference value, or
   # 2) When multipliers are changed, entire table gets updated. I think having 2) is more user-friendly if there is a reminder to ask users to edit bounds last
   # 3) - directly updating the tor_tab_new_model_1() reactive seems to have worked well such that changing bounds and then going back and changing reference does not update entire table
-  
+
   if((length_lower_change == 1 & length_upper_change == 0) |
      (length_lower_change == 0 & length_upper_change == 1)){
     #message("no change")
     all_params_table <- starting_table
   }
-  
+
   # Coerce entire df to character before displaying, this is needed to always trigger the type change in tor_tab_model_1()
   all_params_table <- all_params_table %>%
     dplyr::mutate(dplyr::across(dplyr::everything(), as.character))
-  
+
   return(all_params_table)
 }
 
 #-------------------------------------------------------------------------------
 #' @name calculate_tick_size
 #'
-#' @title Calculates a nice tick size for tornado plots 
+#' @title Calculates a nice tick size for tornado plots
 #'
 #' @param abs_y                 Range of y-axis values (absolute value)
 #' @param max_ticks             Maximum number of ticks
@@ -5068,7 +5154,7 @@ update_batch_run_table <- function(param_df,
 
 calculate_tick_size <- function(abs_y, max_ticks = 12, nice_values = c(1,2,5,10)) {
   approx_tick_size <- abs_y / max_ticks
-  
+
   # Find the nearest "nice" tick size (1, 2, 5, or 10 times a power of 10)
   magnitude      <- 10^floor(log10(approx_tick_size))  # Power of 10
   possible_ticks <- nice_values * magnitude      # Generate possible tick sizes
@@ -5120,34 +5206,34 @@ tornado_plot <- function(df,
                          display_text  = FALSE,
                          xlabname      = "",
                          bioeq_lines   = FALSE) {
-  
+
   # width of columns in plot (value between 0 and 1)
   width <- 0.95
-  
+
   df <- df %>%
     dplyr::rename(Parameter = !!dplyr::sym(param_name),
                   Lower     = !!dplyr::sym(lower_name),
                   Upper     = !!dplyr::sym(upper_name))
-  
+
   # get data frame in shape for ggplot and geom_rect
-  df2 <- df %>% 
+  df2 <- df %>%
     dplyr::mutate(delta_upper = Upper - reference_value,
                   delta_lower = Lower - reference_value,
                   del = abs(delta_upper) +  abs(delta_lower)) %>%
     tidyr::pivot_longer(cols = c(Lower, Upper), names_to = "Level", values_to = "output_pretransform") %>%
     dplyr::arrange(del) %>%
     dplyr::select(Parameter, Level, output_pretransform)
-  
+
   if(filter_rows != "" & is.numeric(filter_rows)) {
     if(filter_rows > 0) {
       df2 <- df2 %>%
         dplyr::slice_tail(n = filter_rows * 2) # multiply by 2 because it is upper + lower
     }
   }
-  
+
   df2 <- df2 %>%
     dplyr::mutate(Parameter = forcats::fct_inorder(Parameter))
-  
+
   if(display_as == "Ratio") {
     df2 <- df2 %>%
       dplyr::mutate(output = output_pretransform / reference_value)
@@ -5156,7 +5242,7 @@ tornado_plot <- function(df,
     bioeq_low  <- 0.80
     label_name <- paste0(metric_name, " (Ratio to Reference)")
   }
-  
+
   if(display_as == "Percentage") {
     df2 <- df2 %>%
       dplyr::mutate(output = (output_pretransform - reference_value) / reference_value)
@@ -5165,7 +5251,7 @@ tornado_plot <- function(df,
     bioeq_low  <- -0.2
     label_name <- paste0(metric_name, " (% Change From Reference)")
   }
-  
+
   if(display_as == "Value") {
     df2 <- df2 %>%
       dplyr::mutate(output = output_pretransform)
@@ -5174,7 +5260,7 @@ tornado_plot <- function(df,
     bioeq_low  <- reference_value * 0.8
     label_name <- paste0(metric_name, " Value")
   }
-  
+
   # Calculate text labels and whether to plot them
   if(display_text) {
     # Add positions for text labels
@@ -5186,49 +5272,49 @@ tornado_plot <- function(df,
                       TRUE                                                 ~ as.character(round(output, 2))
                     )
       ) # Rounded values for display
-    
+
     if(display_as == "Percentage") {
       df2 <- df2 %>% dplyr::mutate(label_text = dplyr::if_else(label_text == "", "", paste0(label_text, "%")))
     }
   }
-  
+
   df2 <- df2 %>%
     dplyr::mutate(ymin=pmin(output, ref_line),
                   ymax=pmax(output, ref_line),
                   xmin=as.numeric(Parameter)-width/2,
                   xmax=as.numeric(Parameter)+width/2,
-                  tooltip = paste0("Parameter: ", Parameter, 
+                  tooltip = paste0("Parameter: ", Parameter,
                                    "<br>Value: ", round(output, 2)))  # Tooltip content for plotly
-  
+
   p <- ggplot2::ggplot() +
     ggplot2::geom_rect(data = df2, ggplot2::aes(ymax=ymax, ymin=ymin, xmax=xmax, xmin=xmin, fill=Level, text = tooltip)) + # Add tooltip content for plotly
-    ggplot2::theme_bw() + 
+    ggplot2::theme_bw() +
     ggplot2::geom_hline(yintercept = ref_line) +
     ggplot2::scale_x_continuous(breaks = seq_along(unique(df2$Parameter)),
-                                labels = unique(df2$Parameter)) + 
+                                labels = unique(df2$Parameter)) +
     ggplot2::scale_fill_manual(values = c(Lower = lower_color, Upper = upper_color) ) +
     ggplot2::coord_flip()
-  
+
   if(bioeq_lines) {
     p <- p +
       ggplot2::geom_hline(yintercept = bioeq_high, linetype = "dashed", alpha = 0.5) +
       ggplot2::geom_hline(yintercept = bioeq_low,  linetype = "dashed", alpha = 0.5)
   }
-  
+
   if(display_as == "Ratio" | display_as == "Percentage") {
     max_y <- max(df2$ymax, na.rm = TRUE)
     min_y <- min(df2$ymin, na.rm = TRUE)
-    
+
     if(is.finite(max_y) & is.finite(min_y)) {
-      
+
       if(bioeq_lines) {
-        
+
         if(display_as == "Percentage") {
           abs_y <- pmax(abs(max_y) + abs(min_y), bioeq_high) # including high bioeq line in case where fold-changes are miniscule
         }
         if(display_as == "Ratio") {
           abs_y <- pmax((abs(max_y - 1) + abs(min_y - 1)), bioeq_high - 1 )
-        } 
+        }
       } else {
         if(display_as == "Percentage") {
           abs_y <- pmax(abs(max_y) + abs(min_y))
@@ -5237,57 +5323,57 @@ tornado_plot <- function(df,
           abs_y <- pmax((abs(max_y - 1) + abs(min_y - 1)))
         }
       }
-      
+
       tick_size <- calculate_tick_size(abs_y = abs_y, max_ticks = 12, nice_values = c(1,2,5,10))
-      
+
       if(display_as == "Percentage") {
-        
+
         # Align min_y to the nearest multiple of tick_size
         aligned_min_y <- floor(min_y / tick_size) * tick_size
         aligned_max_y <- ceiling(max_y / tick_size) * tick_size
-        
+
         if(bioeq_lines) {
           define_limits <- seq(pmin(aligned_min_y, bioeq_low), pmax(aligned_max_y, bioeq_high), tick_size)
         } else {
           define_limits <- seq(aligned_min_y, aligned_max_y, tick_size)
         }
         p <- p + ggplot2::scale_y_continuous(breaks = define_limits, labels = function(x) paste0(x * 100, "%"))
-        
+
       } else {
-        
+
         if(bioeq_lines) {
           define_limits <- seq(0, pmax(max_y + tick_size, bioeq_high), tick_size)
         } else {
           define_limits <- seq(0, max_y + tick_size, tick_size)
-        }        
-        
-        p <- p + ggplot2::scale_y_continuous(breaks = define_limits)      
+        }
+
+        p <- p + ggplot2::scale_y_continuous(breaks = define_limits)
       }
     } # end of finite y check
   } # end of display as percentage or ratio check
-  
+
   if(display_as == "Value") {
     p <- p + ggplot2::scale_y_continuous(breaks = scales::pretty_breaks(n = 10))
   }
-  
+
   # Add text labels at both ends of each bar
   if(display_text) {
     df2$Parameter <- as.numeric(df2$Parameter)
     p <- p +
       ggplot2::geom_text(data = df2,
-                         ggplot2::aes(x = Parameter, 
-                                      y = output, 
+                         ggplot2::aes(x = Parameter,
+                                      y = output,
                                       label = label_text),
                          #size = 4, # Adjust text size
                          hjust = ifelse(df2$output_pretransform > reference_value, -0.2, 1.2), # Adjust vertical alignment
                          vjust = 0.5) # Adjust horizontal alignment
   }
-  
-  if(xlabname != "") {label_name <- xlabname} 
-  
+
+  if(xlabname != "") {label_name <- xlabname}
+
   p <- p +
     ggplot2::labs(x = NULL, y = label_name) +
     ggplot2::ggtitle(plot_title)
-  
+
   return(p)
 }

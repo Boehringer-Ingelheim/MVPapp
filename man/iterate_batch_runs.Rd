@@ -47,6 +47,8 @@ iterate_batch_runs(
 
 \item{append_id_text}{A string prefix to be inserted for each ID}
 
+\item{show_progress}{When TRUE, shows shiny progress messages}
+
 \item{parallel_sim}{Default TRUE, uses the future and mrgsim.parallel packages !Not implemented live!}
 
 \item{parallel_n}{The number of subjects required before parallelization is used !Not implemented live!}

@@ -9,7 +9,7 @@ update_variability(
   input_matrix,
   name_of_matrix = "omega",
   check_validity = TRUE,
-  debug = show_debugging_msg
+  debug = FALSE
 )
 }
 \arguments{
