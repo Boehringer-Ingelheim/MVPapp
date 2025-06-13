@@ -44,12 +44,12 @@ if(debug_mode) {
   # source("functions.R")         # List of helper functions required for the app
 
   ## Start-up options for the App when not running through run_mvp()
-  show_debugging_msg  = TRUE
-  authentication_code = NA_character_
   insert_watermark    = TRUE
+  authentication_code = NA_character_
   internal_version    = TRUE
   pw_models_path      = NA_character_  # "passworded_models_example.R"
   use_bi_styling      = FALSE
+  show_debugging_msg  = TRUE
 }
 #######################
 

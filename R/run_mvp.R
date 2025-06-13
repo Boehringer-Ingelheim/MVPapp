@@ -11,62 +11,53 @@
 #' function (i.e. \code{exists(OBJECT)} returns TRUE) then the value will be reset
 #' to it's state prior to calling \code{run_mvp}.
 #'
-#' @param show_debugging_msg Logical. Default FALSE. Set to TRUE to output verbose working messages in the console, useful for debugging.
-#' @param authentication_code Character. Default NA_character_. Provide a string (e.g., password) to password-lock the entire app.
+#' @param appDir the directory of the application to run.
 #' @param insert_watermark Logical. Default TRUE. Set to FALSE to remove "For Internal Use Only" text in simulated plots.
+#' @param authentication_code Character. Default NA_character_. Provide a string (e.g., password) to password-lock the entire app.
 #' @param internal_version Logical. Default TRUE. Setting to FALSE may allow generation of NCA reports when hosted on AWS with different access rights.
 #' @param use_bi_styling Logical. Default FALSE. Set to TRUE to insert BI logo.
 #' @param pw_models_path Character. Default NA_character_. Provide a path to source password-gated models.
-#' @param ... Additional parameters to pass through to the app
-#'
-#' If the user wishes to run the App outside of the function (e.g. preparing for
-#' deployment on Posit Connect), this can be done by accessing inst/shiny/app.R,
-#' which is located inside the folder of where the package was installed, and set
-#' debug_mode = TRUE (and setting these options there as required).
-#'
-#' @param appDir the directory of the application to run.
-## @param ui the Shiny ui object.
-## @param server the Shiny server object.
+#' @param show_debugging_msg Logical. Default FALSE. Set to TRUE to output verbose working messages in the console, useful for debugging.
 #' @param ... [shiny::runApp()] parameters, [shiny::shinyApp()] parameters,
 #'        or parameters to pass to the Shiny app.
+#'
+#' @details
+#' If the user wishes to run the App outside of the function (e.g. preparing for
+#' deployment on Posit Connect), this can be done by accessing inst/shiny/app.R,
+#' which is located inside the folder of where the package was installed, and modify
+#' debug_mode = TRUE (and setting these options there as required).
+#'
 #' @examples
 #' \dontrun{
 #' run_mvp(insert_watermark = FALSE) # remove watermarks
+#' run_mvp(launch.browser = TRUE) # launch app in browser (argument passed to shinyApp)
 #' run_mvp(authentication_code = "some_password") # Password-lock the site,
 #' # could be useful in deployment
 #' run_mvp(pw_models_path = "path/to/your/private/models.R") # see
-#' # "passworded_models_example.R" on how to set one up
+#' # "inst/shiny/passworded_models_example.R" on how to set one up
 #' }
 #' @note
 #' Adapted from https://github.com/jbryer/ShinyDemo/blob/master/R/run_shiny_app.R
 #' @seealso
-#' \code{vignette("supply-passwords", package = "MVPapp")}
+#' \url{https://boehringer-ingelheim.github.io/MVPapp/articles/supply-passwords.html}
 #' @export
 run_mvp <- function(appDir              = system.file("shiny", package = "MVPapp"),
-                    show_debugging_msg  = FALSE,
-                    authentication_code = NA_character_,
                     insert_watermark    = TRUE,
+                    authentication_code = NA_character_,
                     internal_version    = TRUE,
                     use_bi_styling      = FALSE,
                     pw_models_path      = NA_character_,
+                    show_debugging_msg  = FALSE,
                     ...) {
 
-  # Define internal defaults for parameters
-  show_debugging_msg  <- show_debugging_msg  %||% FALSE
-  authentication_code <- authentication_code %||% NA_character_
-  insert_watermark    <- insert_watermark    %||% TRUE
-  internal_version    <- internal_version    %||% TRUE
-  use_bi_styling      <- use_bi_styling      %||% FALSE
-  pw_models_path      <- pw_models_path      %||% NA_character_
-
-  # Create a list of the parameters
+# Create a list of the parameters
   params <- list(
-    show_debugging_msg  = show_debugging_msg,
-    authentication_code = authentication_code,
     insert_watermark    = insert_watermark,
+    authentication_code = authentication_code,
     internal_version    = internal_version,
     use_bi_styling      = use_bi_styling,
-    pw_models_path      = pw_models_path
+    pw_models_path      = pw_models_path,
+    show_debugging_msg  = show_debugging_msg
   )
 
   shinyApp_args <- list()

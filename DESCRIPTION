@@ -58,7 +58,6 @@ Collate: "utils-pipe.R"
          "ui_settings.R"
          "code_templates.R"
          "functions.R"
-         "config.R"
          "run_mvp.R"
          "data.R"
 VignetteBuilder: knitr

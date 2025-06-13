@@ -6,29 +6,29 @@
 \usage{
 run_mvp(
   appDir = system.file("shiny", package = "MVPapp"),
-  show_debugging_msg = FALSE,
-  authentication_code = NA_character_,
   insert_watermark = TRUE,
+  authentication_code = NA_character_,
   internal_version = TRUE,
   use_bi_styling = FALSE,
   pw_models_path = NA_character_,
+  show_debugging_msg = FALSE,
   ...
 )
 }
 \arguments{
 \item{appDir}{the directory of the application to run.}
 
-\item{show_debugging_msg}{Logical. Default FALSE. Set to TRUE to output verbose working messages in the console, useful for debugging.}
+\item{insert_watermark}{Logical. Default TRUE. Set to FALSE to remove "For Internal Use Only" text in simulated plots.}
 
 \item{authentication_code}{Character. Default NA_character_. Provide a string (e.g., password) to password-lock the entire app.}
-
-\item{insert_watermark}{Logical. Default TRUE. Set to FALSE to remove "For Internal Use Only" text in simulated plots.}
 
 \item{internal_version}{Logical. Default TRUE. Setting to FALSE may allow generation of NCA reports when hosted on AWS with different access rights.}
 
 \item{use_bi_styling}{Logical. Default FALSE. Set to TRUE to insert BI logo.}
 
 \item{pw_models_path}{Character. Default NA_character_. Provide a path to source password-gated models.}
+
+\item{show_debugging_msg}{Logical. Default FALSE. Set to TRUE to output verbose working messages in the console, useful for debugging.}
 
 \item{...}{\code{\link[shiny:runApp]{shiny::runApp()}} parameters, \code{\link[shiny:shinyApp]{shiny::shinyApp()}} parameters,
 or parameters to pass to the Shiny app.}
@@ -41,18 +41,25 @@ into the global environment on exit. If objects exist prior to calling this
 function (i.e. \code{exists(OBJECT)} returns TRUE) then the value will be reset
 to it's state prior to calling \code{run_mvp}.
 }
+\details{
+If the user wishes to run the App outside of the function (e.g. preparing for
+deployment on Posit Connect), this can be done by accessing inst/shiny/app.R,
+which is located inside the folder of where the package was installed, and modify
+debug_mode = TRUE (and setting these options there as required).
+}
 \note{
 Adapted from https://github.com/jbryer/ShinyDemo/blob/master/R/run_shiny_app.R
 }
 \examples{
 \dontrun{
 run_mvp(insert_watermark = FALSE) # remove watermarks
+run_mvp(launch.browser = TRUE) # launch app in browser (argument passed to shinyApp)
 run_mvp(authentication_code = "some_password") # Password-lock the site,
 # could be useful in deployment
 run_mvp(pw_models_path = "path/to/your/private/models.R") # see
-# "passworded_models_example.R" on how to set one up
+# "inst/shiny/passworded_models_example.R" on how to set one up
 }
 }
 \seealso{
-\code{vignette("supply-passwords", package = "MVPapp")}
+\url{https://boehringer-ingelheim.github.io/MVPapp/articles/supply-passwords.html}
 }
