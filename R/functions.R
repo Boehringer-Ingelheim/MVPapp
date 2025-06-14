@@ -5551,7 +5551,7 @@ spider_plot <-  function(df,
   }
   
   if(normalize_x_axis) {
-    df2$RatioN <- round(df2$Ratio, 2)
+    df2$RatioN <- round(df2$Ratio, 3)
     df2$RatioN <- factor(df2$RatioN, levels = sort(unique(df2$RatioN)))
   }
   
