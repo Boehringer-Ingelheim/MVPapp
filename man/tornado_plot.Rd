@@ -22,7 +22,7 @@ tornado_plot(
 )
 }
 \arguments{
-\item{df}{Input df containing "Parameter", "Lower", "Upper"}
+\item{df}{Input df containing parameter name, lower bound name, and upper bound name}
 
 \item{reference_value}{Untransformed reference value}
 

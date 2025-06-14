@@ -18,6 +18,7 @@ iterate_batch_runs(
   debug = FALSE,
   append_id_text = "m1-",
   show_progress = TRUE,
+  gradient = FALSE,
   parallel_sim = FALSE,
   parallel_n = 200
 )
@@ -49,12 +50,14 @@ iterate_batch_runs(
 
 \item{show_progress}{When TRUE, shows shiny progress messages}
 
+\item{gradient}{When TRUE, perform gradient runs in between lower/upper}
+
 \item{parallel_sim}{Default TRUE, uses the future and mrgsim.parallel packages !Not implemented live!}
 
 \item{parallel_n}{The number of subjects required before parallelization is used !Not implemented live!}
 }
 \value{
-a df mrgsolve output totaling 2 * params + 1 (reference) runs
+a df mrgsolve output totaling 2 * params + 1 (reference) runs, or 8 * params + 1 if gradient option is used
 }
 \description{
 Perform multiple simulations from a dataframe containing parameters

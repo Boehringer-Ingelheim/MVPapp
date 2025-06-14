@@ -386,6 +386,10 @@ label_tor_show_digits  <- 'Display Values Verbatim'
 #' @export
 bspop_tor_show_digits  <- 'Display all parameter values as-is (i.e. treating it as a character and not rounded to 2 dp in the UI).<br><br>Note: This option should be toggled before editing the table as values may reset.'
 #' @export
+label_tor_do_gradient  <- 'Gradients'
+#' @export
+bspop_tor_do_gradient  <- 'Insert additional (n=3) equidistant batch runs between each bound and the reference value, i.e. 6x more runs in total for better coverage between the bounds (recommended for spider plots, does not affect tornado plots).<br><br>E.g. If a bound is 2 and the reference value is 10, 3 extra runs (4, 6, 8) will be added.'
+#' @export
 label_tor_variable     <- 'Select Variable to Derive Metrics'
 #' @export
 label_tor_display      <- 'Display as:'
@@ -394,7 +398,11 @@ label_trim_tor         <- 'Limit Params'
 #' @export
 label_tor_display_text <- "Show Text"
 #' @export
-bspop_tor_display_text <- "Displays effect size on each end of the bar. Effect sizes which are <1% change relative to the reference are not displayed."
+bspop_tor_display_text <- "Displays effect size on each end of the bar. Effect sizes which are <1% change relative to the reference are not displayed. Only applicable for tornado plots."
+#' @export
+label_spi_normalize    <- "Normalize Fold-Change"
+#' @export
+bspop_spi_normalize    <- "Normalize Parameter Fold-Change for spider plots, i.e. treating x-axis as discrete factors."
 #' @export
 bspop_show_bioeq       <- 'Insert visual guide to represent the bioequivalence criteria of 80% - 125%.'
 #' @export
@@ -405,9 +413,9 @@ label_fix_parameters  <- shiny::HTML(paste0("Fix Parameters: <i class='fa fa-que
 #' @export
 bspop_reset_reference <- 'Press to reset all reference values back to the original model from \"Simulation\" page.'
 #' @export
-bspop_generate_batch  <- 'Press to generate batch runs according to the Batch Run Parameters Table. The total number of simulations are 2 * number of parameters + 1 (the reference model).'
+bspop_generate_batch  <- 'Press to generate batch runs according to the Batch Run Parameters Table. The total number of simulations are 2 * number of parameters + 1 (the reference model).<br><br>Note: if \"Gradients\" is selected, the total number of simulations will be 8 * number of parameters + 1.'
 #' @export
-bspop_batch_runs      <- 'Perform sensitivity analysis for all parameters to visualize the impact on exposure metrics, ordered by relative importance (Tornado Plots). Parameters are pre-configured with a upper/lower bound (default: \u00B150%).<br><br>Press the "Batch Run" button after any further adjustments to the table below.' #<br><br>Note: could be time consuming for larger models and/or frequent sampling.'
+bspop_batch_runs      <- 'Perform sensitivity analysis for all parameters to visualize the impact on exposure metrics, ordered by relative importance (Tornado Plots and Spider Plots). Parameters are pre-configured with a upper/lower bound (default: \u00B150%).<br><br>Press the "Batch Run" button after any further adjustments to the table below.' #<br><br>Note: could be time consuming for larger models and/or frequent sampling.'
 #' @export
 bspop_bounds          <- 'Pre-configures batch runs by multiplying the reference value of all parameter by this number as the upper/lower bound.<br><br>The Table can also be further fine-tuned (i.e. directly edit) for all values, including the reference value.'
 

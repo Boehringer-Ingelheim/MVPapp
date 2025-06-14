@@ -3239,7 +3239,7 @@ convert_to_plotly_watermark <- function(ggplot_object,
 
 quantize <- function (x, levels, ...) {
   stopifnot(!anyNA(levels), is.numeric(levels), is.numeric(x))
-  midpoints <- (head(levels, -1) + tail(levels, -1))/2
+  midpoints <- (util::head(levels, -1) + utils::tail(levels, -1))/2
   breaks <- c(-Inf, midpoints, Inf)
   idx <- cut(x, breaks, labels = FALSE, ...)
   levels[idx]
@@ -4643,7 +4643,6 @@ quantile_ranges_name <- function(quantiles_df, df_orig, xvar) {
 #' @importFrom purrr map2
 #' @importFrom dplyr case_when filter mutate sym syms summarise
 #' @importFrom forcats fct_relevel
-#' @importFrom rlang expr
 #' @returns a character string containing the quantile limits
 #' @export
 #-------------------------------------------------------------------------------
@@ -4963,12 +4962,13 @@ transform_ev_df <- function(mod, ev_df, model_dur, model_rate, pred_model, debug
 #' @param append_id_text        A string prefix to be inserted for each ID
 #' @param show_progress         When TRUE, shows shiny progress messages
 #' @param debug                 When TRUE, outputs debugging messages
+#' @param gradient              When TRUE, perform gradient runs in between lower/upper
 #' @param parallel_sim          Default TRUE, uses the future and mrgsim.parallel packages !Not implemented live!
 #' @param parallel_n            The number of subjects required before parallelization is used !Not implemented live!
 #'
-#' @importFrom dplyr mutate rename select bind_rows across
+#' @importFrom dplyr mutate rename select bind_rows across rowwise ungroup 
 #' @importFrom shiny withProgress setProgress
-#' @returns a df mrgsolve output totaling 2 * params + 1 (reference) runs
+#' @returns a df mrgsolve output totaling 2 * params + 1 (reference) runs, or 8 * params + 1 if gradient option is used
 #' @export
 #-------------------------------------------------------------------------------
 
@@ -4985,64 +4985,114 @@ iterate_batch_runs <- function(batch_run_df,
                                debug              = FALSE,
                                append_id_text     = "m1-",
                                show_progress      = TRUE,
+                               gradient           = FALSE,
                                parallel_sim       = FALSE,
                                parallel_n         = 200#,
 ) {
-
+  
   if(nrow(batch_run_df) == 0) {
     return(NULL)
   }
-
+  
   # Coerce all columns except "name" to numeric
   batch_run_df <- batch_run_df %>%
     dplyr::mutate(dplyr::across(-Name, as.numeric))
-
+  
   # Initiate empty list totaling 2 * params + 1 (reference) run
-  list_of_runs  <- vector("list", nrow(batch_run_df) * 2 + 1)
+  if(gradient) {
+    
+    # expand batch_run_df to include 3 more lower and 3 more upper
+    batch_run_df <- batch_run_df %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(
+        splits = list(split_reference_value(Reference, Lower, Upper)),
+        `LowerQ1` = splits$lower_splits[1],
+        `LowerQ2` = splits$lower_splits[2],
+        `LowerQ3` = splits$lower_splits[3],
+        `UpperQ1` = splits$upper_splits[1],
+        `UpperQ2` = splits$upper_splits[2],
+        `UpperQ3` = splits$upper_splits[3]
+      ) %>%
+      dplyr::ungroup() %>% # Remove intermediate column
+      dplyr::select(Name, Reference, Lower, `LowerQ1`, `LowerQ2`, `LowerQ3`, `UpperQ1`, `UpperQ2`, `UpperQ3`, Upper)
+  } 
+  
+  list_of_runs  <- vector("list", nrow(batch_run_df) * (ncol(batch_run_df)-2) + 1)
   ref_run_df    <- batch_run_df #%>% dplyr::rename(value = Reference)
   nrow_batch_df <- nrow(batch_run_df)
-
+  
   shiny::withProgress(message = "Batch Run", value = 0, {
     for(i in 1:length(list_of_runs)) {
-
+      
       m <- i-1 # Offset by reference run
       # Replace bound value as reference before updating it
       this_run_df <- ref_run_df
-
+      
+      this_row <- ifelse(m %% nrow_batch_df == 0, nrow_batch_df, m %% nrow_batch_df) # Reference will originally be 0 but it doesn't matter
+      
+      reference_value <- this_run_df$Reference[this_row] # stores original reference value, will not be relevant for reference model
+      
       if(i == 1) { # Reference run
         run_name      <- "ref"
         run_name_good <- "Reference"
         cat_name      <- "Reference"
         param_name    <- "Reference"
       } else {
-
+        column_name_suffix <- ""
+        
         # Check if this is the first half of bounds (i.e. replace values with lower bounds)
-        if(m <= nrow_batch_df) {
-
-          this_run_df$Reference[m] <- this_run_df$Lower[m]
-          run_name      <- paste0("lower", this_run_df$Name[m])
-          run_name_good <- paste0("lower ", this_run_df$Name[m])
-          cat_name      <- "Lower"
-          param_name    <- this_run_df$Name[m]
-
+        if(i <= ((length(list_of_runs)-1) / 2) + 1) {
+          
+          if(gradient) {
+            # Calculate which lower column to replace by
+            column_name_suffix <- case_when(m <= nrow(batch_run_df)   ~ "",
+                                            m <= nrow(batch_run_df)*2 ~ "Q1",
+                                            m <= nrow(batch_run_df)*3 ~ "Q2",
+                                            TRUE                      ~ "Q3"
+            )
+            
+            this_run_df$Lower[this_row] <- this_run_df[[paste0("Lower", column_name_suffix)]][this_row]
+          }
+          
+          column_name_suffix_good <- ifelse(column_name_suffix == "", column_name_suffix, paste0(" (", column_name_suffix, ")"))
+          
+          this_run_df$Reference[this_row] <- this_run_df$Lower[this_row] # replace by lower column
+          run_name      <- paste0("lower", this_run_df$Name[this_row], column_name_suffix)
+          run_name_good <- paste0("lower ", this_run_df$Name[this_row], column_name_suffix_good)
+          cat_name      <- paste0("Lower", column_name_suffix_good)
+          param_name    <- this_run_df$Name[this_row]
+          
         } else { # Otherwise replace by upper bounds
-
-          this_run_df$Reference[m - nrow_batch_df] <- this_run_df$Upper[m - nrow_batch_df]
-          run_name      <- paste0("upper", this_run_df$Name[m - nrow_batch_df])
-          run_name_good <- paste0("upper ", this_run_df$Name[m - nrow_batch_df])
-          cat_name      <- "Upper"
-          param_name    <- this_run_df$Name[m - nrow_batch_df]
+          
+          if(gradient) {
+            # Calculate which upper quantile column to replace the original upper column by
+            column_name_suffix <- case_when(m <= nrow(batch_run_df)*5 ~ "Q1",
+                                            m <= nrow(batch_run_df)*6 ~ "Q2",
+                                            m <= nrow(batch_run_df)*7 ~ "Q3",
+                                            TRUE                      ~ ""
+            )
+            
+            this_run_df$Upper[this_row] <- this_run_df[[paste0("Upper", column_name_suffix)]][this_row]
+          }
+          
+          column_name_suffix_good <- ifelse(column_name_suffix == "", column_name_suffix, paste0(" (", column_name_suffix, ")"))
+          
+          this_run_df$Reference[this_row] <- this_run_df$Upper[this_row]
+          run_name      <- paste0("upper", this_run_df$Name[this_row], column_name_suffix)
+          run_name_good <- paste0("upper ", this_run_df$Name[this_row], column_name_suffix_good)
+          cat_name      <- paste0("Upper", column_name_suffix_good)
+          param_name    <- this_run_df$Name[this_row]
         }
       }
-
-      this_model_object <- update_model_object(input_model_object, this_run_df %>% select(-Lower, -Upper), convert_colnames = TRUE)
-
+      
+      this_model_object <- update_model_object(input_model_object, this_run_df %>% select(Name, Reference), convert_colnames = TRUE)
+      
       if(debug) {
         message("Trying Batch run: ", run_name_good)
       }
-
+      
       if(show_progress) {shiny::setProgress(value = i / length(list_of_runs), detail = paste0(i, "/", length(list_of_runs)))}
-
+      
       tmp <- run_single_sim(
         input_model_object = this_model_object,
         wt_based_dosing    = wt_based_dosing,
@@ -5058,16 +5108,18 @@ iterate_batch_runs <- function(batch_run_df,
         parallel_sim       = parallel_sim,
         parallel_n         = parallel_n
       )
-
+      
       if(!is.null(tmp) && is.data.frame(tmp)) {
         tmp$.desc         <- run_name_good
         tmp$.cat          <- cat_name
         tmp$.paramname    <- param_name
+        tmp$.value        <- ifelse(i == 1, -99, this_run_df$Reference[this_row]) 
+        tmp$.ratio        <- ifelse(i == 1, 1, tmp$.value / reference_value) # Add fold change for spider plot
         list_of_runs[[i]] <- tmp
       }
     } # end of for-loop
-  })
-
+  }) # progress wrap
+  
   return(dplyr::bind_rows(list_of_runs))
 }
 
@@ -5109,16 +5161,16 @@ update_batch_run_table <- function(param_df,
   # A workaround is not found, perhaps due to circular logic?
   all_params_table <- starting_table %>%
     dplyr::mutate(
-      Lower = Reference * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 0.5, display_error = TRUE),
-      Upper = Reference * sanitize_numeric_input(upper_multiplier, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
+      Lower = Reference * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 0.1, display_error = TRUE),
+      Upper = Reference * sanitize_numeric_input(upper_multiplier, allow_zero = FALSE, return_value = 1.1, display_error = TRUE)
     )
 
   # If last change was on a reference value. Only the corresponding upper/lower bounds should be updated
   # Switching models could introduce more than one last_change_ref_model_1() so we're also checking against that
   if(length(last_change_ref_index) == 1 && last_change_ref_index > 0) {
     all_params_table <- starting_table
-    all_params_table$Lower[last_change_ref_index] <- all_params_table$Reference[last_change_ref_index] * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)
-    all_params_table$Upper[last_change_ref_index] <- all_params_table$Reference[last_change_ref_index] * sanitize_numeric_input(upper_multiplier, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
+    all_params_table$Lower[last_change_ref_index] <- all_params_table$Reference[last_change_ref_index] * sanitize_numeric_input(lower_multiplier, allow_zero = FALSE, return_value = 0.1, display_error = TRUE)
+    all_params_table$Upper[last_change_ref_index] <- all_params_table$Reference[last_change_ref_index] * sanitize_numeric_input(upper_multiplier, allow_zero = FALSE, return_value = 1.1, display_error = TRUE)
   }
 
   # If last change was on a bound, don't update the entire table, however updating the table has some weird circular logic interaction
@@ -5167,7 +5219,7 @@ calculate_tick_size <- function(abs_y, max_ticks = 12, nice_values = c(1,2,5,10)
 #'
 #' @title Draws a tornado plot
 #'
-#' @param df                    Input df containing "Parameter", "Lower", "Upper"
+#' @param df                    Input df containing parameter name, lower bound name, and upper bound name
 #' @param param_name            Column name for parameters
 #' @param lower_name            Column name for lower bounds
 #' @param upper_name            Column name for upper bounds
@@ -5375,5 +5427,221 @@ tornado_plot <- function(df,
     ggplot2::labs(x = NULL, y = label_name) +
     ggplot2::ggtitle(plot_title)
 
+  return(p)
+}
+
+#-------------------------------------------------------------------------------
+#' @name split_reference_value
+#'
+#' @title Split reference values evenly between lower and upper bound for batch run table
+#'
+#' @param reference_value       The reference value to be used for splitting
+#' @param lower_bound           The lower bound to be used for splitting
+#' @param upper_bound           The upper bound to be used for splitting
+#'
+#' @returns a list of splits excluding reference value
+#' @export
+#-------------------------------------------------------------------------------
+split_reference_value <- function(reference_value, lower_bound, upper_bound) {
+  # Generate 4 evenly spaced values between Lower and Reference (excluding Reference and the bound)
+  lower_splits <- seq(lower_bound, reference_value, length.out = 5)[c(-1, -5)]
+  
+  # Generate 4 evenly spaced values between Reference and Upper (excluding Reference and the bound)
+  upper_splits <- seq(reference_value, upper_bound, length.out = 5)[c(-1, -5)]
+  
+  # Return splits as a list
+  return(list(lower_splits = lower_splits, upper_splits = upper_splits))
+}
+
+#-------------------------------------------------------------------------------
+#' @name spider_plot
+#'
+#' @title Draws a spider plot
+#'
+#' @param df                    Input df containing parameter name, ratio (fold-change), and metric
+#' @param param_name            Column name for parameters
+#' @param ratio_name            Column name for ratio
+#' @param metric_name           Column name for metric
+#' @param reference_value       Untransformed reference value
+#' @param plot_title            Plot title
+#' @param display_as            A choice between "Ratio", "Percentage", and "Value"
+#' @param filter_rows           Filter by X number of rows
+#' @param bioeq_lines           When TRUE, plots the 80% / 125% lines relative to reference value
+#' @param ylabname              Custom name for y-axis
+#' @param normalize_x_axis      Treat x-axis as a factor
+#'
+#' @importFrom dplyr mutate select arrange slice_tail case_when if_else rename sym
+#' @importFrom tidyr pivot_longer
+#' @importFrom forcats fct_inorder
+#' @importFrom ggplot2 ggplot geom_rect theme_bw geom_hline scale_x_continuous scale_fill_manual coord_flip
+#' @importFrom ggplot2 scale_y_continuous aes labs ggtitle
+#' @importFrom scales percent pretty_breaks
+#' @returns a ggplot object
+#' @export
+#-------------------------------------------------------------------------------
+
+spider_plot <-  function(df,
+                         reference_value,
+                         param_name    = ".paramname",
+                         ratio_name    = ".ratio",
+                         metric_name   = "Cmax",
+                         plot_title    = "",
+                         display_as    = "Value",
+                         filter_rows   = 20,
+                         ylabname      = "",
+                         normalize_x_axis = FALSE,
+                         bioeq_lines   = FALSE) {
+  
+  df <- df %>%
+    dplyr::rename(Parameter = !!dplyr::sym(param_name),
+                  Ratio     = !!dplyr::sym(ratio_name),
+                  Metric    = !!dplyr::sym(metric_name))
+  
+  # get data frame in shape for ggplot and geom_rect
+  df2 <- df %>%
+    dplyr::mutate(output_pretransform = Metric) #%>%
+  #dplyr::arrange(Metric)
+  
+  df2 <- df2 %>%
+    dplyr::group_by(Parameter) %>%
+    dplyr::mutate(del = abs(max(Metric)) +  abs(min(Metric))) %>%
+    dplyr::arrange(desc(del)) %>%
+    dplyr::ungroup()
+  
+  df2 <- df2 %>%
+    dplyr::mutate(Parameter = forcats::fct_inorder(Parameter))
+  
+  param_levels <- levels(df2$Parameter)
+  
+  
+  if(filter_rows != "" & is.numeric(filter_rows)) {
+    if(filter_rows > 0) {
+      params_to_retain <- param_levels[1:filter_rows]
+      df2 <- df2 %>%
+        dplyr::filter(Parameter %in% params_to_retain)
+    }
+  }
+  
+  
+  if(display_as == "Ratio") {
+    df2 <- df2 %>%
+      dplyr::mutate(output = output_pretransform / reference_value)
+    ref_line   <- 1
+    bioeq_high <- 1.25
+    bioeq_low  <- 0.80
+    label_name <- paste0(metric_name, " (Ratio to Reference)")
+  }
+  
+  if(display_as == "Percentage") {
+    df2 <- df2 %>%
+      dplyr::mutate(output = (output_pretransform - reference_value) / reference_value)
+    ref_line   <- 0
+    bioeq_high <- 0.25
+    bioeq_low  <- -0.2
+    label_name <- paste0(metric_name, " (% Change From Reference)")
+  }
+  
+  if(display_as == "Value") {
+    df2 <- df2 %>%
+      dplyr::mutate(output = output_pretransform)
+    ref_line   <- reference_value
+    bioeq_high <- reference_value * 1.25
+    bioeq_low  <- reference_value * 0.8
+    label_name <- paste0(metric_name, " Value")
+  }
+  
+  if(normalize_x_axis) {
+    df2$RatioN <- round(df2$Ratio, 2)
+    df2$RatioN <- factor(df2$RatioN, levels = sort(unique(df2$RatioN)))
+  }
+  
+  if(normalize_x_axis) {
+    p <- ggplot2::ggplot(data = df2, ggplot2::aes(x = RatioN, y = output, color = Parameter, group = Parameter))
+  } else {
+    p <- ggplot2::ggplot(data = df2, ggplot2::aes(x = Ratio, y = output, color = Parameter))
+  }
+  
+  p <- p +
+    ggplot2::theme_bw() +
+    ggplot2::geom_point() + 
+    ggplot2::geom_line()
+  
+  if(bioeq_lines) {
+    p <- p +
+      ggplot2::geom_hline(yintercept = bioeq_high, linetype = "dashed", alpha = 0.5) +
+      ggplot2::geom_hline(yintercept = bioeq_low,  linetype = "dashed", alpha = 0.5)
+  }
+  
+  if(display_as == "Ratio" | display_as == "Percentage") {
+    max_y <- max(df2$output, na.rm = TRUE)
+    min_y <- min(df2$output, na.rm = TRUE)
+    
+    if(is.finite(max_y) & is.finite(min_y)) {
+      
+      if(bioeq_lines) {
+        
+        if(display_as == "Percentage") {
+          abs_y <- pmax(abs(max_y) + abs(min_y), bioeq_high) # including high bioeq line in case where fold-changes are miniscule
+        }
+        if(display_as == "Ratio") {
+          abs_y <- pmax((abs(max_y - 1) + abs(min_y - 1)), bioeq_high - 1 )
+        }
+      } else {
+        if(display_as == "Percentage") {
+          abs_y <- pmax(abs(max_y) + abs(min_y))
+        }
+        if(display_as == "Ratio") {
+          abs_y <- pmax((abs(max_y - 1) + abs(min_y - 1)))
+        }
+      }
+      
+      tick_size <- calculate_tick_size(abs_y = abs_y, max_ticks = 10, nice_values = c(1,2,5,10))
+      
+      if(display_as == "Percentage") {
+        
+        # Align min_y to the nearest multiple of tick_size
+        aligned_min_y <- floor(min_y / tick_size) * tick_size
+        aligned_max_y <- ceiling(max_y / tick_size) * tick_size
+        
+        if(bioeq_lines) {
+          define_limits <- seq(pmin(aligned_min_y, bioeq_low), pmax(aligned_max_y, bioeq_high), tick_size)
+        } else {
+          define_limits <- seq(aligned_min_y, aligned_max_y, tick_size)
+        }
+        p <- p + ggplot2::scale_y_continuous(breaks = define_limits, labels = function(x) paste0(x * 100, "%"))
+        
+      } else {
+        
+        if(bioeq_lines) {
+          define_limits <- seq(0, pmax(max_y + tick_size, bioeq_high), tick_size)
+        } else {
+          define_limits <- seq(0, max_y + tick_size, tick_size)
+        }
+        
+        p <- p + ggplot2::scale_y_continuous(breaks = define_limits)
+      }
+    } # end of finite y check
+  } # end of display as percentage or ratio check
+  
+  if(display_as == "Value") {
+    p <- p + ggplot2::scale_y_continuous(breaks = scales::pretty_breaks(n = 8))
+  }
+  
+  if(!normalize_x_axis) {
+    number_of_breaks <- length(unique(round(df2$Ratio, 3)))
+    #message("num of breaks: ", number_of_breaks)
+    if(number_of_breaks <= 9) { # standard number of breaks is 9
+      p <- p + ggplot2::scale_x_continuous(breaks = unique(round(df2$Ratio, 3)), labels = unique(round(df2$Ratio, 3)))
+    } else {
+      p <- p + ggplot2::scale_x_continuous(breaks = scales::pretty_breaks(n = 8))  
+    }
+  }
+  
+  if(ylabname != "") {label_name <- ylabname}
+  
+  p <- p +
+    ggplot2::labs(x = "Parameter Fold Change", y = label_name) +
+    ggplot2::ggtitle(plot_title)
+  
   return(p)
 }

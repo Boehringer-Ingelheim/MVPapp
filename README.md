@@ -227,9 +227,9 @@ Batch run simulations (i.e. assessing all parameters at the same time)
 can be generated from the “All Parameters” tab on the top-left side of
 the page, with **results available from just a single click** and
 visualized using <a href="https://en.wikipedia.org/wiki/Tornado_diagram"
-target="_blank">Tornado Plots</a>. This feature is particularly useful
-for complex models with up to hundreds of parameters to rank parameters
-of relative importance, e.g. PBPK or QSP models.
+target="_blank">Tornado Plots</a> and Spider Plots. This feature is
+particularly useful for complex models with up to hundreds of parameters
+to rank parameters of relative importance, e.g. PBPK or QSP models.
 
 1.  (Optional) Remove any parameters from the batch run using the “Fix
     parameters” option on the top-left side.
@@ -259,6 +259,16 @@ of relative importance, e.g. PBPK or QSP models.
       Parameter Table is changed.
 
 ![](www/tornado3.png)
+
+For spider plots (right hand side tab), make sure that the “Gradients”
+option on the left hand side is checked. 6 additional simulations per
+parameter will be inserted between the upper and lower bound to provide
+better “coverage” by increasing the granularity when assessing parameter
+sensitivity. If the user has large ranges between the upper and lower
+bound, or has manually edited any parameter value, the “Normalize Fold
+Change” option may be used for improved visuals.
+
+![](www/spider.png)
 
 ### Simulations with Variability
 
@@ -372,10 +382,10 @@ using MVP to perform quick EDA.
 ### Run MVP as a regular Shiny App
 
 To run MVP without calling `run_mvp()`, navigate to the path of the
-installed `MVPapp` package, open `shiny/app.R`, and set
-`debug_mode <- TRUE`. Then you would be able to run the App as-is.
-Change back to `debug_mode <- FALSE` to allow passing of options via
-`run_mvp()` again.
+installed `MVPapp` package, open `inst/shiny/app.R`, and set
+`standalone_mode <- TRUE`. Then you would be able to run the App as-is.
+Change back to `standalone_mode <- FALSE` to allow passing of options
+via `run_mvp()` again.
 
 ### Sources for patient databases
 

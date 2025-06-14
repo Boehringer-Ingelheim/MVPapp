@@ -128,7 +128,7 @@ After a model has been generated from the Simulation page, the impact of perturb
 
 #### Assessing All Structural Parameters
 
-Batch run simulations (i.e. assessing all parameters at the same time) can be generated from the "All Parameters" tab on the top-left side of the page, with **results available from just a single click** and visualized using [Tornado Plots](https://en.wikipedia.org/wiki/Tornado_diagram){target="_blank"}. This feature is particularly useful for complex models with up to hundreds of parameters to rank parameters of relative importance, e.g. PBPK or QSP models.
+Batch run simulations (i.e. assessing all parameters at the same time) can be generated from the "All Parameters" tab on the top-left side of the page, with **results available from just a single click** and visualized using [Tornado Plots](https://en.wikipedia.org/wiki/Tornado_diagram){target="_blank"} and Spider Plots. This feature is particularly useful for complex models with up to hundreds of parameters to rank parameters of relative importance, e.g. PBPK or QSP models.
 
 1. (Optional) Remove any parameters from the batch run using the "Fix parameters" option on the top-left side.
 2. By default, all parameters are perturbed based on ±50% of the original value, i.e. the reference model. Users may tweak the Lower and Upper Multipliers to quickly pre-configure the range easily. Each value can also be adjusted manually in the Batch Run Parameters Table.
@@ -139,6 +139,10 @@ Batch run simulations (i.e. assessing all parameters at the same time) can be ge
     -   A new set of Batch Runs should be generated whenever the Batch Run Parameter Table is changed.
 
 ![](www/tornado3.png)
+
+For spider plots (right hand side tab), make sure that the "Gradients" option on the left hand side is checked. 6 additional simulations per parameter will be inserted between the upper and lower bound to provide better "coverage" by increasing the granularity when assessing parameter sensitivity. If the user has large ranges between the upper and lower bound, or has manually edited any parameter value, the "Normalize Fold Change" option may be used for improved visuals.
+
+![](www/spider.png)
 
 ### Simulations with Variability
 
@@ -202,7 +206,7 @@ Please see the article on [Effective Exploratory Data Analysis (EDA)](https://bo
 
 ### Run MVP as a regular Shiny App
 
-To run MVP without calling `run_mvp()`, navigate to the path of the installed `MVPapp` package, open `shiny/app.R`, and set `debug_mode <- TRUE`. Then you would be able to run the App as-is. Change back to `debug_mode <- FALSE` to allow passing of options via `run_mvp()` again.
+To run MVP without calling `run_mvp()`, navigate to the path of the installed `MVPapp` package, open `inst/shiny/app.R`, and set `standalone_mode <- TRUE`. Then you would be able to run the App as-is. Change back to `standalone_mode <- FALSE` to allow passing of options via `run_mvp()` again.
 
 ### Sources for patient databases
 

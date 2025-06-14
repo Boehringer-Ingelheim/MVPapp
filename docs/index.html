@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -184,7 +184,7 @@
 <div class="section level4">
 <h4 id="assessing-all-structural-parameters">Assessing All Structural Parameters<a class="anchor" aria-label="anchor" href="#assessing-all-structural-parameters"></a>
 </h4>
-<p>Batch run simulations (i.e. assessing all parameters at the same time) can be generated from the “All Parameters” tab on the top-left side of the page, with <strong>results available from just a single click</strong> and visualized using <a href="https://en.wikipedia.org/wiki/Tornado_diagram" target="_blank" class="external-link">Tornado Plots</a>. This feature is particularly useful for complex models with up to hundreds of parameters to rank parameters of relative importance, e.g. PBPK or QSP models.</p>
+<p>Batch run simulations (i.e. assessing all parameters at the same time) can be generated from the “All Parameters” tab on the top-left side of the page, with <strong>results available from just a single click</strong> and visualized using <a href="https://en.wikipedia.org/wiki/Tornado_diagram" target="_blank" class="external-link">Tornado Plots</a> and Spider Plots. This feature is particularly useful for complex models with up to hundreds of parameters to rank parameters of relative importance, e.g. PBPK or QSP models.</p>
 <ol style="list-style-type: decimal">
 <li>(Optional) Remove any parameters from the batch run using the “Fix parameters” option on the top-left side.</li>
 <li>By default, all parameters are perturbed based on ±50% of the original value, i.e. the reference model. Users may tweak the Lower and Upper Multipliers to quickly pre-configure the range easily. Each value can also be adjusted manually in the Batch Run Parameters Table.
@@ -201,6 +201,8 @@
 </li>
 </ol>
 <p><img src="www/tornado3.png"></p>
+<p>For spider plots (right hand side tab), make sure that the “Gradients” option on the left hand side is checked. 6 additional simulations per parameter will be inserted between the upper and lower bound to provide better “coverage” by increasing the granularity when assessing parameter sensitivity. If the user has large ranges between the upper and lower bound, or has manually edited any parameter value, the “Normalize Fold Change” option may be used for improved visuals.</p>
+<p><img src="www/spider.png"></p>
 </div>
 </div>
 <div class="section level3">
@@ -288,7 +290,7 @@
 <div class="section level3">
 <h3 id="run-mvp-as-a-regular-shiny-app">Run MVP as a regular Shiny App<a class="anchor" aria-label="anchor" href="#run-mvp-as-a-regular-shiny-app"></a>
 </h3>
-<p>To run MVP without calling <code><a href="reference/run_mvp.html">run_mvp()</a></code>, navigate to the path of the installed <code>MVPapp</code> package, open <code>shiny/app.R</code>, and set <code>debug_mode &lt;- TRUE</code>. Then you would be able to run the App as-is. Change back to <code>debug_mode &lt;- FALSE</code> to allow passing of options via <code><a href="reference/run_mvp.html">run_mvp()</a></code> again.</p>
+<p>To run MVP without calling <code><a href="reference/run_mvp.html">run_mvp()</a></code>, navigate to the path of the installed <code>MVPapp</code> package, open <code>inst/shiny/app.R</code>, and set <code>standalone_mode &lt;- TRUE</code>. Then you would be able to run the App as-is. Change back to <code>standalone_mode &lt;- FALSE</code> to allow passing of options via <code><a href="reference/run_mvp.html">run_mvp()</a></code> again.</p>
 </div>
 <div class="section level3">
 <h3 id="sources-for-patient-databases">Sources for patient databases<a class="anchor" aria-label="anchor" href="#sources-for-patient-databases"></a>

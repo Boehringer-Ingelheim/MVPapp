@@ -1,3 +1,9 @@
+# MVPapp 0.3.2 (2025-06-13)
+
+## Features
+
+* Spider plot functionality added for batch runs (#46)
+
 # MVPapp 0.3.1 (2025-06-12)
 
 ## Bugfixes

@@ -6,14 +6,14 @@
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-# Debug mode:
-# Set debug_mode = TRUE to run app.R as standalone app without loading MVPapp
+# Standalone mode:
+# Set standalone_mode = TRUE to run app.R as standalone app without loading MVPapp
 # (i.e. not using run_mvp())
 #-------------------------------------------------------------------------------
-debug_mode <- FALSE
+standalone_mode <- FALSE
 
 #######################
-if(debug_mode) {
+if(standalone_mode) {
 
   #source("packages.R") # Loading packages here to side-step JS compatibility issues
 
@@ -96,7 +96,7 @@ ui <- shiny::navbarPage(
                                                 checkboxInput('EVID_filter', 'Remove dosing rows (exclude EVID >= 1)', width = '100%', FALSE),
                                                 checkboxInput('distinct_by_ID', 'Keep unique subjects only (distinct by "ID")', width = '100%', FALSE),
                                                 checkboxInput('turn_all_numeric', 'Coerce Dataset to Numeric (all characters becomes "NA")', width = '100%', FALSE)
-
+                                                
                             ),
                             shinyBS::bsPopover("bspop_deselect", title = "De-select Columns to Display", content = bspop_deselect, placement = "right", trigger = "hover"),
                             shinydashboard::box(width = 12,
@@ -278,7 +278,7 @@ ui <- shiny::navbarPage(
                                                                  shinyBS::bsPopover('do_data_plotly', 'Interactive Plot (Slower)' , content = bspop_do_data_plotly, placement = "top", trigger = "hover"),
                                                                  checkboxInput('do_data_plotly', 'Interactive Plot (Slower)', value = FALSE))
                                                         )
-
+                                                        
                                     ), # end of box
                                     shinydashboard::box(width = 12,
                                                         title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
@@ -690,7 +690,7 @@ ui <- shiny::navbarPage(
                                                                numericInput('tinf1', label_infdur, value = 0, min = 0),
                                                                shinyBS::bsPopover('tinf1', title = label_infdur, content = bspop_infdur, placement = 'left', trigger = 'focus')
                                                         )
-
+                                                        
                                                ), # end of tabPanel
                                                tabPanel(title = 'Regimen 2',
                                                         column(width = 2,
@@ -847,7 +847,7 @@ ui <- shiny::navbarPage(
                                                                numericInput('tinf1_2', label_infdur, value = 0, min = 0),
                                                                shinyBS::bsPopover('tinf1_2', title = label_infdur, content = bspop_infdur, placement = 'left', trigger = 'focus')
                                                         )
-
+                                                        
                                                ), # end of tabPanel
                                                tabPanel(title = 'Regimen 2',
                                                         column(width = 2,
@@ -1081,7 +1081,7 @@ ui <- shiny::navbarPage(
                                              shinyBS::bsPopover('custom_sampling_time_cb', title = "Custom Sampling Times", content = bspop_custom_sampling_cb, placement = 'left', trigger = "focus"),
                                              checkboxInput('add_time_zero', 'Add Sampling at Time 0', value = TRUE),
                                              shinyBS::bsPopover('add_time_zero', "Add Sampling at Time 0", content = bspop_time_0_text, trigger = 'focus', placement = 'left')
-
+                                             
                          ),          # end of box
                          shinydashboard::box(width = 4,
                                              title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
@@ -1364,7 +1364,7 @@ ui <- shiny::navbarPage(
                                                                checkboxInput('geom_vline_option_model_2', add_geom_vline, width = '100%', value = TRUE),
                                                                checkboxInput('combine_nmdata_1_model_2', label_combine_nm_data, width = '100%'),
                                                                shinyBS::bsPopover('combine_nmdata_1_model_2', title = label_combine_nm_data, content = bspop_combine_nm_data, trigger = 'hover', placement = 'top')
-
+                                                               
                                                         ),
                                                         column(width = 3,
                                                                checkboxInput('geom_ribbon_option_model_2', add_geom_ribbon, width = '100%', value = FALSE),
@@ -1453,7 +1453,7 @@ ui <- shiny::navbarPage(
                                                                   div(style = "height: 5px;"),  # Empty div to add space
                                                                   rhandsontable::rHandsontableOutput('tor_table_model_1')
                                                            ),
-
+                                                           
                                                            column(width = 12,
                                                                   div(style = "height: 10px;"),  # Empty div to add space
                                                                   div(
@@ -1461,26 +1461,40 @@ ui <- shiny::navbarPage(
                                                                     downloadButton("download_tor_table_model_1", "Download Table (.csv)")
                                                                   ),
                                                                   div(
-                                                                    style = "display: inline-block; vertical-align: top; margin-left: 20px;",
+                                                                    style = "display: inline-block; vertical-align: top; margin-left: 10px;",
                                                                     checkboxInput('tor_show_digits_model_1', label_tor_show_digits, value = TRUE),
                                                                     shinyBS::bsPopover('tor_show_digits_model_1', label_tor_show_digits, content = bspop_tor_show_digits, placement = "right", trigger = "hover")
-                                                                  )
+                                                                  ),
+                                                                  div(
+                                                                    style = "display: inline-block; vertical-align: top; margin-left: 10px;",
+                                                                    checkboxInput('tor_do_gradient_model_1', label_tor_do_gradient, value = TRUE),
+                                                                    shinyBS::bsPopover('tor_do_gradient_model_1', label_tor_do_gradient, content = bspop_tor_do_gradient, placement = "right", trigger = "hover")
+                                                                  )                                                                  
                                                            )
                                        ) # end of box
                                      ) # end of fluidRow
                         ), # end of sidebarPanel
                         mainPanel(width = mainbar_width,
                                   fluidRow(
-                                    shinydashboard::box(width = 12,
-                                                        title = "Tornado Plot", status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
-                                                        uiOutput('tor_plot_output_model_1'),
-                                                        downloadButton("download_tor_plot_model_1", "Download Non-Interactive Plot"),
-                                                        shinyBS::bsPopover('download_tor_plot_model_1', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover"),
-                                                        tags$span(style = "padding: 10px;"), # Add horizontal space
-                                                        downloadButton("download_tor_summary_model_1", "Download Summary Results (.csv)"),
-                                                        tags$span(style = "padding: 10px;"), # Add horizontal space
-                                                        downloadButton("download_tor_results_model_1", "Download All Simulations (.csv)"),
-
+                                    shinydashboard::box(title = "Simulated Model Plot",
+                                                        width = 12, status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
+                                                        tabsetPanel(
+                                                          id = 'psa_all_panel_model_1',
+                                                          tabPanel(title = "Tornado Plot", 
+                                                                   uiOutput('tor_plot_output_model_1'),
+                                                                   downloadButton("download_tor_plot_model_1", "Download Non-Interactive Plot"),
+                                                                   shinyBS::bsPopover('download_tor_plot_model_1', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover"),
+                                                                   tags$span(style = "padding: 10px;"), # Add horizontal space
+                                                                   downloadButton("download_tor_summary_model_1", "Download Summary Results (.csv)"),
+                                                                   tags$span(style = "padding: 10px;"), # Add horizontal space
+                                                                   downloadButton("download_tor_results_model_1", "Download All Simulations (.csv)"),
+                                                          ),
+                                                          tabPanel(title = "Spider Plot", 
+                                                                   uiOutput('spi_plot_output_model_1'),
+                                                                   downloadButton("download_spi_plot_model_1", "Download Non-Interactive Plot"),
+                                                                   shinyBS::bsPopover('download_spi_plot_model_1', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover"),
+                                                          )
+                                                        )
                                     ), # end of box
                                     shinyBS::bsPopover("bspop_select_time_interval_tor_plot_model_1", title = "Select Time Interval", content = bspop_select_time_interval_exp, placement = "top", trigger = "hover"),
                                     shinydashboard::box(width = 12,
@@ -1521,14 +1535,19 @@ ui <- shiny::navbarPage(
                                                                  textInput('plot_title_tor_model_1', plot_title_label, value = NULL, placeholder = plot_title_placeholder)
                                                           ),
                                                           column(width = 2,
-                                                                 textInput('xlab_tor_model_1', 'X-axis Label', value = '', placeholder = "(Optional)")
+                                                                 textInput('xlab_tor_model_1', 'Axis Label', value = '', placeholder = "(Optional)")
                                                           ),
-                                                          column(width = 2,
+                                                          column(width = 1,
                                                                  div(style = "height: 20px;"),  # Empty div to add space
                                                                  checkboxInput('tor_display_text_model_1', label_tor_display_text, value = TRUE),
                                                                  shinyBS::bsPopover('tor_display_text_model_1', label_tor_display_text , content = bspop_tor_display_text, placement = "top", trigger = "hover"),
                                                           ),
-                                                          column(width = 4,
+                                                          column(width = 2,
+                                                                 div(style = "height: 20px;"),  # Empty div to add space
+                                                                 checkboxInput('spi_normalize_model_1', label_spi_normalize, value = FALSE),
+                                                                 shinyBS::bsPopover('spi_normalize_model_1', label_spi_normalize , content = bspop_spi_normalize, placement = "top", trigger = "hover"),
+                                                          ),
+                                                          column(width = 3,
                                                                  div(style = "height: 20px;"),  # Empty div to add space
                                                                  shinyBS::bsPopover('do_tor_plotly_model_1', 'Interactive Plot (Slower)' , content = bspop_do_sim_plotly, placement = "top", trigger = "hover"),
                                                                  checkboxInput('do_tor_plotly_model_1', 'Interactive Plot (Slower)', value = TRUE)
@@ -1538,7 +1557,7 @@ ui <- shiny::navbarPage(
                                     shinydashboard::box(width = 12,
                                                         title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
                                                         column(width = 6,
-                                                               textInput('plotlytor_filename_model_1', plotly_filename_label, value = paste0(today_numeric(), '_tornado_plot_model_1')),
+                                                               textInput('plotlytor_filename_model_1', plotly_filename_label, value = paste0(today_numeric(), '_all_params_model_1')),
                                                                shinyBS::bsPopover('plotlytor_filename_model_1', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
                                                         ),
                                                         column(width = 2,
@@ -1609,7 +1628,7 @@ ui <- shiny::navbarPage(
                                                                   div(style = "height: 5px;"),  # Empty div to add space
                                                                   rhandsontable::rHandsontableOutput('tor_table_model_2')
                                                            ),
-
+                                                           
                                                            column(width = 12,
                                                                   div(style = "height: 10px;"),  # Empty div to add space
                                                                   div(
@@ -1617,26 +1636,40 @@ ui <- shiny::navbarPage(
                                                                     downloadButton("download_tor_table_model_2", "Download Table (.csv)")
                                                                   ),
                                                                   div(
-                                                                    style = "display: inline-block; vertical-align: top; margin-left: 20px;",
+                                                                    style = "display: inline-block; vertical-align: top; margin-left: 10px;",
                                                                     checkboxInput('tor_show_digits_model_2', label_tor_show_digits, value = TRUE),
                                                                     shinyBS::bsPopover('tor_show_digits_model_2', label_tor_show_digits, content = bspop_tor_show_digits, placement = "right", trigger = "hover")
-                                                                  )
+                                                                  ),
+                                                                  div(
+                                                                    style = "display: inline-block; vertical-align: top; margin-left: 10px;",
+                                                                    checkboxInput('tor_do_gradient_model_2', label_tor_do_gradient, value = TRUE),
+                                                                    shinyBS::bsPopover('tor_do_gradient_model_2', label_tor_do_gradient, content = bspop_tor_do_gradient, placement = "right", trigger = "hover")
+                                                                  ) 
                                                            )
                                        ) # end of box
                                      ) # end of fluidRow
                         ), # end of sidebarPanel
                         mainPanel(width = mainbar_width,
                                   fluidRow(
-                                    shinydashboard::box(width = 12,
-                                                        title = "Tornado Plot", status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
-                                                        uiOutput('tor_plot_output_model_2'),
-                                                        downloadButton("download_tor_plot_model_2", "Download Non-Interactive Plot"),
-                                                        shinyBS::bsPopover('download_tor_plot_model_2', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover"),
-                                                        tags$span(style = "padding: 10px;"), # Add horizontal space
-                                                        downloadButton("download_tor_summary_model_2", "Download Summary Results (.csv)"),
-                                                        tags$span(style = "padding: 10px;"), # Add horizontal space
-                                                        downloadButton("download_tor_results_model_2", "Download All Simulations (.csv)"),
-
+                                    shinydashboard::box(title = "Simulated Model Plot",
+                                                        width = 12, status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
+                                                        tabsetPanel(
+                                                          id = 'psa_all_panel_model_2',
+                                                          tabPanel(title = "Tornado Plot", 
+                                                                   uiOutput('tor_plot_output_model_2'),
+                                                                   downloadButton("download_tor_plot_model_2", "Download Non-Interactive Plot"),
+                                                                   shinyBS::bsPopover('download_tor_plot_model_2', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover"),
+                                                                   tags$span(style = "padding: 10px;"), # Add horizontal space
+                                                                   downloadButton("download_tor_summary_model_2", "Download Summary Results (.csv)"),
+                                                                   tags$span(style = "padding: 10px;"), # Add horizontal space
+                                                                   downloadButton("download_tor_results_model_2", "Download All Simulations (.csv)"),
+                                                          ),
+                                                          tabPanel(title = "Spider Plot", 
+                                                                   uiOutput('spi_plot_output_model_2'),
+                                                                   downloadButton("download_spi_plot_model_2", "Download Non-Interactive Plot"),
+                                                                   shinyBS::bsPopover('download_spi_plot_model_2', 'Download Non-Interactive Plot' , content = bspop_download_plot, placement = "left", trigger = "hover"),
+                                                          )
+                                                        )
                                     ), # end of box
                                     shinyBS::bsPopover("bspop_select_time_interval_tor_plot_model_2", title = "Select Time Interval", content = bspop_select_time_interval_exp, placement = "top", trigger = "hover"),
                                     shinydashboard::box(width = 12,
@@ -1677,14 +1710,19 @@ ui <- shiny::navbarPage(
                                                                  textInput('plot_title_tor_model_2', plot_title_label, value = NULL, placeholder = plot_title_placeholder)
                                                           ),
                                                           column(width = 2,
-                                                                 textInput('xlab_tor_model_2', 'X-axis Label', value = '', placeholder = "(Optional)")
+                                                                 textInput('xlab_tor_model_2', 'Axis Label', value = '', placeholder = "(Optional)")
                                                           ),
-                                                          column(width = 2,
+                                                          column(width = 1,
                                                                  div(style = "height: 20px;"),  # Empty div to add space
                                                                  checkboxInput('tor_display_text_model_2', label_tor_display_text, value = TRUE),
                                                                  shinyBS::bsPopover('tor_display_text_model_2', label_tor_display_text , content = bspop_tor_display_text, placement = "top", trigger = "hover"),
                                                           ),
-                                                          column(width = 4,
+                                                          column(width = 2,
+                                                                 div(style = "height: 20px;"),  # Empty div to add space
+                                                                 checkboxInput('spi_normalize_model_2', label_spi_normalize, value = FALSE),
+                                                                 shinyBS::bsPopover('spi_normalize_model_2', label_spi_normalize , content = bspop_spi_normalize, placement = "top", trigger = "hover"),
+                                                          ),
+                                                          column(width = 3,
                                                                  div(style = "height: 20px;"),  # Empty div to add space
                                                                  shinyBS::bsPopover('do_tor_plotly_model_2', 'Interactive Plot (Slower)' , content = bspop_do_sim_plotly, placement = "top", trigger = "hover"),
                                                                  checkboxInput('do_tor_plotly_model_2', 'Interactive Plot (Slower)', value = TRUE)
@@ -1694,7 +1732,7 @@ ui <- shiny::navbarPage(
                                     shinydashboard::box(width = 12,
                                                         title = 'Download Options', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
                                                         column(width = 6,
-                                                               textInput('plotlytor_filename_model_2', plotly_filename_label, value = paste0(today_numeric(), '_tornado_plot_model_2')),
+                                                               textInput('plotlytor_filename_model_2', plotly_filename_label, value = paste0(today_numeric(), '_all_params_model_2')),
                                                                shinyBS::bsPopover('plotlytor_filename_model_2', title = plotly_filename_label, content = bspop_plotly_file_name_label, placement = 'left', trigger = "focus")
                                                         ),
                                                         column(width = 2,
@@ -2218,19 +2256,20 @@ ui <- shiny::navbarPage(
                                p("Jin Gyu Kim (Developer, 2023)"),
                                htmltools::br(),
                                p('Please cite this work as ', a(href = "https://ascpt.onlinelibrary.wiley.com/doi/10.1002/psp4.70023", "Choy et al (2025).", target = "_blank"), '')
-
+                               
            ),
            shinydashboard::box(width = 12,
                                title = 'Acknowledgements', status = 'primary', solidHeader = TRUE,
                                p('The authors would like to acknowledge Nik Onufrak, Jan-George Wojtyniak, Hugo Maas, and the PMxT working group in Boehringer-Ingelheim for their support in this project.'),
                                p('MVP is inspired by various open-source tools, in particular ', a(href = "https://github.com/PavanVaddady/modvizpop", "ModVizPop", target = "_blank"), ' by Pavan Vaddady.')
-
-
+                               
+                               
            ),
            shinydashboard::box(width = 12,
                                title = 'Changelog', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
                                p('Please visit the ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/releases", "Github release page", target = "_blank"), ' for more information.'),
                                htmltools::br(),
+                               p('v0.3.2 (2025-06-13) - Added spider plots sub-tab for batch runs.'),
                                p('v0.3.1 (2025-06-11) - Weight-based dosing now apply for batch runs and variability plots.'),
                                p('v0.3.0 (2025-06-10) - Parameter Sensitivity Analysis - Batch Runs (i.e. Tornado Plots). Fix slowness of plots when switching models with differing sample times. General improvements.'),
                                p('v0.2.19 (2025-06-03) - Prevent bad parameter values from crashing the app. Re-worked median line bins to be based on quantiles. Bug fixes for box plot count labels. Better handling of NAs for Quantize X-axis. Built-in data filtering option to distinct by ID. More QoL options for NCA (safeguards and rounding). Minor re-factoring and QoL updates.'),
@@ -2328,7 +2367,7 @@ ui <- shiny::navbarPage(
 
 # server ----
 server <- function(input, output, session) {
-
+  
   if(!is.na(authentication_code)) {
     # Function to show the authentication modal
     show_auth_modal <- function() {
@@ -2343,10 +2382,10 @@ server <- function(input, output, session) {
         fade = FALSE
       ))
     }
-
+    
     # Show the authentication modal on app startup
     show_auth_modal()
-
+    
     # Observe the submit button click
     observeEvent(input$submit_code, {
       if (!is.na(input$auth_code)) {
@@ -2356,7 +2395,7 @@ server <- function(input, output, session) {
       }
     })
   } # end authentication
-
+  
   # Page 1 Data Input ----
   # Using debounce to wait for inactivity on textInput
   d_plot_title_data      <- debounce(reactive({ input$plot_title_data }), debounce_timer_slow)
@@ -2364,13 +2403,13 @@ server <- function(input, output, session) {
   d_filter_by_id         <- debounce(reactive({ input$filter_by_id }), debounce_timer_slow)
   d_sort_by_ind          <- debounce(reactive({ input$sort_by_ind }), debounce_timer_slow)
   d_highlight_var_values <- debounce(reactive({ input$highlight_var_values }), debounce_timer_slow)
-
+  
   ## uploaded_data() ----
   # Disable the checkboxes
   shinyjs::disable("change_all_to_upper") # Always required and not changeable by the user
   shinyjs::disable("remove_pound_sign")   # Always required and not changeable by the user
   shinyjs::disable("create_cmt_col")   # Always required and not changeable by the user
-
+  
   uploaded_data <- reactive({
     shiny::req(input$upload)
     ext <- tools::file_ext(input$upload$name)
@@ -2382,96 +2421,96 @@ server <- function(input, output, session) {
       shiny::validate("Invalid file; Please upload a .csv or .txt (tab-delimited) file")
     )
   }, label = 'uploaded_nm_data')
-
+  
   # Data after checkBoxed:
   ## built_in_filtered_data() ----
   built_in_filtered_data <- reactive({
     tmp <- uploaded_data()
-
+    
     if(any(duplicated(names(tmp)))) {
-
+      
       # Get the column names
       col_names <- names(tmp)
-
+      
       # Find the duplicate column names
       dup_cols <- which(duplicated(col_names) | duplicated(col_names, fromLast = TRUE))
-
+      
       shiny::showNotification(paste0("WARNING: These column names are duplicated and will be renamed: ", paste(unique(col_names[dup_cols]), collapse = " ")), type = "warning", duration = 10)
       # Add a suffix to duplicate column names to make them unique
       col_names[dup_cols] <- paste0(col_names[dup_cols], "_", 1:length(dup_cols))
-
+      
       # Update the column names in the dataframe
       names(tmp) <- col_names
     }
-
+    
     if(input$change_all_to_upper) {
       tmp <- tmp %>% dplyr::rename_all(toupper)
     }
-
+    
     if(input$remove_pound_sign) {
       tmp <- tmp %>% dplyr::rename_all(~stringr::str_replace_all(., "#", ""))
       tmp <- tmp %>% dplyr::rename_all(~stringr::str_replace_all(., "@", ""))
     }
-
+    
     if (input$EVID_filter) {
       if ('EVID' %in% names(tmp)) {
         tmp <- tmp %>% dplyr::filter(EVID < 1)
       }
     }
-
+    
     if (input$BLQ_filter) {
       if('BLQ' %in% names(tmp)) {
         tmp <- tmp %>% dplyr::filter(BLQ < 1)
       }
     }
-
+    
     if(input$create_cmt_col) {
       if(!('CMT' %in% names(tmp))) {
         tmp <- tmp %>% dplyr::mutate(CMT = 2)
       }
     }
-
+    
     if (input$create_id_col) {
       tmp <- search_id_col(tmp, names_of_id_cols = c("SUBJIDN", "SUBJID", "USUBJID", "PTNO"))
     }
-
+    
     if (input$create_time_col) {
       tmp <- search_time_col(tmp, names_of_time_cols = c("TAFD", "TSFD", "ATFD", "ATSD"))
     }
-
+    
     if(input$distinct_by_ID) {
       if('ID' %in% names(tmp)) {
         tmp <- tmp %>% dplyr::distinct(ID, .keep_all = TRUE)
         shiny::showNotification(paste0("Dataset has been filtered to retain one row per ID only (n=", nrow(tmp), ")"), type = "message", duration = 10)
       }
     }
-
+    
     if (input$turn_all_numeric) {
       tmp <- as.data.frame(lapply(tmp, function(x) as.numeric(as.character(x))))
     }
-
+    
     return(tmp)
   }, label = 'built_in_filtered_data')
-
+  
   ### Update selectize columns  ----
   observeEvent(uploaded_data(), {
     updateSelectizeInput(session, "column",
                          choices = names(built_in_filtered_data())
     )
   }, label = 'updated_column_after_upload')
-
+  
   # Integrated with built_in_filtered_data and selectized columns:
   ## de_selectized_data() ----
   de_selectized_data <- reactive({
     tmp <- built_in_filtered_data()
-
+    
     if(!is.null(input$column)) {
       tmp <- tmp %>% dplyr::select(!dplyr::all_of(input$column))
     }
-
+    
     return(tmp)
   }, label = 'de_selectized_data')
-
+  
   ### Enable auto completion with live ----
   observe({
     autoComplete <- if (input$enableAutocomplete) {
@@ -2485,18 +2524,18 @@ server <- function(input, output, session) {
     }
     shinyAce::updateAceEditor(session, 'codes', autoComplete = autoComplete)
   }, label = 'ShinyAce autocompletion')
-
+  
   observe({
     input$enableAutocomplete
     comps <- colnames(de_selectized_data())
     shinyAce::updateAceEditor(session, "codes", autoCompleteList = comps)
   }, label = 'ShinyAce autocomplete columns')
-
+  
   # Integrated data selection between built_in_filtered_data and de_selectized_data:
   ## nmdata() ----
   nmdata <- reactive({
     tmp_data <- uploaded_data()
-
+    
     if (!is.null(input$EVID_filter | input$BLQ_filter)) {
       tmp_data <- built_in_filtered_data()
     }
@@ -2508,21 +2547,21 @@ server <- function(input, output, session) {
     }
     return(tmp_data)
   }, label = 'nmdata() before addtional filtering')
-
+  
   safely_nmdata_code <- reactive({
     if(is.data.frame(nmdata())) {
-
+      
       if (show_debugging_msg) {
         message("nmdata() is dataframe")
       }
-
+      
       nmdata_global     <<- nmdata() # globally assigned as shinyAce editor is not scoped to access this environment
       parsed_text <- safely_parse(text = paste('nmdata_global <<- nmdata_global %>% ', input$codes))
-
+      
       if (show_debugging_msg) {
         message(parsed_text$result)
       }
-
+      
       eval_text   <- safely_eval(parsed_text$result)
       return(eval_text)
     } else {
@@ -2532,86 +2571,86 @@ server <- function(input, output, session) {
       return(eval_text)
     }
   }, label = 'Evaluate Safely additional filtering code box') %>% bindEvent(input$eval_button, nmdata())
-
-
+  
+  
   nmdata_code_is_valid <- reactiveVal(FALSE)
-
+  
   observe({
     if(is.null(safely_nmdata_code()$error)) {
       if(is.data.frame(safely_nmdata_code()$result)) {
-
+        
         if (show_debugging_msg) {
           message('The dataset and code is valid')
         }
-
+        
         nmdata_code_is_valid(TRUE)
       }
     } else {
-
+      
       if (show_debugging_msg) {
         message('Invalid Code')
       }
-
+      
       nmdata_code_is_valid(FALSE)
       shiny::showNotification("ERROR: Dataset cleaning code failed to run. Check Console Error Message for more info.", type = "error", duration = 10)
     }
   }, label = 'nmdata_code_is_valid')
-
+  
   # Additional_filtered_data
   ## final_output() ----
   final_output <- reactive({
     nonmem_dataset <- nmdata()
-
+    
     if (nmdata_code_is_valid()) {
       nonmem_dataset <- safely_nmdata_code()$result
       if (show_debugging_msg) {
         message('Returning uploaded dataset as final_output()')
       }
     }
-
+    
     return(nonmem_dataset)
   }, label = 'Final output after additional filtering')
-
+  
   observe({
     if ('CMT' %in% names(final_output())) {
       unique_cmt_values <- sort(as.numeric(unique(final_output()$CMT)))
     } else {
       unique_cmt_values <- NULL
     }
-
+    
     unique_cmt_values <- c('NULL', unique_cmt_values)
-
+    
     updateSelectizeInput(session,
                          "filter_cmt",
                          choices = unique_cmt_values,
                          selected = 'NULL')
-
+    
     updateSelectizeInput(session,
                          "filter_cmt_data",
                          choices = unique_cmt_values,
                          selected = 'NULL')
   }, label = 'Update selectizeInput nmdata() filtered CMT')
-
+  
   output$console_data_1 <- renderPrint({
     if(!nmdata_code_is_valid()) {
       print(safely_nmdata_code()$error)
-
+      
     }
   }) %>% bindEvent(nmdata_code_is_valid(), safely_nmdata_code())
-
+  
   final_output_executed <- reactiveVal(FALSE)
   id_is_in_dataset      <- reactiveVal(FALSE) # A less strict dataset for Data Exploration, only requiring "ID" column
-
+  
   # Additional processing for nmdata plot
   ## nmdataset_for_plot() ----
   nmdataset_for_plot <- reactive({
-
+    
     if (show_debugging_msg) {
       message('Creating nmdataset_for_plot()')
     }
-
+    
     nonmem_dataset <- final_output()
-
+    
     if('ID' %in% names(nonmem_dataset)) {
       nonmem_dataset <- nonmem_dataset %>% dplyr::mutate(ID   = as.character(ID))
       nonmem_dataset$ID <- as.factor(nonmem_dataset$ID)
@@ -2620,44 +2659,44 @@ server <- function(input, output, session) {
     } else {
       id_is_in_dataset(FALSE)
     }
-
+    
     if('TIME' %in% names(nonmem_dataset)) {
       nonmem_dataset <- nonmem_dataset %>% dplyr::mutate(TIME = as.numeric(TIME))
     }
-
+    
     if('DV' %in% names(nonmem_dataset)) {
       nonmem_dataset <- nonmem_dataset %>% dplyr::mutate(DV   = as.numeric(DV))
     }
-
+    
     if (all(c('ID', 'TIME', 'DV') %in% names(final_output()))) {
-
+      
       if (show_debugging_msg) {
         message('Found ID TIME DV')
       }
       final_output_executed(TRUE)
     } else {
-
+      
       final_output_executed(FALSE)
       shiny::showNotification("ERROR: Not all required columns (ID, TIME, DV) are present. Data overlay options are disabled.", type = "error", duration = 12)
       #updateCheckboxInput(session, "turn_all_numeric", value = FALSE)
       #shiny::showNotification("WARNING: Dataset appears to not be NONMEM-formatted. Re-filtering to retain characters...", type = "warning", duration = 12)
     }
-
+    
     if (show_debugging_msg) {
       #dplyr::glimpse(nonmem_dataset)
       message(paste0("final_output_executed() status: ", final_output_executed()))
     }
-
+    
     return(nonmem_dataset)
   }, label = 'nmdataset_for_plot')
-
+  
   ### Update variables for inputted_file ----
   observeEvent(nmdataset_for_plot(), {
     #if(final_output_executed()) {
     if (show_debugging_msg) {
       message('Attempting to update default variables for nmdataset_for_plot()')
     }
-
+    
     updateSelectizeInput(session,
                          "x_axis",
                          choices = names(nmdataset_for_plot()) %>% sort(),
@@ -2671,7 +2710,7 @@ server <- function(input, output, session) {
                                                      "ARELTMEL" %in% names(nmdataset_for_plot()) ~ "ARELTMEL",
                                                      TRUE                                        ~ "")
     )
-
+    
     updateSelectizeInput(session,
                          "y_axis",
                          choices = names(nmdataset_for_plot()) %>% sort(),
@@ -2681,26 +2720,26 @@ server <- function(input, output, session) {
                                                      #"ACVALREP" %in% names(nmdataset_for_plot()) ~ "ACVALREP",
                                                      TRUE                                        ~ "")
     )
-
+    
     updateSelectizeInput(session,
                          "color",
                          choices = names(nmdataset_for_plot()) %>% sort(),
                          selected = '')
-
+    
     updateSelectizeInput(session,
                          "median_line_by",
                          choices = names(nmdataset_for_plot()) %>% sort(),
                          selected = '')
-
+    
     updateSelectizeInput(session,
                          "var_corr",
                          choices = names(nmdataset_for_plot()) %>% sort())
-
+    
     updateSelectizeInput(session,
                          "facet_by",
                          choices = names(nmdataset_for_plot()) %>% sort(),
                          selected = NULL)
-
+    
     updateSelectizeInput(session,
                          "color_corr",
                          choices = names(nmdataset_for_plot()) %>% sort(),
@@ -2711,7 +2750,7 @@ server <- function(input, output, session) {
                                                      TRUE  ~ ''
                          )
     )
-
+    
     ## Update selections for NCA
     updateSelectizeInput(session,
                          "subject_colname",
@@ -2721,7 +2760,7 @@ server <- function(input, output, session) {
                                                      "ID" %in% names(nmdataset_for_plot()) ~ "ID",
                                                      "USUBJID" %in% names(nmdataset_for_plot()) ~ "USUBJID")
     )
-
+    
     updateSelectizeInput(session,
                          "time_colname",
                          choices = names(nmdataset_for_plot()) %>% sort(),
@@ -2734,7 +2773,7 @@ server <- function(input, output, session) {
                                                      "ARTMSLR" %in% names(nmdataset_for_plot()) ~ "ARTMSLR",
                                                      "ARELTMEL" %in% names(nmdataset_for_plot()) ~ "ARELTMEL")
     )
-
+    
     updateSelectizeInput(session,
                          "conc_colname",
                          choices = names(nmdataset_for_plot()) %>% sort(),
@@ -2743,7 +2782,7 @@ server <- function(input, output, session) {
                                                      "DV" %in% names(nmdataset_for_plot()) ~ "DV",
                                                      "AVAL" %in% names(nmdataset_for_plot()) ~ "AVAL")
     )
-
+    
     updateSelectizeInput(session,
                          "dose_colname",
                          choices = names(nmdataset_for_plot()) %>% sort(),
@@ -2752,7 +2791,7 @@ server <- function(input, output, session) {
                                                      "DOSEAM" %in% names(nmdataset_for_plot()) ~ "DOSEAM",
                                                      "DOSE" %in% names(nmdataset_for_plot()) ~ "DOSE")
     )
-
+    
     updateSelectizeInput(session,
                          "additional_keys",
                          choices = names(nmdataset_for_plot()) %>% sort(),
@@ -2764,7 +2803,7 @@ server <- function(input, output, session) {
                                                      #"AMT" %in% names(nmdataset_for_plot()) ~ "AMT",
                                                      TRUE ~ "DUMMY")
     )
-
+    
     if('ID' %in% names(nmdataset_for_plot())) {
       updateSelectizeInput(session,
                            "filter_by_id",
@@ -2773,25 +2812,25 @@ server <- function(input, output, session) {
                            server = TRUE
       )
     }
-
+    
     updateSelectizeInput(session,
                          "sort_by_ind",
                          choices = names(nmdataset_for_plot()) %>% sort(),
                          selected = NULL
     )
-
+    
     updateSelectizeInput(session,
                          "strat_by_ind",
                          choices = names(nmdataset_for_plot()) %>% sort(),
                          selected = ''
     )
-
+    
     updateSelectizeInput(session,
                          "highlight_var",
                          choices = names(nmdataset_for_plot()) %>% sort(),
                          selected = ''
     )
-
+    
     updateSelectizeInput(session,
                          "ind_dose_colname",
                          choices = names(nmdataset_for_plot()) %>% sort(),
@@ -2801,17 +2840,17 @@ server <- function(input, output, session) {
                                                      "AMTNM" %in% names(nmdataset_for_plot()) ~ "AMT",
                                                      TRUE                                        ~ "")
     )
-
+    
     updateSelectizeInput(session,
                          "lloq_colname",
                          choices = names(nmdataset_for_plot()) %>% sort(),
                          selected = dplyr::case_when("LLOQ" %in% names(nmdataset_for_plot()) ~ "LLOQ",
                                                      TRUE                                        ~ "")
     )
-
+    
     #}
   }, label = 'Update selectizeInput after uploaded_data()')
-
+  
   observeEvent(c(nmdataset_for_plot(), input$number_of_rows, input$number_of_cols), {
     if('ID' %in% names(nmdataset_for_plot())) {
       updateSelectizeInput(session,
@@ -2821,7 +2860,7 @@ server <- function(input, output, session) {
       )
     }
   }, label = 'Update page_number')
-
+  
   observeEvent(c(nmdataset_for_plot(), input$highlight_var), {
     if(!is.null(input$highlight_var) && input$highlight_var != '') {
       updateSelectizeInput(session,
@@ -2831,7 +2870,7 @@ server <- function(input, output, session) {
       )
     }
   }, label = 'Update highlight_var_values')
-
+  
   ## Download nmdataset_for_plot() ----
   output$download_nmdataset_for_plot <- downloadHandler(
     filename = function() {
@@ -2841,15 +2880,15 @@ server <- function(input, output, session) {
       #write.csv(nmdataset_for_plot(), file, quote = FALSE, row.names = FALSE)
       data.table::fwrite(nmdataset_for_plot(), file, quote = FALSE, row.names = FALSE)
     })
-
+  
   # table output of nmdata with code evaluation
   ## UI: output$dataset_page_table ----
   output$dataset_page_table <- DT::renderDataTable({
-
+    
     if (show_debugging_msg) {
       message('Creating dataset_page_table')
     }
-
+    
     DT::datatable(nmdataset_for_plot(),
                   rownames = FALSE,
                   options = list(
@@ -2863,7 +2902,7 @@ server <- function(input, output, session) {
                   filter = 'top',
     )
   })
-
+  
   ## UI: output$data_info ----
   # Summary Stats
   data_summary_stats <- reactive({
@@ -2872,7 +2911,7 @@ server <- function(input, output, session) {
     }
     nmdataset_for_plot() %>% calc_summary_stats(transpose = input$transpose_data_info, comma_format = FALSE)
   })
-
+  
   output$data_info <- DT::renderDataTable({
     DT::datatable(data_summary_stats(),
                   rownames = FALSE,
@@ -2884,7 +2923,7 @@ server <- function(input, output, session) {
                   )
     )
   })
-
+  
   output$download_data_info <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_nonmem_data_summ_stats.csv")
@@ -2893,21 +2932,21 @@ server <- function(input, output, session) {
       #write.csv(data_summary_stats(), file, quote = FALSE, row.names = FALSE)
       data.table::fwrite(data_summary_stats(), file, quote = FALSE, row.names = FALSE)
     })
-
+  
   ## UI: output$descriptive_stats ----
   stat_table <- reactive({
     shiny::req(nmdataset_for_plot())
     nmdataset_for_nca <- nmdataset_for_plot()
-
+    
     if("EVID" %in% names(nmdataset_for_nca)) {
       nmdataset_for_nca <- nmdataset_for_nca %>% filter(EVID == 0)
       shiny::showNotification("Only retaining observations (EVID == 0) for NCA.", type = "message", duration = 10)
     }
-
+    
     if(input$mw_value == 0) {
       shiny::showNotification("WARNING: Set Molecular Weight to a non-zero value to get Clearance and Volume estimates.", type = "warning", duration = 10)
     }
-
+    
     if(length(unique(nmdataset_for_nca$CMT)) > 1) {
       most_frequent_cmt <- nmdataset_for_nca %>%
         count(CMT) %>%                # Count occurrences of each unique CMT
@@ -2916,15 +2955,15 @@ server <- function(input, output, session) {
       nmdataset_for_nca <- nmdataset_for_nca %>% filter(CMT %in% most_frequent_cmt[1]) # Use %in% in case of ties
       shiny::showNotification(paste0("WARNING: Multiple CMTs found. Retaining most frequent CMT (", most_frequent_cmt, ") for NCA."), type = "warning", duration = 10)
     }
-
+    
     nmdataset_for_nca <- nmdataset_for_nca %>% # sort by ID and TIME to prevent "Check if the x is sorted in order!" error. Also by additional keys and dose col
       arrange(!!dplyr::sym(input$additional_keys), !!dplyr::sym(input$dose_colname), !!dplyr::sym(input$subject_colname), !!dplyr::sym(input$time_colname))
-
+    
     doses_by_id <- nmdataset_for_nca %>%
       dplyr::select(!!dplyr::sym(input$subject_colname), !!dplyr::sym(input$additional_keys), !!dplyr::sym(input$dose_colname)) %>%
       dplyr::distinct() %>%
       .[[input$dose_colname]]
-
+    
     tblNCA_progress(nmdataset_for_nca, ## originally was NonCompart::tblNCA, modified to support progress bars
                     key = c(input$subject_colname, input$additional_keys),
                     colTime = input$time_colname,
@@ -2940,13 +2979,13 @@ server <- function(input, output, session) {
                     #R2ADJ = input$R2ADJ_value,
                     MW = input$mw_value) %>%
       dplyr::select(where(~any(!is.na(.)))) ## Remove columns with NA's if inputs are non-sensible
-
+    
   }) %>%
     bindEvent(input$calc_nca)
-
+  
   # Create a named vector for renaming
   rename_vectors <- reactive({
-
+    
     list_of_name_pairs <- c("CMAX"     = paste0("Cmax (", input$desc_conc_unit, ")"),
                             "CMAXD"    = paste0("Cmax,norm (", input$desc_conc_unit, "/", input$desc_dose_unit, ")"),
                             "AUCLST"   = paste0("AUClast (", input$desc_time_unit, "*", input$desc_conc_unit, ")"),
@@ -2975,22 +3014,22 @@ server <- function(input, output, session) {
     )
     return(list_of_name_pairs)
   })
-
+  
   output$descriptive_stats_summary <- renderUI({
     shiny::req(stat_table())
     shiny::req(rename_vectors())
-
+    
     rename_vectors_reverse <- setNames(names(rename_vectors()), unname(rename_vectors()))
     rename_vectors_exist   <- rename_vectors_reverse[names(rename_vectors()) %in% colnames(stat_table())]
-
+    
     # Rename the columns
     stat_table_renamed <- dplyr::rename(stat_table(), !!!rename_vectors_exist)
-
+    
     if(show_debugging_msg) {
       message(rename_vectors_exist)
       dplyr::glimpse(stat_table_renamed)
     }
-
+    
     list_of_nca <- calc_summary_stats_as_list(stat_table_renamed,
                                               group_by_name       = input$additional_keys,
                                               list_of_nca_metrics = names(rename_vectors_reverse),
@@ -2998,7 +3037,7 @@ server <- function(input, output, session) {
                                               dp                  = as.numeric(input$nca_sigfigs),
                                               sigdig              = TRUE,
                                               id_colname          = input$subject_colname)
-
+    
     withProgress(message = "Tabulating NCA", value = 0, {
       for(i in 1:length(list_of_nca)) {
         setProgress(value = i / length(list_of_nca))
@@ -3027,16 +3066,16 @@ server <- function(input, output, session) {
         }
       }
     })
-
+    
     fluidRow(list_of_nca)
   })
-
+  
   output$descriptive_stats <- DT::renderDataTable({
     shiny::req(nmdataset_for_plot())
     if (show_debugging_msg) {
       message('Creating descriptive_stats')
     }
-
+    
     DT::datatable(stat_table(),
                   rownames = FALSE,
                   options = list(
@@ -3045,7 +3084,7 @@ server <- function(input, output, session) {
                       "$(this.api().table().header()).css({'background-color': '#08312A', 'color': '#00E47C'});",
                       "}")))
   })
-
+  
   output$download_descriptive_stats <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_descriptive_stats.csv")
@@ -3054,18 +3093,18 @@ server <- function(input, output, session) {
       #write.csv(stat_table(), file, quote = FALSE, row.names = FALSE)
       data.table::fwrite(stat_table(), file, quote = FALSE, row.names = FALSE)
     })
-
+  
   output$download_nca_report <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_nca_report.pdf")
     },
     content = function(file) {
       nmdataset_for_nca2 <- nmdataset_for_plot()
-
+      
       if("EVID" %in% names(nmdataset_for_nca2)) {
         nmdataset_for_nca2 <- nmdataset_for_nca2 %>% filter(EVID == 0)
       }
-
+      
       if(length(unique(nmdataset_for_nca2$CMT)) > 1) {
         most_frequent_cmt <- nmdataset_for_nca2 %>%
           count(CMT) %>%                # Count occurrences of each unique CMT
@@ -3073,15 +3112,15 @@ server <- function(input, output, session) {
           pull(CMT)                     # Extract the CMT value(s)
         nmdataset_for_nca2 <- nmdataset_for_nca2 %>% filter(CMT %in% most_frequent_cmt[1]) # Use %in% in case of ties
       }
-
+      
       nmdataset_for_nca2 <- nmdataset_for_nca2 %>% # sort by ID and TIME to prevent "Check if the x is sorted in order!" error. Also by additional keys and dose col
         arrange(!!dplyr::sym(input$additional_keys), !!dplyr::sym(input$dose_colname), !!dplyr::sym(input$subject_colname), !!dplyr::sym(input$time_colname))
-
+      
       doses_by_id2 <- nmdataset_for_nca2 %>%
         dplyr::select(!!dplyr::sym(input$subject_colname), !!dplyr::sym(input$additional_keys), !!dplyr::sym(input$dose_colname)) %>%
         dplyr::distinct() %>%
         .[[input$dose_colname]]
-
+      
       withProgress(message = 'Generating report', value = 0, {
         pdfNCA_wm(fileName = file, ## originally was ncar::pdfNCA, modified to support progress bars and watermarks in plots
                   nmdataset_for_nca2,
@@ -3104,22 +3143,22 @@ server <- function(input, output, session) {
                   show_progress = TRUE)
       })
     })
-
+  
   # Data output plotting
   ## UI: output$dataset_page_plot ----
   dataset_page_plot <- reactive({
     if (show_debugging_msg) {
       message('Creating dataset_page_plot')
     }
-
+    
     if (id_is_in_dataset()) {
       if(input$x_axis == "" | input$y_axis == "") { # Dummy panel
         return(ggplot2::ggplot() + ggplot2::theme(panel.background = ggplot2::element_blank()))
       }
-
+      
       shiny::req(input$x_axis)
       shiny::req(input$y_axis)
-
+      
       # data_to_plot <- trim_columns(data = nmdataset_for_plot(),
       #                              x_axis = input$x_axis,
       #                              y_axis = input$y_axis,
@@ -3130,7 +3169,7 @@ server <- function(input, output, session) {
       #                              med_line_by = input$median_line_by)#,
       #                              #ind_dose_colname = input$ind_dose_colname,
       #                              #highlight_var = input$highlight_var)
-
+      
       a <- do_data_page_plot(nmd         = nmdataset_for_plot(), #data_to_plot,
                              filter_cmt  = input$filter_cmt_data,
                              x_axis      = input$x_axis,
@@ -3150,17 +3189,17 @@ server <- function(input, output, session) {
                              plot_title  = d_plot_title_data(),
                              label_size  = as.numeric(input$select_label_size),
                              debug       = show_debugging_msg)
-
+      
     } else {
       a <- ggplot2::ggplot() +
         ggplot2::labs(title = unsupported_dataset) +
         ggplot2::theme(panel.background = ggplot2::element_blank(),
                        plot.title = ggplot2::element_text(color = model_1_color))
     }
-
+    
     return(a)
   }, label = 'dataset_page_plot')
-
+  
   output$dataset_page_plot <- renderUI({
     shiny::conditionalPanel(
       condition = "true",
@@ -3177,7 +3216,7 @@ server <- function(input, output, session) {
   })
   #### size = 16 is used for regular ggplots to approximate looks compared to plotly in browser. For download, this size change is not applied
   output$data_ggplot <- renderPlot(dataset_page_plot() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
-
+  
   output$data_plotly <- plotly::renderPlotly(convert_to_plotly_watermark(dataset_page_plot(),
                                                                          format           = input$plotlyd_format,
                                                                          filename         = input$plotlyd_filename,
@@ -3186,7 +3225,7 @@ server <- function(input, output, session) {
                                                                          plotly_watermark = insert_watermark,
                                                                          debug            = show_debugging_msg)
   )
-
+  
   #### Data Plot download section
   observeEvent(input$do_data_plotly, {
     if (input$do_data_plotly) {
@@ -3199,7 +3238,7 @@ server <- function(input, output, session) {
                         choices = c("png", "pdf", "jpeg", "svg"))
     }
   }, label = "update_download_data_plot")
-
+  
   output$download_data_plot <- downloadHandler(
     filename = function() {
       paste0(input$plotlyd_filename, ".", input$plotlyd_format)
@@ -3214,12 +3253,12 @@ server <- function(input, output, session) {
       )
     }
   )
-
+  
   ## UI: output$dataset_page_plot_corr ----
   correlation_plot <- reactive({
     if (shiny::req(input$color_corr) %in% names(nmdataset_for_plot()) &
         shiny::req(input$var_corr[1]) %in% names(nmdataset_for_plot())) {
-
+      
       draw_correlation_plot(input_df         = nmdataset_for_plot(),
                             corr_variables   = input$var_corr,
                             color_sep        = input$color_corr,
@@ -3227,9 +3266,9 @@ server <- function(input, output, session) {
                             debug            = show_debugging_msg)
     }
   })
-
+  
   output$dataset_page_plot_corr <- renderPlot({
-
+    
     if (id_is_in_dataset()) {
       correlation_plot()
     } else {
@@ -3240,8 +3279,8 @@ server <- function(input, output, session) {
         add_watermark(watermark_toggle = insert_watermark)
     }
   })
-
-
+  
+  
   #### Corr Plot download section
   output$download_corr_plot <- downloadHandler(
     filename = function() {
@@ -3257,21 +3296,21 @@ server <- function(input, output, session) {
       )
     }
   )
-
+  
   ## UI: output$dataset_page_ind_plot ----
   dataset_page_ind_plot <- reactive({
     if (show_debugging_msg) {
       message('Creating dataset_page_ind_plot')
     }
-
+    
     if (id_is_in_dataset()) {
       if(input$x_axis == "" | input$y_axis == "") { # Dummy panel
         return(ggplot2::ggplot() + ggplot2::theme(panel.background = ggplot2::element_blank()))
       }
-
+      
       shiny::req(input$x_axis)
       shiny::req(input$y_axis)
-
+      
       data_to_plot <- trim_columns(data = nmdataset_for_plot(),
                                    x_axis = input$x_axis,
                                    y_axis = input$y_axis,
@@ -3285,7 +3324,7 @@ server <- function(input, output, session) {
                                    ind_dose_colname = input$ind_dose_colname,
                                    highlight_var = input$highlight_var,
                                    lloq_colname = input$lloq_colname)
-
+      
       a <- do_data_page_ind_plot(nmd         = data_to_plot,
                                  rownums     = as.numeric(input$number_of_rows),
                                  colnums     = as.numeric(input$number_of_cols),
@@ -3318,17 +3357,17 @@ server <- function(input, output, session) {
                                  lloq_name   = input$lloq_colname,
                                  same_scale  = input$fixed_scale,
                                  debug       = show_debugging_msg)
-
+      
     } else {
       a <- ggplot2::ggplot() +
         ggplot2::labs(title = unsupported_dataset) +
         ggplot2::theme(panel.background = ggplot2::element_blank(),
                        plot.title = ggplot2::element_text(color = model_1_color))
     }
-
+    
     return(a)
   }, label = 'dataset_page_ind_plot')
-
+  
   output$dataset_page_ind_plot <- renderUI({
     shiny::conditionalPanel(
       condition = "true",
@@ -3345,7 +3384,7 @@ server <- function(input, output, session) {
   })
   #### size = 16 is used for regular ggplots to approximate looks compared to plotly in browser. For download, this size change is not applied
   output$data_ind_ggplot <- renderPlot(dataset_page_ind_plot() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
-
+  
   output$data_ind_plotly <- plotly::renderPlotly(convert_to_plotly_watermark(dataset_page_ind_plot(),
                                                                              format           = input$plotlydi_format,
                                                                              filename         = input$plotlydi_filename,
@@ -3354,7 +3393,7 @@ server <- function(input, output, session) {
                                                                              plotly_watermark = insert_watermark,
                                                                              debug            = show_debugging_msg)
   )
-
+  
   #### Individual Plot download section
   observeEvent(input$do_data_ind_plotly, {
     if (input$do_data_ind_plotly) {
@@ -3367,7 +3406,7 @@ server <- function(input, output, session) {
                         choices = c("png", "pdf", "jpeg", "svg"))
     }
   }, label = "update_download_data_ind_plot")
-
+  
   output$download_data_ind_plot <- downloadHandler(
     filename = function() {
       paste0(input$plotlydi_filename, ".", input$plotlydi_format)
@@ -3382,20 +3421,20 @@ server <- function(input, output, session) {
       )
     }
   )
-
+  
   ### All Individual Plots download
   output$download_data_ind_plot_all <- downloadHandler(
     filename = function() {
       paste0(input$plotlydi_all_filename, ".", input$plotlydi_all_format)
     },
     content = function(file) {
-
+      
       unique_ids         <- unique(nmdataset_for_plot()$ID)
       length_unique_ids  <- length(unique_ids)
       number_of_pages    <- ceiling(length_unique_ids / (as.numeric(input$number_of_rows) * as.numeric(input$number_of_cols)))
-
+      
       p_ind_all       <- list() # Initiating empty lists to store multiple pages
-
+      
       data_to_plot <- trim_columns(data = nmdataset_for_plot(),
                                    x_axis = input$x_axis,
                                    y_axis = input$y_axis,
@@ -3409,7 +3448,7 @@ server <- function(input, output, session) {
                                    ind_dose_colname = input$ind_dose_colname,
                                    highlight_var = input$highlight_var,
                                    lloq_colname = input$lloq_colname)
-
+      
       withProgress(message = 'Generating plots', value = 0, {
         for (i in 1:number_of_pages) {
           # Estimating that generation of plots take approx 20% of the total time
@@ -3449,7 +3488,7 @@ server <- function(input, output, session) {
             debug       = show_debugging_msg) +
             add_watermark(watermark_toggle = insert_watermark)
         }
-
+        
         pdf(file = file, width = input$plotlydi_all_width, height = input$plotlydi_all_height)
         for(m in seq_along(p_ind_all)) {
           setProgress(value = 0.2 + (m/length(p_ind_all) * 0.8), message = 'Compiling PDF', detail = paste0("page ", m, "/", length(p_ind_all)))
@@ -3459,7 +3498,7 @@ server <- function(input, output, session) {
       })
     }
   )
-
+  
   # Page 2 Simulation ----
   d_x_axis_label   <- debounce(reactive({ input$x_axis_label }), debounce_timer_slow)
   d_y_axis_label   <- debounce(reactive({ input$y_axis_label }), debounce_timer_slow)
@@ -3467,23 +3506,23 @@ server <- function(input, output, session) {
   d_tgrid_max      <- debounce(reactive({ input$tgrid_max }), debounce_timer_fast)
   d_delta          <- debounce(reactive({ input$delta }), debounce_timer_fast)
   d_custom_sampling_time_text <- debounce(reactive({ input$custom_sampling_time_text }), debounce_timer_slow)
-
+  
   mcode_model_1  <- paste0("\nmodel_object <- mcode('Model-1-", runif(min = 1, max = 9999999, n = 1) %>% round(), "', model_code, recover = TRUE)") # Insert random number as part of name to avoid global object namespace clash
   mcode_model_2  <- paste0("\nmodel_object <- mcode('Model-2-", runif(min = 1, max = 9999999, n = 1) %>% round(), "', model_code, recover = TRUE)")
-
+  
   ## Outline ----
   ### Update model selectizeInput ----
   observeEvent(input$password, {
     update_model_choices(input_password = input$password, session = session)
   }, label = 'update_model_choices_default_values')
-
+  
   observeEvent(input$model_select, {
     shinyAce::updateAceEditor(session, 'model_input', value = model_switch_conditions(input_model_select = input$model_select, mcode_model_choice = mcode_model_1))
-
+    
     if (show_debugging_msg) {
       message(paste0('Model 1 selected to: ', input$model_select))
     }
-
+    
     # Turn all dose amounts to 0 for TTE models as they are not applicable
     if(stringr::str_detect(input$model_select, "Time To Event")) {
       shiny::showNotification("Setting all dose amounts to 0 for TTE models.", type = "message", duration = 10)
@@ -3493,16 +3532,16 @@ server <- function(input, output, session) {
       updateNumericInput(session, "amt4", value = 0)
       updateNumericInput(session, "amt5", value = 0)
     }
-
+    
   }, label = 'updateAceEditor Model 1')
-
+  
   observeEvent(input$model_select2, {
     shinyAce::updateAceEditor(session, 'model_input2', value = model_switch_conditions(input_model_select = input$model_select2, mcode_model_choice = mcode_model_2))
-
+    
     if (show_debugging_msg) {
       message(paste0('Model 2 selected to: ', input$model_select2))
     }
-
+    
     # Turn all dose amounts to 0 for TTE models as they are not applicable
     if(stringr::str_detect(input$model_select2, "Time To Event")) {
       shiny::showNotification("Setting all dose amounts to 0 for TTE models.", type = "message", duration = 10)
@@ -3512,9 +3551,9 @@ server <- function(input, output, session) {
       updateNumericInput(session, "amt4_2", value = 0)
       updateNumericInput(session, "amt5_2", value = 0)
     }
-
+    
   }, label = 'updateAceEditor Model 2')
-
+  
   ## Handling upload of .cpp file option
   output$upload_cpp_model_1 <- renderUI({
     if (input$model_select == "Upload .cpp File") {
@@ -3525,13 +3564,13 @@ server <- function(input, output, session) {
       )
     }
   })
-
+  
   observeEvent(input$cppfile_model_1, {
     shiny::req(input$cppfile_model_1)
     cpp_text_model_1 <- paste(readLines(input$cppfile_model_1$datapath), collapse = "\n")
     shinyAce::updateAceEditor(session, "model_input", value = paste0(cpp_preamble, '"', cpp_text_model_1, '"', mcode_model_1))
   })
-
+  
   output$upload_cpp_model_2 <- renderUI({
     if (input$model_select2 == "Upload .cpp File") {
       fileInput("cppfile_model_2", "Upload External .cpp File",
@@ -3541,13 +3580,13 @@ server <- function(input, output, session) {
       )
     }
   })
-
+  
   observeEvent(input$cppfile_model_2, {
     shiny::req(input$cppfile_model_2)
     cpp_text_model_2 <- paste(readLines(input$cppfile_model_2$datapath), collapse = "\n")
     shinyAce::updateAceEditor(session, "model_input2", value = paste0(cpp_preamble, '"', cpp_text_model_2, '"', mcode_model_2))
   })
-
+  
   ### Update x_axis_label ----
   observe({
     updateTextInput(session, 'x_axis_label', value = switch(
@@ -3566,26 +3605,26 @@ server <- function(input, output, session) {
                                        param_updated_model_1           = FALSE,
                                        sim_generated_model_1           = FALSE,
   )
-
+  
   iiv_checkpoint_model_1 <- reactiveValues(extract_model_omega = FALSE,
                                            extract_model_sigma = FALSE,
                                            updated_matrix_omega = FALSE,
                                            updated_matrix_sigma = FALSE,
                                            reconstructed_iiv = FALSE,
                                            iiv_simulation = FALSE)
-
+  
   safely_inputted_model_1 <- reactive({
     tmp <- safely_eval(parse(text = input$model_input))
     return(tmp)
   }, label = 'safely_inputted_model_1') %>% bindEvent(input$generate_model)
-
+  
   inputted_model_1 <- reactive({
     model_1_checkpoint$updated_values_model_1          <- NULL
     model_1_checkpoint$param_updated_model_1           <- FALSE
     model_1_checkpoint$sim_generated_model_1           <- FALSE
     model_1_checkpoint$param_input_generated_model_1   <- FALSE
     model_1_checkpoint$param_columns_generated_model_1 <- FALSE
-
+    
     iiv_checkpoint_model_1$extract_model_omega <- FALSE
     iiv_checkpoint_model_1$extract_model_sigma <- FALSE
     iiv_checkpoint_model_1$updated_matrix_omega <- FALSE
@@ -3598,8 +3637,8 @@ server <- function(input, output, session) {
       return(NULL) # compatibility for many if conditionals failing
     }
   }, label = 'inputted_model_1')
-
-
+  
+  
   ## Model 1 validation ----
   model_1_is_valid <- reactive({
     if(mrgsolve::is.mrgmod(safely_inputted_model_1()$result)) {
@@ -3615,7 +3654,7 @@ server <- function(input, output, session) {
       return(FALSE)
     }
   }, label = 'model_1_is_valid')
-
+  
   output$console_output_model_1 <- renderPrint({
     if(!model_1_is_valid()) {
       if(is.null(safely_inputted_model_1()$result)) {
@@ -3633,7 +3672,7 @@ server <- function(input, output, session) {
       }
     }
   }) %>% bindEvent(changed_reacted_param_model_1(), dosing_regimen_model_1(), safely_inputted_model_1(), model_1_is_valid())
-
+  
   ## param_columns_generated_model_1() ----
   param_columns_generated_model_1 <- eventReactive(model_1_is_valid(), {
     if(model_1_is_valid()) {
@@ -3654,35 +3693,35 @@ server <- function(input, output, session) {
       return(tmp)
     }
   }, label = 'param_columns_generated_model_1')
-
+  
   # Generate parameter UI based on numbers of $PARAM
   ## UI: output$param_output_model_1 ----
   output$param_output_model_1 <- renderUI({
     param_columns_generated_model_1()
   })
-
+  
   ### Update param and insert into model ----
   # Create a reactive value to store the updated input values
   param_input_model_1 <- reactiveVal()
-
+  
   observe({
     if(model_1_checkpoint$param_columns_generated_model_1) {
       param_names <- names(mrgsolve::param(inputted_model_1()))
-
+      
       if (!shinyAce::is.empty(input[[param_names[1]]])) {
         dataframe_list <- list()
-
+        
         for (param_name in param_names) {
           if (!is.null(input[[param_name]])) {
             model_1_checkpoint$updated_values_model_1[[param_name]] <- input[[param_name]]
-
+            
             dataframe <- data.frame(name = param_name, value = model_1_checkpoint$updated_values_model_1[[param_name]])
-
+            
             dataframe_list[[param_name]] <- dataframe
           }
         }
         final_dataframe <- do.call(rbind, dataframe_list) %>% dplyr::as_tibble()
-
+        
         if (show_debugging_msg) {
           message('created_param_input')
           GGally::print_if_interactive(final_dataframe)
@@ -3692,11 +3731,11 @@ server <- function(input, output, session) {
       }
     }
   }, label = 'param_input_model_1()')
-
+  
   # Insert modification on params into the model
   ## changed_reacted_param_model_1() ----
   changed_reacted_param_model_1 <- reactiveVal()
-
+  
   observe({
     if (model_1_checkpoint$param_input_generated_model_1) {
       if (show_debugging_msg) {
@@ -3708,17 +3747,17 @@ server <- function(input, output, session) {
                                     atol     = sanitize_numeric_input(input$solver_atol),
                                     maxsteps = sanitize_numeric_input(input$solver_maxsteps))
       changed_reacted_param_model_1(new_model)
-
+      
       if (show_debugging_msg) {
         message('update_model_object_completed')
       }
       model_1_checkpoint$param_updated_model_1 <- TRUE
     }
   }, label = 'changed_reacted_param_model_1()')
-
+  
   ## dosing_regimen_model_1() ----
   dosing_regimen_model_1 <- reactive({
-
+    
     dose_regimen <- generate_dosing_regimens(
       amt1 = input$amt1, delay_time1 = input$delay_time1, cmt1 = input$cmt1_model_1, tinf1 = input$tinf1, total1 = input$total1, ii1 = input$ii1,
       amt2 = input$amt2, delay_time2 = input$delay_time2, cmt2 = input$cmt2_model_1, tinf2 = input$tinf2, total2 = input$total2, ii2 = input$ii2,
@@ -3729,10 +3768,10 @@ server <- function(input, output, session) {
       create_dummy_ev = TRUE,
       debug = show_debugging_msg
     )
-
+    
     return(dose_regimen)
   }, label = 'dosing_regimen_model_1')
-
+  
   ## mw_conversion_model_1() ----
   mw_conversion_model_1 <- reactive({
     if(input$mw_checkbox) {
@@ -3742,7 +3781,7 @@ server <- function(input, output, session) {
     }
     return(conversion)
   }, label = 'mw_conversion_model_1')
-
+  
   ### Update cmt from the model ----
   observeEvent(inputted_model_1(), {
     # Automatically handle D_ and R_ if present
@@ -3752,7 +3791,7 @@ server <- function(input, output, session) {
     } else {
       updateCheckboxInput(session, "model_dur_checkbox", value = FALSE)
     }
-
+    
     if (any(stringr::str_starts(inputted_model_1()$code, "R_") &
             !stringr::str_starts(inputted_model_1()$code, "R_tot"))) {
       updateCheckboxInput(session, "model_rate_checkbox", value = TRUE)
@@ -3760,44 +3799,44 @@ server <- function(input, output, session) {
     } else {
       updateCheckboxInput(session, "model_rate_checkbox", value = FALSE)
     }
-
+    
     if(model_1_is_valid()) {
       updateSelectizeInput(session,
                            "cmt1_model_1",
                            choices  = mrgsolve::outvars(inputted_model_1())$cmt,
                            selected = mrgsolve::outvars(inputted_model_1())$cmt[1])
-
+      
       updateSelectizeInput(session,
                            "cmt2_model_1",
                            choices  = mrgsolve::outvars(inputted_model_1())$cmt,
                            selected = mrgsolve::outvars(inputted_model_1())$cmt[1])
-
+      
       updateSelectizeInput(session,
                            "cmt3_model_1",
                            choices  = mrgsolve::outvars(inputted_model_1())$cmt,
                            selected = mrgsolve::outvars(inputted_model_1())$cmt[1])
-
+      
       updateSelectizeInput(session,
                            "cmt4_model_1",
                            choices  = mrgsolve::outvars(inputted_model_1())$cmt,
                            selected = mrgsolve::outvars(inputted_model_1())$cmt[1])
-
+      
       updateSelectizeInput(session,
                            "cmt5_model_1",
                            choices  = mrgsolve::outvars(inputted_model_1())$cmt,
                            selected = mrgsolve::outvars(inputted_model_1())$cmt[1])
-
+      
     }
   }, label = 'update simulation CMT dosing_regimen_model_1')
-
+  
   model_duration_argument_model_1 <- reactive({
     tmp <- FALSE
-
+    
     ## Handling edge case where if D_syntax is used and amt is 0, mrgsolve will crash with the following error:
     ## Warning: Error in : non-zero rate requires positive amt
     ## ID: 1, row: 1, rate: -2, amt: 0
     ## Solution is to uncheck the model_dur_checkbox
-
+    
     if (input$model_dur_checkbox) {
       if (any(stringr::str_starts(inputted_model_1()$code, "D_"))) {
         if(any(dosing_regimen_model_1()$amt > 0)) {
@@ -3809,13 +3848,13 @@ server <- function(input, output, session) {
         shiny::showNotification("ERROR: Duration syntax (D_xxx) not identified in the model code. Duration not modeled.", type = "error", duration = 10)
       }
     }
-
+    
     return(tmp)
   })
-
+  
   model_rate_argument_model_1 <- reactive({
     tmp <- FALSE
-
+    
     if (input$model_rate_checkbox) {
       if (any(stringr::str_starts(inputted_model_1()$code, "R_"))) {
         if(any(dosing_regimen_model_1()$amt > 0)) {
@@ -3827,10 +3866,10 @@ server <- function(input, output, session) {
         shiny::showNotification("ERROR: Rate syntax (R_xxx) not identified in the model code. Rate not modeled.", type = "error", duration = 10)
       }
     }
-
+    
     return(tmp)
   })
-
+  
   # Check if model 1 is using $PRED syntax
   model_1_is_pred <- reactive({
     if(model_1_is_valid()) {
@@ -3839,7 +3878,7 @@ server <- function(input, output, session) {
               stringr::str_starts(tolower(inputted_model_1()$code), "\\[pred\\]")
       )
       ) {
-
+        
         if (show_debugging_msg) {
           message("Model 1 is modelled using $PRED.")
         }
@@ -3850,9 +3889,9 @@ server <- function(input, output, session) {
         shinyjs::disable("amt5")
         shiny::showNotification("Warning: Model uses $PRED. All dosing settings will be ignored.", type = "warning", duration = 10)
         tmp <- TRUE
-
+        
       } else {
-
+        
         if (show_debugging_msg) {
           message("Model 1 is not modelled using $PRED.")
         }
@@ -3868,7 +3907,7 @@ server <- function(input, output, session) {
     }
     return(tmp)
   }, label = "model_1_is_pred")
-
+  
   ## simulation_output_model_1() ----
   simulation_output_model_1 <- reactive({
     if (model_1_checkpoint$param_updated_model_1) {
@@ -3897,7 +3936,7 @@ server <- function(input, output, session) {
               divide_by          = time_value()
             )
         }
-
+        
         if(is.data.frame(sim_output)) {
           model_1_checkpoint$sim_generated_model_1 <- TRUE
           if (show_debugging_msg) {
@@ -3911,7 +3950,7 @@ server <- function(input, output, session) {
       }
     }
   }, label = 'simulation_output_model_1()')
-
+  
   # Model 2 ----   ###############################################################
   ## inputted_model_2() ----
   model_2_checkpoint <- reactiveValues(param_columns_generated_model_2 = FALSE,
@@ -3920,26 +3959,26 @@ server <- function(input, output, session) {
                                        param_updated_model_2           = FALSE,
                                        sim_generated_model_2           = FALSE,
   )
-
+  
   iiv_checkpoint_model_2 <- reactiveValues(extract_model_omega = FALSE,
                                            extract_model_sigma = FALSE,
                                            updated_matrix_omega = FALSE,
                                            updated_matrix_sigma = FALSE,
                                            reconstructed_iiv = FALSE,
                                            iiv_simulation = FALSE)
-
+  
   safely_inputted_model_2 <- reactive({
     tmp2 <- safely_eval(parse(text = input$model_input2))
     return(tmp2)
   }, label = 'safely_inputted_model_2') %>% bindEvent(input$generate_model2)
-
+  
   inputted_model_2 <- reactive({
     model_2_checkpoint$param_columns_generated_model_2 <- FALSE
     model_2_checkpoint$updated_values_model_2          <- NULL
     model_2_checkpoint$param_input_generated_model_2   <- FALSE
     model_2_checkpoint$param_updated_model_2           <- FALSE
     model_2_checkpoint$sim_generated_model_2           <- FALSE
-
+    
     iiv_checkpoint_model_2$extract_model_omega <- FALSE
     iiv_checkpoint_model_2$extract_model_sigma <- FALSE
     iiv_checkpoint_model_2$updated_matrix_omega <- FALSE
@@ -3952,7 +3991,7 @@ server <- function(input, output, session) {
       return(NULL)
     }
   }, label = 'inputted_model_2')
-
+  
   ## Model 2 validation ----
   model_2_is_valid <- reactive({
     if(mrgsolve::is.mrgmod(safely_inputted_model_2()$result)) {
@@ -3968,7 +4007,7 @@ server <- function(input, output, session) {
       return(FALSE)
     }
   }, label = 'model_2_is_valid')
-
+  
   output$console_output_model_2 <- renderPrint({
     if(!model_2_is_valid()) {
       if(is.null(safely_inputted_model_2()$result)) {
@@ -3986,8 +4025,8 @@ server <- function(input, output, session) {
       }
     }
   }) %>% bindEvent(changed_reacted_param_model_2(), dosing_regimen_model_2(), safely_inputted_model_2())
-
-
+  
+  
   ## param_columns_generated_model_2() ----
   param_columns_generated_model_2 <- eventReactive(model_2_is_valid(), {
     if(model_2_is_valid()) {
@@ -4008,35 +4047,35 @@ server <- function(input, output, session) {
       return(tmp)
     }
   }, label = 'param_columns_generated_model_2')
-
+  
   # Generate parameter UI based on numbers of $PARAM
   ## UI: output$param_output_model_2 ----
   output$param_output_model_2 <- renderUI({
     param_columns_generated_model_2()
   })
-
+  
   ### Update param and imsert into model ----
   # Create a reactive value to store the updated input values
   param_input_model_2 <- reactiveVal()
-
+  
   observe({
     if(model_2_checkpoint$param_columns_generated_model_2) {
       param_names2 <- names(mrgsolve::param(inputted_model_2()))
-
+      
       if (!is.null(input[[paste0(names(mrgsolve::param(inputted_model_2())[1]), '_model_2')]])) {
         dataframe_list2 <- list()
-
+        
         for (param_name2 in param_names2) {
           if (!is.null(input[[paste0(param_name2, '_model_2')]])) {
             model_2_checkpoint$updated_values_model_2[[param_name2]] <- input[[paste0(param_name2, '_model_2')]]
-
+            
             dataframe2 <- data.frame(name = param_name2, value = model_2_checkpoint$updated_values_model_2[[param_name2]])
-
+            
             dataframe_list2[[param_name2]] <- dataframe2
           }
         }
         final_dataframe2 <- do.call(rbind, dataframe_list2) %>% dplyr::as_tibble()
-
+        
         if (show_debugging_msg) {
           message('created_param_input')
           GGally::print_if_interactive(final_dataframe2)
@@ -4046,34 +4085,34 @@ server <- function(input, output, session) {
       }
     }
   }, label = 'param_input_model_2()')
-
+  
   # Insert modification on params into the model
   ## changed_reacted_param_model_2() ----
   changed_reacted_param_model_2 <- reactiveVal()
-
+  
   observe({
     if (model_2_checkpoint$param_input_generated_model_2) {
       if (show_debugging_msg) {
         message('update_model_2_object_observe')
       }
-
+      
       new_model2 <- update_model_object(inputted_model_2(), param_input_model_2())
       new_model2 <- mrgsolve::update(new_model2,
                                      rtol     = sanitize_numeric_input(input$solver_rtol),
                                      atol     = sanitize_numeric_input(input$solver_atol),
                                      maxsteps = sanitize_numeric_input(input$solver_maxsteps))
       changed_reacted_param_model_2(new_model2)
-
+      
       if (show_debugging_msg) {
         message('model_updated_observe_model_2')
       }
       model_2_checkpoint$param_updated_model_2 <- TRUE
     }
   }, label = 'changed_reacted_param_model_2()')
-
+  
   ## dosing_regimen_model_2() ----
   dosing_regimen_model_2 <- reactive({
-
+    
     dose_regimen_2 <- generate_dosing_regimens(
       amt1 = input$amt1_2, delay_time1 = input$delay_time1_2, cmt1 = input$cmt1_model_2, tinf1 = input$tinf1_2, total1 = input$total1_2, ii1 = input$ii1_2,
       amt2 = input$amt2_2, delay_time2 = input$delay_time2_2, cmt2 = input$cmt2_model_2, tinf2 = input$tinf2_2, total2 = input$total2_2, ii2 = input$ii2_2,
@@ -4084,11 +4123,11 @@ server <- function(input, output, session) {
       create_dummy_ev = TRUE,
       debug = show_debugging_msg
     )
-
+    
     return(dose_regimen_2)
-
+    
   }, label = 'dosing_regimen_model_2')
-
+  
   ## mw_conversion_model_2() ----
   mw_conversion_model_2 <- reactive({
     if(input$mw_checkbox_2) {
@@ -4098,7 +4137,7 @@ server <- function(input, output, session) {
     }
     return(conversion2)
   }, label = 'mw_conversion_model_2')
-
+  
   ### Update cmt from the model ----
   observeEvent(inputted_model_2(), {
     # Automatically handle D_ and R_ if present
@@ -4108,7 +4147,7 @@ server <- function(input, output, session) {
     } else {
       updateCheckboxInput(session, "model_dur_checkbox_2", value = FALSE)
     }
-
+    
     if (any(stringr::str_starts(inputted_model_2()$code, "R_") &
             !stringr::str_starts(inputted_model_2()$code, "R_tot"))) {
       updateCheckboxInput(session, "model_rate_checkbox_2", value = TRUE)
@@ -4116,38 +4155,38 @@ server <- function(input, output, session) {
     } else {
       updateCheckboxInput(session, "model_rate_checkbox_2", value = FALSE)
     }
-
+    
     if(model_2_is_valid()) {
       updateSelectizeInput(session,
                            "cmt1_model_2",
                            choices  = mrgsolve::outvars(inputted_model_2())$cmt,
                            selected = mrgsolve::outvars(inputted_model_2())$cmt[1])
-
+      
       updateSelectizeInput(session,
                            "cmt2_model_2",
                            choices  = mrgsolve::outvars(inputted_model_2())$cmt,
                            selected = mrgsolve::outvars(inputted_model_2())$cmt[1])
-
+      
       updateSelectizeInput(session,
                            "cmt3_model_2",
                            choices  = mrgsolve::outvars(inputted_model_2())$cmt,
                            selected = mrgsolve::outvars(inputted_model_2())$cmt[1])
-
+      
       updateSelectizeInput(session,
                            "cmt4_model_2",
                            choices  = mrgsolve::outvars(inputted_model_2())$cmt,
                            selected = mrgsolve::outvars(inputted_model_2())$cmt[1])
-
+      
       updateSelectizeInput(session,
                            "cmt5_model_2",
                            choices  = mrgsolve::outvars(inputted_model_2())$cmt,
                            selected = mrgsolve::outvars(inputted_model_2())$cmt[1])
     }
   }, label = 'update simulation CMT dosing_regimen_model_2')
-
+  
   model_duration_argument_model_2 <- reactive({
     tmp <- FALSE
-
+    
     if (input$model_dur_checkbox_2) {
       if (any(stringr::str_starts(inputted_model_2()$code, "D_"))) {
         if(any(dosing_regimen_model_2()$amt > 0)) {
@@ -4159,13 +4198,13 @@ server <- function(input, output, session) {
         shiny::showNotification("ERROR: Duration syntax (D_xxx) not identified in the model code. Duration not modeled.", type = "error", duration = 10)
       }
     }
-
+    
     return(tmp)
   })
-
+  
   model_rate_argument_model_2 <- reactive({
     tmp <- FALSE
-
+    
     if (input$model_rate_checkbox_2) {
       if (any(stringr::str_starts(inputted_model_2()$code, "R_"))) {
         if(any(dosing_regimen_model_2()$amt > 0)) {
@@ -4177,11 +4216,11 @@ server <- function(input, output, session) {
         shiny::showNotification("ERROR: Rate syntax (R_xxx) not identified in the model code. Rate not modeled.", type = "error", duration = 10)
       }
     }
-
+    
     return(tmp)
   })
-
-
+  
+  
   # Check if model 2 is using $PRED syntax
   model_2_is_pred <- reactive({
     if(model_2_is_valid()) {
@@ -4190,7 +4229,7 @@ server <- function(input, output, session) {
               stringr::str_starts(tolower(inputted_model_2()$code), "\\[pred\\]")
       )
       ){
-
+        
         if (show_debugging_msg) {
           message("Model 2 is modelled using $PRED.")
         }
@@ -4201,9 +4240,9 @@ server <- function(input, output, session) {
         shinyjs::disable("amt5_2")
         shiny::showNotification("Warning: Model uses $PRED. All dosing settings will be ignored.", type = "warning", duration = 10)
         tmp <- TRUE
-
+        
       } else {
-
+        
         if (show_debugging_msg) {
           message("Model 2 is not modelled using $PRED.")
         }
@@ -4219,20 +4258,20 @@ server <- function(input, output, session) {
     }
     return(tmp)
   }, label = "model_2_is_pred")
-
+  
   ## simulation_output_model_2() ----
   simulation_output_model_2 <- reactive({
     if (model_2_checkpoint$param_updated_model_2) {
       if(model_2_is_pred() || dosing_regimen_model_2()$cmt[1] %in% inputted_model_2()$cmt) {
         if (input$generate_model2) {
-
+          
           if(show_debugging_msg) {
             message("generate_model2 clicked. Either model 2 is $PRED or model_2_checkpoint$param_updated_model_2 met.")
           }
-
+          
           sim_output <- NULL
         }
-
+        
         if(mrgsolve::is.mrgmod(changed_reacted_param_model_2())) {
           if(show_debugging_msg) {
             message("changed_reacted_param_model_2 is mrgmod. will execute run_single_sim")
@@ -4265,26 +4304,26 @@ server <- function(input, output, session) {
       }
     }
   }, label = 'simulation_output_model_2()')
-
+  
   # End of model 1 and model 2 ##################################################
   ## Create a new variable that sanitizes Max Sampling time
   tend <- reactive({
     tmp <- sanitize_numeric_input(d_tgrid_max(), allow_zero = FALSE, return_value = 24, display_error = TRUE)
     return(tmp)
   }, label = 'tend: tgrid_max')
-
+  
   ## Create a new variable that sanitizes Frequency
   tdelta <- reactive({
     tmp <- sanitize_numeric_input(d_delta(), allow_zero = FALSE, legal_maximum = tend(), display_error = TRUE)
     return(tmp)
   }, label = 'tdelta')
-
+  
   # checking if user provided custom sampling is valid
   eval_custom_time <- reactive({
     tmp <- try(eval(parse(text=paste0("c(", d_custom_sampling_time_text(), ")"))), silent=TRUE)
     return(tmp)
   }, label = 'eval_custom_time')
-
+  
   # Only evaluate and return a non-error message (presumably a vector)
   custom_time <- NULL
   custom_time <- reactive({
@@ -4298,18 +4337,18 @@ server <- function(input, output, session) {
       }
     }
   }, label = 'custom_time after sanitized')
-
+  
   sampling_options <- reactive({
     # Default scenario uses Max Sampling and Sampling Frequency
     sampling_argument <- seq(from = tdelta(), to = tend(), by = tdelta())
-
+    
     if(length(sampling_argument) > max_samples & !input$custom_sampling_time_cb) {
       # Calculate how many times to divide by 10 to get below max_samples (default = 20000, adjust 'max_samples' in ui_settings.R)
       delta_multiplier  <- 10^(ceiling(log10(length(sampling_argument)) - log10(max_samples)))
       sampling_argument <- seq(from = tdelta() * delta_multiplier, to = tend(), by = tdelta() * delta_multiplier)
       shiny::showNotification(paste0("WARNING: Too many total samples (>", max_samples, "). Reduced sampling frequency to ", tdelta() * delta_multiplier, " to avoid crashing."), type = "warning", duration = 10)
     }
-
+    
     # If Custom sampling CB & Non-error Sampling Times & it is not NULL, then use custom time
     if(input$custom_sampling_time_cb) {
       if (show_debugging_msg) {
@@ -4329,22 +4368,22 @@ server <- function(input, output, session) {
     }
     return(sampling_argument)
   }, label = 'sampling_options')
-
+  
   ## TIME selection ----
   time_value <- reactiveVal()
-
+  
   observe({
     time_value(as.numeric(input$time_unit))
   }, label = 'convert time_value() to numeric', priority = 98)
-
+  
   nmdata_cmt_filtered <- reactive({
     if (input$filter_cmt != 'NULL') {
       cmt_filtered <- nmdataset_for_plot() %>% dplyr::filter(CMT %in% input$filter_cmt)
-
+      
       if(show_debugging_msg) {
         message(dplyr::glimpse(cmt_filtered))
       }
-
+      
       if("TIME" %in% names(cmt_filtered)) {
         cmt_filtered <- cmt_filtered %>% dplyr::mutate(TIMEADJ = TIME/time_value())
       } else {
@@ -4359,7 +4398,7 @@ server <- function(input, output, session) {
       }
     }
   }, label = 'nmdata_cmt_filtered')
-
+  
   ### Update plotting variables to capture ----
   observeEvent(inputted_model_1(), {
     if(model_1_is_valid()) {
@@ -4371,13 +4410,13 @@ server <- function(input, output, session) {
                            'tor_var_model_1',
                            choices = c(mrgsolve::outvars(inputted_model_1())$capture, mrgsolve::outvars(inputted_model_1())$cmt),
                            selected = mrgsolve::outvars(inputted_model_1())$capture[1])
-
+      
       if (show_debugging_msg) {
         message('updated yaxis_name')
       }
     }
   }, label = 'update_y_axis_name')
-
+  
   observeEvent(inputted_model_2(), {
     if(model_2_is_valid()) {
       updateSelectizeInput(session,
@@ -4388,37 +4427,37 @@ server <- function(input, output, session) {
                            'tor_var_model_2',
                            choices = c(mrgsolve::outvars(inputted_model_2())$capture, mrgsolve::outvars(inputted_model_2())$cmt),
                            selected = mrgsolve::outvars(inputted_model_2())$capture[1])
-
+      
       if (show_debugging_msg) {
         message('updated yaxis_name_2')
       }
     }
   }, label = 'update_y_axis_name_2')
-
+  
   observeEvent(nmdata_cmt_filtered(), {
     updateSelectizeInput(session,
                          "nonmem_y_axis",
                          choices = names(nmdata_cmt_filtered()) %>% sort(),
                          selected = 'DV')
   }, label = 'update_nonmem_y_axis')
-
+  
   observeEvent(nmdata_cmt_filtered(), {
     updateSelectizeInput(session,
                          "color_data_by",
                          choices = names(nmdata_cmt_filtered()) %>% sort(),
                          selected = NA)
   }, label = 'update_color_data_by')
-
+  
   observeEvent(c(nmdata_cmt_filtered(), input$color_data_by), {
     updateSelectizeInput(session,
                          "stat_sum_data_by",
                          choices = names(nmdata_cmt_filtered()) %>% sort(),
                          selected = input$color_data_by)
   }, label = 'update_stat_sum_data_by')
-
+  
   sim_1_dataset_arg <- reactive({
     tmp <- NULL
-
+    
     if (model_1_checkpoint$sim_generated_model_1) {
       if (input$yaxis_name %in% colnames(simulation_output_model_1())) {
         if (input$show_model_1) {
@@ -4426,10 +4465,10 @@ server <- function(input, output, session) {
         }}}
     return(tmp)
   }, label = 'sim_1_dataset_arg')
-
+  
   sim_2_dataset_arg <- reactive({
     tmp2 <- NULL
-
+    
     if (model_2_checkpoint$sim_generated_model_2) {
       if (input$yaxis_name_2 %in% colnames(simulation_output_model_2())) {
         if (input$show_model_2) {
@@ -4437,12 +4476,12 @@ server <- function(input, output, session) {
         }}}
     return(tmp2)
   }, label = 'sim_2_dataset_arg')
-
+  
   nonmem_dataset_arg <- reactive({
     tmp <- NULL
-
+    
     if (input$combine_nmdata && final_output_executed() && input$nonmem_y_axis %in% colnames(nmdata_cmt_filtered())) {
-
+      
       # Do some more trimming
       tmp <- trim_columns(data = nmdata_cmt_filtered(),
                           x_axis = "TIMEADJ",
@@ -4452,20 +4491,20 @@ server <- function(input, output, session) {
                           #facet_name = input$facet_by,
                           insert_med_line = input$stat_sum_data_option,
                           med_line_by = input$stat_sum_data_by)
-
+      
     }
     return(tmp)
   }, label = 'nonmem_dataset_arg')
-
+  
   ## simulation_page_plot() ----
-
+  
   simulation_page_plot <- reactive({
-
+    
     if (!is.null(sim_1_dataset_arg()) || !is.null(sim_2_dataset_arg())) {
       if (show_debugging_msg) {
         message('Plotting condition met, generating a plot')
       }
-
+      
       sim_plot <- plot_data_with_nm(input_dataset1 = sim_1_dataset_arg(),
                                     input_dataset2 = sim_2_dataset_arg(),
                                     nonmem_dataset = nonmem_dataset_arg(),
@@ -4487,17 +4526,17 @@ server <- function(input, output, session) {
                                     line_color_2 = model_2_color,
                                     debug  = show_debugging_msg
       )
-
+      
       if (input$combine_nmdata && is.null(nonmem_dataset_arg())) {
         sim_plot <- sim_plot +
           ggplot2::labs(title = unsupported_dataset) +
           ggplot2::theme(plot.title = ggplot2::element_text(color = model_1_color))
       }
-
+      
       return(sim_plot)
     }
   }, label = 'simulation_page_plot')
-
+  
   output$simulation_plot_output <- renderUI({
     shiny::conditionalPanel(
       condition = "true",
@@ -4512,9 +4551,9 @@ server <- function(input, output, session) {
       )
     )
   })
-
+  
   output$sim_ggplot <- renderPlot(simulation_page_plot() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
-
+  
   output$sim_plotly <- plotly::renderPlotly(convert_to_plotly_watermark(simulation_page_plot(),
                                                                         format           = input$plotly_format,
                                                                         filename         = input$plotly_filename,
@@ -4523,7 +4562,7 @@ server <- function(input, output, session) {
                                                                         plotly_watermark = insert_watermark,
                                                                         debug            = show_debugging_msg)
   )
-
+  
   combine_sim_download_data <- reactive({
     downloadable_df <- check_and_combine_df(model_1_is_valid = model_1_checkpoint$sim_generated_model_1,
                                             model_2_is_valid = model_2_checkpoint$sim_generated_model_2,
@@ -4531,8 +4570,8 @@ server <- function(input, output, session) {
                                             input_df_2 = simulation_output_model_2())
     return(downloadable_df)
   })
-
-
+  
+  
   ## Download simulated combined table ----
   output$download_sim_data <- downloadHandler(
     filename = function() {
@@ -4543,7 +4582,7 @@ server <- function(input, output, session) {
       data.table::fwrite(combine_sim_download_data(), file, quote = FALSE, row.names = FALSE)
     }
   )
-
+  
   #### Sim Plot download section
   observeEvent(input$do_sim_plotly, {
     if (input$do_sim_plotly) {
@@ -4556,7 +4595,7 @@ server <- function(input, output, session) {
                         choices = c("png", "pdf", "jpeg", "svg"))
     }
   }, label = "update_download_sim_plot")
-
+  
   output$download_sim_plot <- downloadHandler(
     filename = function() {
       paste0(input$plotly_filename, ".", input$plotly_format)
@@ -4571,7 +4610,7 @@ server <- function(input, output, session) {
       )
     }
   )
-
+  
   ## Download model code as .cpp ----
   output$download_cpp_model_1 <- downloadHandler(
     filename = function() {
@@ -4581,7 +4620,7 @@ server <- function(input, output, session) {
       mrgsolve::mwrite_cpp(changed_reacted_param_model_1(), file = file, update = FALSE)
     }
   )
-
+  
   output$download_cpp_model_2 <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_model_2.cpp")
@@ -4590,11 +4629,11 @@ server <- function(input, output, session) {
       mrgsolve::mwrite_cpp(changed_reacted_param_model_2(), file = file, update = FALSE)
     }
   )
-
+  
   # Page 3 Parameter Sensitivity Analysis ----
   d_plot_title_psa_model_1 <- debounce(reactive({ input$plot_title_psa_model_1 }), debounce_timer_slow)
   d_plot_title_psa_model_2 <- debounce(reactive({ input$plot_title_psa_model_2 }), debounce_timer_slow)
-
+  
   ## Outline ----
   ### Update input$auc_time_range ----
   observe({
@@ -4605,7 +4644,7 @@ server <- function(input, output, session) {
                                     choices = sort(unique(simulation_output_model_1()$TIME)),
                                     select = min(unique(simulation_output_model_1()$TIME))
     )
-
+    
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_nca_obs_time_model_1',
                                     label = NULL,
@@ -4618,7 +4657,7 @@ server <- function(input, output, session) {
                                     choices = sort(unique(simulation_output_model_1()$TIME)),
                                     select = min(unique(simulation_output_model_1()$TIME))
     )
-
+    
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_tor_obs_time_model_1',
                                     label = NULL,
@@ -4626,7 +4665,7 @@ server <- function(input, output, session) {
                                     select = max(unique(simulation_output_model_1()$TIME))
     )
   }, label = 'update model_1 time selection')
-
+  
   observeEvent(input$min_nca_obs_time_model_1, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_nca_obs_time_model_1',
@@ -4635,7 +4674,7 @@ server <- function(input, output, session) {
                                     selected = input$max_nca_obs_time_model_1
     )
   }, label = 'update model_1 time selection (Max)')
-
+  
   observeEvent(input$max_nca_obs_time_model_1, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'min_nca_obs_time_model_1',
@@ -4644,7 +4683,7 @@ server <- function(input, output, session) {
                                     selected = input$min_nca_obs_time_model_1
     )
   }, label = 'update model_1 time selection (Min)')
-
+  
   observeEvent(input$min_tor_obs_time_model_1, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_tor_obs_time_model_1',
@@ -4653,7 +4692,7 @@ server <- function(input, output, session) {
                                     selected = input$max_tor_obs_time_model_1
     )
   }, label = 'update Batch Run model_1 time selection (Max)')
-
+  
   observeEvent(input$max_tor_obs_time_model_1, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'min_tor_obs_time_model_1',
@@ -4662,30 +4701,30 @@ server <- function(input, output, session) {
                                     selected = input$min_tor_obs_time_model_1
     )
   }, label = 'update Batch Run model_1 time selection (Min)')
-
+  
   numeric_obs_min_model_1 <- reactive({
     as.numeric(input$min_nca_obs_time_model_1)
   }, label = 'convert model_1 time to numeric (Min)')
-
+  
   numeric_obs_max_model_1 <- reactive({
     as.numeric(input$max_nca_obs_time_model_1)
   }, label = 'convert model_1 time to numeric (Max)')
-
+  
   numeric_tor_min_model_1 <- reactive({
     as.numeric(input$min_tor_obs_time_model_1)
   }, label = 'convert Batch Run model_1 time to numeric (Min)')
-
+  
   numeric_tor_max_model_1 <- reactive({
     as.numeric(input$max_tor_obs_time_model_1)
   }, label = 'convert Batch Run model_1 time to numeric (Max)')
-
+  
   ### Update input$param_selector ----
   observeEvent(inputted_model_1(), {
     updateSelectInput(session,
                       "param_selector_model_1",
                       choices  = names(inputted_model_1())$param)
   }, label = 'model_1 PSA param_selector')
-
+  
   # Read selected param name
   ## pas_init_param_name() ----
   pas_init_param_name <- reactive({
@@ -4693,16 +4732,16 @@ server <- function(input, output, session) {
       paste0(input$param_selector_model_1, i)
     })
     do.call(tagList, reactive_name)
-
+    
     return(reactive_name)
   }, label = 'pas_init_param_name_model_1')
-
+  
   # Read selected param value
   ## pas_init_param_value ----
   pas_init_param_value <- reactive({
     changed_reacted_param_model_1()[[input$param_selector_model_1]]
   }, label = 'pas_init_param_value_MODEL1')
-
+  
   ## Generate param min/mid/max UI ----
   ### param_min_ui_model_1() ----
   param_min_ui_model_1 <- eventReactive(pas_init_param_name(), {
@@ -4713,7 +4752,7 @@ server <- function(input, output, session) {
       step = 0.1
     )
   }, label = 'param_min_ui_model_1')
-
+  
   ### param_mid_ui_model_1() ----
   param_mid_ui_model_1 <- eventReactive(pas_init_param_name(), {
     numericInput(
@@ -4723,7 +4762,7 @@ server <- function(input, output, session) {
       step = 0.1
     )
   }, label = 'param_mid_ui_model_1')
-
+  
   ### param_max_ui() ----
   param_max_ui_model_1 <- eventReactive(pas_init_param_name(), {
     numericInput(
@@ -4733,46 +4772,46 @@ server <- function(input, output, session) {
       step = 0.1
     )
   }, label = 'param_max_ui_model_1')
-
+  
   ## Generate min/mid/max modified param into model ----
   ### applied_param_min() ----
   applied_param_min_model_1 <- reactive({
-
+    
     shiny::req(!shinyAce::is.empty(input$param_min_id_model_1))
-
+    
     dataframe <- data.frame(name = input$param_selector_model_1, value = input$param_min_id_model_1) %>%
       dplyr::as_tibble()
-
+    
     new_model_min <- update_model_object(changed_reacted_param_model_1(), dataframe)
     return(new_model_min)
   }, label = 'applied_param_min_model_1')
-
+  
   ### applied_param_mid() ----
   applied_param_mid_model_1 <- reactive({
-
+    
     shiny::req(!shinyAce::is.empty(input$param_mid_id_model_1))
-
+    
     dataframe <- data.frame(name = input$param_selector_model_1, value = input$param_mid_id_model_1) %>%
       dplyr::as_tibble()
-
+    
     new_model_mid <- update_model_object(changed_reacted_param_model_1(), dataframe)
-
+    
     return(new_model_mid)
   }, label = 'applied_param_mid_model_1')
-
+  
   ### applied_param_max() ----
   applied_param_max_model_1 <- reactive({
-
+    
     shiny::req(!shinyAce::is.empty(input$param_max_id_model_1))
-
+    
     dataframe <- data.frame(name = input$param_selector_model_1, value = input$param_max_id_model_1) %>%
       dplyr::as_tibble()
-
+    
     new_model_max <- update_model_object(changed_reacted_param_model_1(), dataframe)
-
+    
     return(new_model_max)
   }, label = 'applied_param_max_model_1')
-
+  
   dosing_regimen_min_model_1 <- reactive({
     shiny::req(applied_param_min_model_1())
     dose_regimen <- generate_dosing_regimens(
@@ -4787,7 +4826,7 @@ server <- function(input, output, session) {
     )
     return(dose_regimen)
   }, label = 'dosing_regimen_min_model_1')
-
+  
   dosing_regimen_mid_model_1 <- reactive({
     shiny::req(applied_param_mid_model_1())
     dose_regimen <- generate_dosing_regimens(
@@ -4802,7 +4841,7 @@ server <- function(input, output, session) {
     )
     return(dose_regimen)
   }, label = 'dosing_regimen_mid_model_1')
-
+  
   dosing_regimen_max_model_1 <- reactive({
     shiny::req(applied_param_max_model_1())
     dose_regimen <- generate_dosing_regimens(
@@ -4817,7 +4856,7 @@ server <- function(input, output, session) {
     )
     return(dose_regimen)
   }, label = 'dosing_regimen_max_model_1')
-
+  
   ### new_sim_min() ----
   new_sim_min_model_1 <- reactive({
     shiny::req(model_1_is_valid())
@@ -4836,7 +4875,7 @@ server <- function(input, output, session) {
       )
     return(sim_output_min_model_1)
   }, label = 'new_sim_min_model_1')
-
+  
   ### new_sim_mid() ----
   new_sim_mid_model_1 <- reactive({
     shiny::req(model_1_is_valid())
@@ -4854,9 +4893,9 @@ server <- function(input, output, session) {
         divide_by      = time_value()
       )
     return(sim_output_mid_model_1)
-
+    
   }, label = 'new_sim_mid_model_1')
-
+  
   ### new_sim_max() ----
   new_sim_max_model_1 <- reactive({
     shiny::req(model_1_is_valid())
@@ -4874,25 +4913,25 @@ server <- function(input, output, session) {
         divide_by      = time_value()
       )
     return(sim_output_max_model_1)
-
+    
   }, label = 'new_sim_max_model_1')
-
+  
   ## Generate min/mid/max ui ----
   ### UI: input$param min ----
   output$param_widget_output_min_model_1 <- renderUI({
     param_min_ui_model_1()
   })
-
+  
   ### UI: input$param mid ----
   output$param_widget_output_mid_model_1 <- renderUI({
     param_mid_ui_model_1()
   })
-
+  
   ### UI: input$param max ----
   output$param_widget_output_max_model_1 <- renderUI({
     param_max_ui_model_1()
   })
-
+  
   ## Generate min/mid/max metrics df ----
   react_metrics_min_model_1 <- reactive({pknca_table(new_sim_min_model_1(),
                                                      input$yaxis_name,
@@ -4900,22 +4939,22 @@ server <- function(input, output, session) {
                                                      end_time = numeric_obs_max_model_1(),
                                                      debug = show_debugging_msg)
   }, label = 'react_metrics_min_model_1')
-
+  
   react_metrics_mid_model_1 <- reactive({pknca_table(new_sim_mid_model_1(),
                                                      input$yaxis_name,
                                                      start_time = numeric_obs_min_model_1(),
                                                      end_time = numeric_obs_max_model_1(),
                                                      debug = show_debugging_msg)
   }, label = 'react_metrics_mid_model_1')
-
+  
   react_metrics_max_model_1 <- reactive({pknca_table(new_sim_max_model_1(),
                                                      input$yaxis_name,
                                                      start_time = numeric_obs_min_model_1(),
                                                      end_time = numeric_obs_max_model_1(),
                                                      debug = show_debugging_msg)
-
+    
   }, label = 'react_metrics_max_model_1')
-
+  
   ## Generate metrics valueBoxes ----
   output$cmax_min_model_1     <- shinydashboard::renderValueBox({create_value_box(react_metrics_min_model_1(), 'CMAX_ranged',     'Cmax', color = "olive", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
   output$cavg_min_model_1     <- shinydashboard::renderValueBox({create_value_box(react_metrics_min_model_1(), 'CAVG_ranged',     'Cavg', color = "olive", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
@@ -4926,7 +4965,7 @@ server <- function(input, output, session) {
   output$cfbpct_min_model_1   <- shinydashboard::renderValueBox({create_value_box(react_metrics_min_model_1(), 'CFBPCT_ranged',   '% CFB', color = "olive", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
   output$mcfbpct_min_model_1  <- shinydashboard::renderValueBox({create_value_box(react_metrics_min_model_1(), 'MEANCFBPCT_ranged',   'Mean % CFB', color = "olive", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
   output$nadirpct_min_model_1 <- shinydashboard::renderValueBox({create_value_box(react_metrics_min_model_1(), 'NADIRPCT_ranged', 'Nadir % CFB', color = "olive", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
-
+  
   output$cmax_mid_model_1     <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_1(), 'CMAX_ranged',     'Cmax', color = "orange", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
   output$cavg_mid_model_1     <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_1(), 'CAVG_ranged',     'Cavg', color = "orange", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
   output$cmin_mid_model_1     <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_1(), 'CMIN_ranged',     'Cmin', color = "orange", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
@@ -4936,7 +4975,7 @@ server <- function(input, output, session) {
   output$cfbpct_mid_model_1   <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_1(), 'CFBPCT_ranged',   '% CFB', color = "orange", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
   output$mcfbpct_mid_model_1  <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_1(), 'MEANCFBPCT_ranged',   'Mean % CFB', color = "orange", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
   output$nadirpct_mid_model_1 <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_1(), 'NADIRPCT_ranged', 'Nadir % CFB', color = "orange", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
-
+  
   output$cmax_max_model_1     <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_1(), 'CMAX_ranged',     'Cmax', color = "purple", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
   output$cavg_max_model_1     <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_1(), 'CAVG_ranged',     'Cavg', color = "purple", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
   output$cmin_max_model_1     <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_1(), 'CMIN_ranged',     'Cmin', color = "purple", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
@@ -4946,18 +4985,18 @@ server <- function(input, output, session) {
   output$cfbpct_max_model_1   <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_1(), 'CFBPCT_ranged',   '% CFB', color = "purple", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
   output$mcfbpct_max_model_1  <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_1(), 'MEANCFBPCT_ranged',   'Mean % CFB', color = "purple", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
   output$nadirpct_max_model_1 <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_1(), 'NADIRPCT_ranged', 'Nadir % CFB', color = "purple", sigdig = input$digits_model_1, dp = input$dp_checkbox_model_1)})
-
+  
   # PSA plot from new_sim_min/mid/max
   ## psa_page_plot_model_1() ----
   psa_page_plot_model_1 <- reactive({
     shiny::req(model_1_is_valid())
-
+    
     nonmem_dataset <- if (input$combine_nmdata_1_model_1 && final_output_executed()) {
       nmdata_cmt_filtered()
     } else {
       NULL
     }
-
+    
     title <- if (input$combine_nmdata_1_model_1 && is.null(nonmem_dataset)) {
       unsupported_dataset
     } else {
@@ -4965,7 +5004,7 @@ server <- function(input, output, session) {
         NULL
       }
     }
-
+    
     psa_plot_model_1 <- plot_three_data_with_nm(
       input_dataset_min = new_sim_min_model_1(),
       input_dataset_mid = new_sim_mid_model_1(),
@@ -4992,10 +5031,10 @@ server <- function(input, output, session) {
       debug  = show_debugging_msg,
       title = title
     )
-
+    
     return(psa_plot_model_1)
   }, label = 'psa_page_plot_model_1')
-
+  
   ## UI: output$psa_plot_output ----
   output$psa_plot_output_model_1 <- renderUI({
     shiny::conditionalPanel(
@@ -5009,9 +5048,9 @@ server <- function(input, output, session) {
       )
     )
   })
-
+  
   output$psa_ggplot_model_1 <- renderPlot(psa_page_plot_model_1() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
-
+  
   output$psa_plotly_model_1 <- plotly::renderPlotly(convert_to_plotly_watermark(psa_page_plot_model_1(),
                                                                                 format           = input$plotly3_format_model_1,
                                                                                 filename         = input$plotly3_filename_model_1,
@@ -5020,7 +5059,7 @@ server <- function(input, output, session) {
                                                                                 plotly_watermark = insert_watermark,
                                                                                 debug            = show_debugging_msg)
   )
-
+  
   #### PSA Plot download section
   observeEvent(input$do_psa_plotly_model_1, {
     if (input$do_psa_plotly_model_1) {
@@ -5033,7 +5072,7 @@ server <- function(input, output, session) {
                         choices = c("png", "pdf", "jpeg", "svg"))
     }
   }, label = "update_download_psa_plot_model_1")
-
+  
   output$download_psa_plot_model_1 <- downloadHandler(
     filename = function() {
       paste0(input$plotly3_filename_model_1, ".", input$plotly3_format_model_1)
@@ -5048,7 +5087,7 @@ server <- function(input, output, session) {
       )
     }
   )
-
+  
   # Model 2 ----
   ### Update input$auc_time_range ----
   observe({
@@ -5059,7 +5098,7 @@ server <- function(input, output, session) {
                                     choices = sort(unique(simulation_output_model_2()$TIME)),
                                     select = min(unique(simulation_output_model_2()$TIME))
     )
-
+    
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_nca_obs_time_model_2',
                                     label = NULL,
@@ -5072,7 +5111,7 @@ server <- function(input, output, session) {
                                     choices = sort(unique(simulation_output_model_2()$TIME)),
                                     select = min(unique(simulation_output_model_2()$TIME))
     )
-
+    
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_tor_obs_time_model_2',
                                     label = NULL,
@@ -5080,7 +5119,7 @@ server <- function(input, output, session) {
                                     select = max(unique(simulation_output_model_2()$TIME))
     )
   }, label = 'update model_2 time selection')
-
+  
   observeEvent(input$min_nca_obs_time_model_2, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_nca_obs_time_model_2',
@@ -5089,7 +5128,7 @@ server <- function(input, output, session) {
                                     selected = input$max_nca_obs_time_model_2
     )
   }, label = 'update model_2 time selection (Max)')
-
+  
   observeEvent(input$max_nca_obs_time_model_2, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'min_nca_obs_time_model_2',
@@ -5098,7 +5137,7 @@ server <- function(input, output, session) {
                                     selected = input$min_nca_obs_time_model_2
     )
   }, label = 'update model_2 time selection (Min)')
-
+  
   observeEvent(input$min_tor_obs_time_model_2, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_tor_obs_time_model_2',
@@ -5107,7 +5146,7 @@ server <- function(input, output, session) {
                                     selected = input$max_tor_obs_time_model_2
     )
   }, label = 'update Batch Run model_2 time selection (Max)')
-
+  
   observeEvent(input$max_tor_obs_time_model_2, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'min_tor_obs_time_model_2',
@@ -5116,30 +5155,30 @@ server <- function(input, output, session) {
                                     selected = input$min_tor_obs_time_model_2
     )
   }, label = 'update Batch Run model_2 time selection (Min)')
-
+  
   numeric_obs_min_model_2 <- reactive({
     as.numeric(input$min_nca_obs_time_model_2)
   }, label = 'convert model_2 time to numeric (Min)')
-
+  
   numeric_obs_max_model_2 <- reactive({
     as.numeric(input$max_nca_obs_time_model_2)
   }, label = 'convert model_2 time to numeric (Max)')
-
+  
   numeric_tor_min_model_2 <- reactive({
     as.numeric(input$min_tor_obs_time_model_2)
   }, label = 'convert Batch Run model_2 time to numeric (Min)')
-
+  
   numeric_tor_max_model_2 <- reactive({
     as.numeric(input$max_tor_obs_time_model_2)
   }, label = 'convert Batch Run model_2 time to numeric (Max)')
-
+  
   ### Update input$param_selector_model_2 ----
   observeEvent(inputted_model_2(), {
     updateSelectInput(session,
                       "param_selector_model_2",
                       choices  = names(inputted_model_2())$param)
   }, label = 'model_2 PSA param_selector')
-
+  
   # Read selected param name
   ## pas_init_param_name_model_2() ----
   pas_init_param_name_model_2 <- reactive({
@@ -5147,16 +5186,16 @@ server <- function(input, output, session) {
       paste0(input$param_selector_model_2, i)
     })
     do.call(tagList, reactive_name)
-
+    
     return(reactive_name)
   }, label = 'pas_init_param_name_model_2')
-
+  
   # Read selected param value
   ## pas_init_param_value_model_2 ----
   pas_init_param_value_model_2 <- reactive({
     changed_reacted_param_model_2()[[input$param_selector_model_2]]
   }, label = 'pas_init_param_value_model_2')
-
+  
   ## Generate param min/mid/max UI ----
   ### param_min_ui_model_2() ----
   param_min_ui_model_2 <- eventReactive(pas_init_param_name_model_2(), {
@@ -5167,7 +5206,7 @@ server <- function(input, output, session) {
       step = 0.1
     )
   }, label = 'param_min_ui_model_2')
-
+  
   ### param_mid_ui() ----
   param_mid_ui_model_2 <- eventReactive(pas_init_param_name_model_2(), {
     numericInput(
@@ -5177,7 +5216,7 @@ server <- function(input, output, session) {
       step = 0.1
     )
   }, label = 'param_mid_ui_model_2')
-
+  
   ### param_max_ui_model_2() ----
   param_max_ui_model_2 <- eventReactive(pas_init_param_name_model_2(), {
     numericInput(
@@ -5187,63 +5226,63 @@ server <- function(input, output, session) {
       step = 0.1
     )
   }, label = 'param_max_ui_model_2')
-
+  
   ## Generate min/mid/max ui ----
   ### UI: input$param min ----
   output$param_widget_output_min_model_2 <- renderUI({
     param_min_ui_model_2()
   })
-
+  
   ### UI: input$param mid ----
   output$param_widget_output_mid_model_2 <- renderUI({
     param_mid_ui_model_2()
   })
-
+  
   ### UI: input$param max ----
   output$param_widget_output_max_model_2 <- renderUI({
     param_max_ui_model_2()
   })
-
+  
   # Generate min/mid/max modified param into model ----
   ## applied_param_min_MODEL2() ----
   applied_param_min_model_2 <- reactive({
-
+    
     shiny::req(!shinyAce::is.empty(input$param_min_id_model_2))
-
+    
     dataframe <- data.frame(name = input$param_selector_model_2, value = input$param_min_id_model_2) %>%
       dplyr::as_tibble()
-
+    
     new_model_min <- update_model_object(changed_reacted_param_model_2(), dataframe)
-
+    
     return(new_model_min)
   }, label = 'applied_param_min_model_2')
-
+  
   ### applied_param_mid_model_2() ----
   applied_param_mid_model_2 <- reactive({
-
+    
     shiny::req(!shinyAce::is.empty(input$param_mid_id_model_2))
-
+    
     dataframe <- data.frame(name = input$param_selector_model_2, value = input$param_mid_id_model_2) %>%
       dplyr::as_tibble()
-
+    
     new_model_mid <- update_model_object(changed_reacted_param_model_2(), dataframe)
-
+    
     return(new_model_mid)
   }, label = 'applied_param_mid_model_2')
-
+  
   ### applied_param_max_model_2() ----
   applied_param_max_model_2 <- reactive({
-
+    
     shiny::req(!shinyAce::is.empty(input$param_max_id_model_2))
-
+    
     dataframe <- data.frame(name = input$param_selector_model_2, value = input$param_max_id_model_2) %>%
       dplyr::as_tibble()
-
+    
     new_model_max <- update_model_object(changed_reacted_param_model_2(), dataframe)
-
+    
     return(new_model_max)
   }, label = 'applied_param_max_model_2')
-
+  
   dosing_regimen_min_model_2 <- reactive({
     shiny::req(applied_param_min_model_2())
     dose_regimen <- generate_dosing_regimens(
@@ -5258,7 +5297,7 @@ server <- function(input, output, session) {
     )
     return(dose_regimen)
   }, label = 'dosing_regimen_min_model_2')
-
+  
   dosing_regimen_mid_model_2 <- reactive({
     shiny::req(applied_param_mid_model_2())
     dose_regimen <- generate_dosing_regimens(
@@ -5273,7 +5312,7 @@ server <- function(input, output, session) {
     )
     return(dose_regimen)
   }, label = 'dosing_regimen_mid_model_2')
-
+  
   dosing_regimen_max_model_2 <- reactive({
     shiny::req(applied_param_max_model_2())
     dose_regimen <- generate_dosing_regimens(
@@ -5288,7 +5327,7 @@ server <- function(input, output, session) {
     )
     return(dose_regimen)
   }, label = 'dosing_regimen_max_model_2')
-
+  
   ## Generate min/mid/max simulation ----
   ### new_sim_min_model_2() ----
   new_sim_min_model_2 <- reactive({
@@ -5306,10 +5345,10 @@ server <- function(input, output, session) {
         debug = show_debugging_msg,
         divide_by      = time_value()
       )
-
+    
     return(sim_output_min)
   }, label = 'new_sim_min_model_2') #%>% bindEvent(input$param_min_id_model_2, changed_reacted_param_model_2())
-
+  
   ### new_sim_mid_model_2() ----
   new_sim_mid_model_2 <- reactive({
     shiny::req(model_2_is_valid())
@@ -5324,10 +5363,10 @@ server <- function(input, output, session) {
         debug = show_debugging_msg,
         divide_by      = time_value()
       )
-
+    
     return(sim_output_mid)
   }, label = 'new_sim_mid_model_2') #%>% bindEvent(input$param_mid_id_model_2, changed_reacted_param_model_2())
-
+  
   ### new_sim_max_model_2() ----
   new_sim_max_model_2 <- reactive({
     shiny::req(model_2_is_valid())
@@ -5344,10 +5383,10 @@ server <- function(input, output, session) {
         debug = show_debugging_msg,
         divide_by      = time_value()
       )
-
+    
     return(sim_output_max)
   }, label = 'new_sim_max_model_2') #%>% bindEvent(input$param_max_id_model_2, changed_reacted_param_model_2())
-
+  
   ## Generate min/mid/max metrics df ----
   react_metrics_min_model_2 <- reactive({pknca_table(new_sim_min_model_2(),
                                                      input$yaxis_name_2,
@@ -5355,21 +5394,21 @@ server <- function(input, output, session) {
                                                      end_time = numeric_obs_max_model_2(),
                                                      debug = show_debugging_msg)
   }, label = 'react_metrics_min_model_2')
-
+  
   react_metrics_mid_model_2 <- reactive({pknca_table(new_sim_mid_model_2(),
                                                      input$yaxis_name_2,
                                                      start_time = numeric_obs_min_model_2(),
                                                      end_time = numeric_obs_max_model_2(),
                                                      debug = show_debugging_msg)
   }, label = 'react_metrics_mid_model_2')
-
+  
   react_metrics_max_model_2 <- reactive({pknca_table(new_sim_max_model_2(),
                                                      input$yaxis_name_2,
                                                      start_time = numeric_obs_min_model_2(),
                                                      end_time = numeric_obs_max_model_2(),
                                                      debug = show_debugging_msg)
   }, label = 'react_metrics_max_model_2')
-
+  
   output$cmax_min_model_2     <- shinydashboard::renderValueBox({create_value_box(react_metrics_min_model_2(), 'CMAX_ranged',     'Cmax', color = "olive", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$cavg_min_model_2     <- shinydashboard::renderValueBox({create_value_box(react_metrics_min_model_2(), 'CAVG_ranged',     'Cavg', color = "olive", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$cmin_min_model_2     <- shinydashboard::renderValueBox({create_value_box(react_metrics_min_model_2(), 'CMIN_ranged',     'Cmin', color = "olive", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
@@ -5379,7 +5418,7 @@ server <- function(input, output, session) {
   output$cfbpct_min_model_2   <- shinydashboard::renderValueBox({create_value_box(react_metrics_min_model_2(), 'CFBPCT_ranged',   '% CFB', color = "olive", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$mcfbpct_min_model_2  <- shinydashboard::renderValueBox({create_value_box(react_metrics_min_model_2(), 'MEANCFBPCT_ranged',   'Mean % CFB', color = "olive", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$nadirpct_min_model_2 <- shinydashboard::renderValueBox({create_value_box(react_metrics_min_model_2(), 'NADIRPCT_ranged', 'Nadir % CFB', color = "olive", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
-
+  
   output$cmax_mid_model_2     <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_2(), 'CMAX_ranged',     'Cmax', color = "orange", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$cavg_mid_model_2     <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_2(), 'CAVG_ranged',     'Cavg', color = "orange", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$cmin_mid_model_2     <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_2(), 'CMIN_ranged',     'Cmin', color = "orange", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
@@ -5389,7 +5428,7 @@ server <- function(input, output, session) {
   output$cfbpct_mid_model_2   <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_2(), 'CFBPCT_ranged',   '% CFB', color = "orange", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$mcfbpct_mid_model_2  <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_2(), 'MEANCFBPCT_ranged',   'Mean % CFB', color = "orange", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$nadirpct_mid_model_2 <- shinydashboard::renderValueBox({create_value_box(react_metrics_mid_model_2(), 'NADIRPCT_ranged', 'Nadir % CFB', color = "orange", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
-
+  
   output$cmax_max_model_2     <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_2(), 'CMAX_ranged',     'Cmax', color = "purple", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$cavg_max_model_2     <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_2(), 'CAVG_ranged',     'Cavg', color = "purple", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$cmin_max_model_2     <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_2(), 'CMIN_ranged',     'Cmin', color = "purple", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
@@ -5399,7 +5438,7 @@ server <- function(input, output, session) {
   output$cfbpct_max_model_2   <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_2(), 'CFBPCT_ranged',   '% CFB', color = "purple", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$mcfbpct_max_model_2  <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_2(), 'MEANCFBPCT_ranged',   'Mean % CFB', color = "purple", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
   output$nadirpct_max_model_2 <- shinydashboard::renderValueBox({create_value_box(react_metrics_max_model_2(), 'NADIRPCT_ranged', 'Nadir % CFB', color = "purple", sigdig = input$digits_model_2, dp = input$dp_checkbox_model_2)})
-
+  
   # PSA plot from new_sim_min_model_2/mid/max
   ## psa_page_plot_model_2() ----
   psa_page_plot_model_2 <- reactive({
@@ -5409,7 +5448,7 @@ server <- function(input, output, session) {
     } else {
       NULL
     }
-
+    
     title <- if (input$combine_nmdata_1_model_2 && is.null(nonmem_dataset)) {
       unsupported_dataset
     } else {
@@ -5417,7 +5456,7 @@ server <- function(input, output, session) {
         NULL
       }
     }
-
+    
     psa_plot_model_2 <- plot_three_data_with_nm(
       input_dataset_min = new_sim_min_model_2(),
       input_dataset_mid = new_sim_mid_model_2(),
@@ -5443,10 +5482,10 @@ server <- function(input, output, session) {
       ylabel = input$y_axis_label,
       title = title
     )
-
+    
     return(psa_plot_model_2)
   })
-
+  
   ## UI: output$psa_plot_output_model_2 ----
   output$psa_plot_output_model_2 <- renderUI({
     shiny::conditionalPanel(
@@ -5460,9 +5499,9 @@ server <- function(input, output, session) {
       )
     )
   })
-
+  
   output$psa_ggplot_model_2 <- renderPlot(psa_page_plot_model_2() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
-
+  
   output$psa_plotly_model_2 <- plotly::renderPlotly(convert_to_plotly_watermark(psa_page_plot_model_2(),
                                                                                 format           = input$plotly3_format_model_2,
                                                                                 filename         = input$plotly3_filename_model_2,
@@ -5471,7 +5510,7 @@ server <- function(input, output, session) {
                                                                                 plotly_watermark = insert_watermark,
                                                                                 debug            = show_debugging_msg)
   )
-
+  
   #### PSA Plot download section
   observeEvent(input$do_psa_plotly_model_2, {
     if (input$do_psa_plotly_model_2) {
@@ -5484,7 +5523,7 @@ server <- function(input, output, session) {
                         choices = c("png", "pdf", "jpeg", "svg"))
     }
   }, label = "update_download_psa_plot_model_2")
-
+  
   output$download_psa_plot_model_2 <- downloadHandler(
     filename = function() {
       paste0(input$plotly3_filename_model_2, ".", input$plotly3_format_model_2)
@@ -5499,9 +5538,9 @@ server <- function(input, output, session) {
       )
     }
   )
-
+  
   ## Tornado Plots Model 1
-
+  
   # Initialize reactiveVals to store current info
   tor_tab_orig_model_1         <- reactiveVal()
   tor_tab_new_model_1          <- reactiveVal()
@@ -5514,39 +5553,39 @@ server <- function(input, output, session) {
   d_trim_tor_model_1           <- debounce(reactive({ input$trim_tor_model_1 }), debounce_timer_slow)
   #slowed_lower_model_1         <- throttle(reactive({sanitize_numeric_input(input$tor_lower_model_1, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)}), debounce_timer_fast)
   #slowed_upper_model_1         <- throttle(reactive({sanitize_numeric_input(input$tor_upper_model_1, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)}), debounce_timer_fast)
-
+  
   observeEvent(inputted_model_1(), {
     updateSelectInput(session,
                       "tor_fix_model_1",
                       choices  = names(inputted_model_1())$param)
   }, label = 'model_1 PSA batch run params to fix')
-
+  
   observeEvent(c(changed_reacted_param_model_1(), input$tor_fix_model_1), {
     shiny::req(model_1_is_valid())
     tmp <- extract_model_params(changed_reacted_param_model_1()) %>%
       dplyr::rename(Name = name, Reference = value)
-
+    
     if(!is.null(input$tor_fix_model_1)) {
       tmp <- tmp %>% dplyr::filter(!(Name %in% input$tor_fix_model_1))
     }
-
+    
     tmp <- tmp %>%
       dplyr::mutate(
         Lower = Reference * sanitize_numeric_input(input$tor_lower_model_1, allow_zero = FALSE, return_value = 0.5, display_error = TRUE),
         Upper = Reference * sanitize_numeric_input(input$tor_upper_model_1, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
       )
-
+    
     tor_tab_orig_model_1(tmp) # used for resetting reference values
     tor_tab_new_model_1(tmp)
   })
-
+  
   observeEvent(input$reset_reference_model_1, {
     tor_tab_new_model_1(tor_tab_orig_model_1())  # Reset to original values
   })
-
+  
   tor_tab_model_1 <- eventReactive(c(tor_tab_new_model_1(), input$tor_lower_model_1, input$tor_upper_model_1, input$tor_show_digits_model_1) , {
     shiny::req(tor_tab_new_model_1())
-
+    
     all_params_table <-  update_batch_run_table(
       param_df              = tor_tab_new_model_1(),
       lower_multiplier      = input$tor_lower_model_1, # slowed_lower_model_1() # can throttle if really want to
@@ -5555,7 +5594,7 @@ server <- function(input, output, session) {
       length_lower_change   = length_lower_change_model_1(),
       length_upper_change   = length_upper_change_model_1()
     )
-
+    
     ## Reconverting types here to play nicely with rhandsontable, otherwise numerics do not get proper refresh
     if(input$tor_show_digits_model_1) {
       all_params_table <- all_params_table %>%
@@ -5564,9 +5603,9 @@ server <- function(input, output, session) {
       all_params_table <- all_params_table %>%
         dplyr::mutate(dplyr::across(-Name, as.numeric))
     }
-
+    
     tor_tab_new_model_1(all_params_table) # updating here such that changing reference will not reset whole table
-
+    
     final_table <- rhandsontable::rhandsontable(all_params_table,
                                                 #colTypes = table_col_types, # not used anymore as we handle column types outside
                                                 contextMenu = FALSE) %>%
@@ -5575,45 +5614,52 @@ server <- function(input, output, session) {
                       Handsontable.renderers.TextRenderer.apply(this, arguments);
                       td.style.background = '#d3d3d3';  // Grey background
                     }")  # Disable editing for param
-
+    
     return(final_table)
   })
-
+  
   output$tor_table_model_1 <- rhandsontable::renderRHandsontable({
     shiny::req(model_1_is_valid())
     tor_tab_model_1()
   })
-
+  
   # Capture changes made in the rhandsontable UI
   observeEvent(input$tor_table_model_1, {
     shiny::req(input$tor_table_model_1)
     tmp <- rhandsontable::hot_to_r(input$tor_table_model_1)
-
+    
     if(nrow(tmp) == nrow(tor_tab_new_model_1()) && !any(is.na(tmp))) { # Workaround with glitch caused by removing fixed parameters, and checking no non-sensible inputs
-
+      
       # Record if last change was made on a reference value
       if(any(tmp$Reference != tor_tab_new_model_1()$Reference)) {
         last_change_ref_model_1(which(tmp$Reference != tor_tab_new_model_1()$Reference))
       } else {
         last_change_ref_model_1(0)
       }
-
+      
       # Record if last change was made on a upper/lower bound
       length_lower_change_model_1(length(which(tmp$Lower != tor_tab_new_model_1()$Lower)))
       length_upper_change_model_1(length(which(tmp$Upper != tor_tab_new_model_1()$Upper)))
-
+      
       # if(show_debugging_msg) {
       #   message("last_change_ref_model_1: ", last_change_ref_model_1())
       #   message("length_lower_change_model_1: ", length_lower_change_model_1())
       #   message("length_upper_change_model_1: ", length_upper_change_model_1())
       # }
-
+      
       tor_tab_new_model_1(tmp)
     }
   })
-
+  
   observeEvent(input$generate_batch_model_1, {
     shiny::req(tor_tab_new_model_1())
+    
+    # batch_run_df_test <<- tor_tab_new_model_1()
+    # input_model_test  <<- changed_reacted_param_model_1()
+    # sampling_times_test <<- sampling_options()
+    # ev_df_test <<- dosing_regimen_model_1()
+    # save(batch_run_df_test, input_model_test, sampling_times_test, ev_df_test, file = "spider_test.RData")
+    
     batch_runs <- iterate_batch_runs(
       batch_run_df       = tor_tab_new_model_1(),
       input_model_object = changed_reacted_param_model_1(),
@@ -5627,17 +5673,18 @@ server <- function(input, output, session) {
       divide_by          = time_value(),
       debug              = show_debugging_msg,
       show_progress      = TRUE,
+      gradient           = input$tor_do_gradient_model_1,
       parallel_sim       = FALSE, #input$para_checkbox,
       parallel_n         = 100 # input$para_n,
     )
-
+    
     batch_runs_model_1(batch_runs)
-
+    
     if(show_debugging_msg) {
       glimpse(batch_runs_model_1())
     }
   })
-
+  
   tor_summary_model_1 <- reactive({
     tor_summary <- NULL
     if (!is.null(batch_runs_model_1())) {
@@ -5646,25 +5693,25 @@ server <- function(input, output, session) {
                                        output_conc           = input$tor_var_model_1,
                                        start_time            = numeric_tor_min_model_1(),
                                        end_time              = numeric_tor_max_model_1(),
-                                       carry_out             = c(".desc", ".cat", ".paramname")
+                                       carry_out             = c(".desc", ".cat", ".paramname", ".ratio")
         ) %>% mutate(.varname = input$tor_var_model_1)
       }
     }
     return(tor_summary)
   }, label = "batch runs summary data model 1")
-
+  
   ## tor_page_plot_model_1() ----
   tor_page_plot_model_1 <- reactive({
     shiny::req(tor_summary_model_1())
-
+    
     tmp <- tor_summary_model_1()
     reference_value <- (tmp %>% dplyr::filter(.cat == "Reference"))[[input$select_tor_metric_model_1]]
-
+    
     tmp2 <- tmp %>%
-      dplyr::filter(.cat != "Reference") %>%
+      dplyr::filter(.cat == "Lower" | .cat == "Upper") %>%
       dplyr::select(.paramname, .cat, !!dplyr::sym(input$select_tor_metric_model_1)) %>%
       tidyr::pivot_wider(., names_from = .cat, values_from = !!dplyr::sym(input$select_tor_metric_model_1), id_cols = .paramname)
-
+    
     tor_plot <- tornado_plot(
       df              = tmp2,
       reference_value = reference_value,
@@ -5676,10 +5723,10 @@ server <- function(input, output, session) {
       xlabname        = input$xlab_tor_model_1,
       bioeq_lines     = input$show_bioeq_model_1
     )
-
+    
     return(tor_plot)
   }, label = 'tor_page_plot_model_1')
-
+  
   ## UI: output$tor_plot_output ----
   output$tor_plot_output_model_1 <- renderUI({
     shiny::conditionalPanel(
@@ -5693,9 +5740,9 @@ server <- function(input, output, session) {
       )
     )
   })
-
+  
   output$tor_ggplot_model_1 <- renderPlot(tor_page_plot_model_1() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
-
+  
   output$tor_plotly_model_1 <- plotly::renderPlotly(convert_to_plotly_watermark(tor_page_plot_model_1(),
                                                                                 format           = input$plotlytor_format_model_1,
                                                                                 filename         = input$plotlytor_filename_model_1,
@@ -5704,20 +5751,22 @@ server <- function(input, output, session) {
                                                                                 plotly_watermark = insert_watermark,
                                                                                 debug            = show_debugging_msg)
   )
-
+  
   #### Tornado Plot download section
   observeEvent(input$do_tor_plotly_model_1, {
     if (input$do_tor_plotly_model_1) {
       shinyjs::disable("download_tor_plot_model_1")
+      shinyjs::disable("download_spi_plot_model_1")
       updateSelectInput(session, "plotlytor_format_model_1", label = plotly_format_label,
                         choices = c("png", "jpeg", "svg", "webp"))
     } else {
       shinyjs::enable("download_tor_plot_model_1")
+      shinyjs::enable("download_spi_plot_model_1")
       updateSelectInput(session, "plotlytor_format_model_1", label = plotly_format_label,
                         choices = c("png", "pdf", "jpeg", "svg"))
     }
   }, label = "update_download_tor_plot_model_1")
-
+  
   output$download_tor_plot_model_1 <- downloadHandler(
     filename = function() {
       paste0(input$plotlytor_filename_model_1, ".", input$plotlytor_format_model_1)
@@ -5732,9 +5781,85 @@ server <- function(input, output, session) {
       )
     }
   )
-
+  
+  ## Spider Plot Model 1
+  
+  ## spi_page_plot_model_1() ----
+  spi_page_plot_model_1 <- reactive({
+    shiny::req(tor_summary_model_1())
+    
+    tmp <- tor_summary_model_1()
+    reference_value <- (tmp %>% dplyr::filter(.cat == "Reference"))[[input$select_tor_metric_model_1]]
+    
+    tmp2 <- tmp %>%
+      dplyr::filter(.cat != "Reference") %>% 
+      dplyr::select(.paramname, .ratio, !!dplyr::sym(input$select_tor_metric_model_1))
+    
+    new_rows <- tmp2 %>% # Create dummy row for reference
+      dplyr::distinct(.paramname) %>%
+      dplyr::mutate(.ratio = 1, !!dplyr::sym(input$select_tor_metric_model_1) := reference_value)
+    
+    tmp3 <- dplyr::bind_rows(tmp2, new_rows) %>% dplyr::arrange(.paramname, .ratio)
+    
+    spi_plot <- spider_plot(
+      df               = tmp3,
+      reference_value  = reference_value,
+      metric_name      = input$select_tor_metric_model_1,
+      plot_title       = input$plot_title_tor_model_1,
+      display_as       = input$tor_display_as_model_1,
+      filter_rows      = input$trim_tor_model_1,
+      ylabname         = input$xlab_tor_model_1,
+      bioeq_lines      = input$show_bioeq_model_1,
+      normalize_x_axis = input$spi_normalize_model_1
+    )
+    
+    return(spi_plot)
+  }, label = 'spi_page_plot_model_1')
+  
+  ## UI: output$spi_plot_output ----
+  output$spi_plot_output_model_1 <- renderUI({
+    shiny::conditionalPanel(
+      condition = "true",
+      div(style = "height:600px",
+          if(input$do_tor_plotly_model_1) {
+            plotly::plotlyOutput("spi_plotly_model_1", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          } else {
+            plotOutput("spi_ggplot_model_1", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          }
+      )
+    )
+  })
+  
+  output$spi_ggplot_model_1 <- renderPlot(spi_page_plot_model_1() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
+  
+  output$spi_plotly_model_1 <- plotly::renderPlotly(convert_to_plotly_watermark(spi_page_plot_model_1(),
+                                                                                format           = input$plotlytor_format_model_1,
+                                                                                filename         = input$plotlytor_filename_model_1,
+                                                                                width            = input$plotlytor_width_model_1,
+                                                                                height           = input$plotlytor_height_model_1,
+                                                                                plotly_watermark = insert_watermark,
+                                                                                debug            = show_debugging_msg)
+  )
+  
+  #### Spider Plot download section
+  
+  output$download_spi_plot_model_1 <- downloadHandler(
+    filename = function() {
+      paste0(input$plotlytor_filename_model_1, ".", input$plotlytor_format_model_1)
+    },
+    content = function(file) {
+      ggplot2::ggsave(file,
+                      plot = spi_page_plot_model_1() + add_watermark(watermark_toggle = insert_watermark),
+                      device = input$plotlytor_format_model_1,
+                      units = "px",
+                      width = input$plotlytor_width_model_1,
+                      height = input$plotlytor_height_model_1
+      )
+    }
+  )
+  
   ## Download section for Batch Runs Model 1
-
+  
   output$download_tor_table_model_1 <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_batch_run_table_model_1.csv")
@@ -5745,7 +5870,7 @@ server <- function(input, output, session) {
     },
     contentType = "text/csv"
   )
-
+  
   output$download_tor_summary_model_1 <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_batch_run_summary_model_1_", input$tor_var_model_1, ".csv")
@@ -5754,7 +5879,7 @@ server <- function(input, output, session) {
       data.table::fwrite(tor_summary_model_1(), file, quote = FALSE, row.names = FALSE)
     }
   )
-
+  
   output$download_tor_results_model_1 <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_batch_run_results_model_1.csv")
@@ -5763,9 +5888,9 @@ server <- function(input, output, session) {
       data.table::fwrite(batch_runs_model_1(), file, quote = FALSE, row.names = FALSE)
     }
   )
-
+  
   ## Tornado Plots Model 2
-
+  
   # Initialize reactiveVals to store current info
   tor_tab_orig_model_2         <- reactiveVal()
   tor_tab_new_model_2          <- reactiveVal()
@@ -5778,39 +5903,39 @@ server <- function(input, output, session) {
   d_trim_tor_model_2           <- debounce(reactive({ input$trim_tor_model_2 }), debounce_timer_slow)
   #slowed_lower_model_2         <- throttle(reactive({sanitize_numeric_input(input$tor_lower_model_2, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)}), debounce_timer_fast)
   #slowed_upper_model_2         <- throttle(reactive({sanitize_numeric_input(input$tor_upper_model_2, allow_zero = FALSE, return_value = 0.5, display_error = TRUE)}), debounce_timer_fast)
-
+  
   observeEvent(inputted_model_2(), {
     updateSelectInput(session,
                       "tor_fix_model_2",
                       choices  = names(inputted_model_2())$param)
   }, label = 'model_2 PSA batch run params to fix')
-
+  
   observeEvent(c(changed_reacted_param_model_2(), input$tor_fix_model_2), {
     shiny::req(model_2_is_valid())
     tmp <- extract_model_params(changed_reacted_param_model_2()) %>%
       dplyr::rename(Name = name, Reference = value)
-
+    
     if(!is.null(input$tor_fix_model_2)) {
       tmp <- tmp %>% dplyr::filter(!(Name %in% input$tor_fix_model_2))
     }
-
+    
     tmp <- tmp %>%
       dplyr::mutate(
         Lower = Reference * sanitize_numeric_input(input$tor_lower_model_2, allow_zero = FALSE, return_value = 0.5, display_error = TRUE),
         Upper = Reference * sanitize_numeric_input(input$tor_upper_model_2, allow_zero = FALSE, return_value = 1.5, display_error = TRUE)
       )
-
+    
     tor_tab_orig_model_2(tmp) # used for resetting reference values
     tor_tab_new_model_2(tmp)
   })
-
+  
   observeEvent(input$reset_reference_model_2, {
     tor_tab_new_model_2(tor_tab_orig_model_2())  # Reset to original values
   })
-
+  
   tor_tab_model_2 <- eventReactive(c(tor_tab_new_model_2(), input$tor_lower_model_2, input$tor_upper_model_2, input$tor_show_digits_model_2) , {
     shiny::req(tor_tab_new_model_2())
-
+    
     all_params_table <-  update_batch_run_table(
       param_df              = tor_tab_new_model_2(),
       lower_multiplier      = input$tor_lower_model_2, # slowed_lower_model_2() # can throttle if really want to
@@ -5819,7 +5944,7 @@ server <- function(input, output, session) {
       length_lower_change   = length_lower_change_model_2(),
       length_upper_change   = length_upper_change_model_2()
     )
-
+    
     ## Reconverting types here to play nicely with rhandsontable, otherwise numerics do not get proper refresh
     if(input$tor_show_digits_model_2) {
       all_params_table <- all_params_table %>%
@@ -5828,9 +5953,9 @@ server <- function(input, output, session) {
       all_params_table <- all_params_table %>%
         dplyr::mutate(dplyr::across(-Name, as.numeric))
     }
-
+    
     tor_tab_new_model_2(all_params_table) # updating here such that changing reference will not reset whole table
-
+    
     final_table <- rhandsontable::rhandsontable(all_params_table,
                                                 #colTypes = table_col_types, # not used anymore as we handle column types outside
                                                 contextMenu = FALSE) %>%
@@ -5839,43 +5964,43 @@ server <- function(input, output, session) {
                       Handsontable.renderers.TextRenderer.apply(this, arguments);
                       td.style.background = '#d3d3d3';  // Grey background
                     }")  # Disable editing for param
-
+    
     return(final_table)
   })
-
+  
   output$tor_table_model_2 <- rhandsontable::renderRHandsontable({
     shiny::req(model_2_is_valid())
     tor_tab_model_2()
   })
-
+  
   # Capture changes made in the rhandsontable UI
   observeEvent(input$tor_table_model_2, {
     shiny::req(input$tor_table_model_2)
     tmp <- rhandsontable::hot_to_r(input$tor_table_model_2)
-
+    
     if(nrow(tmp) == nrow(tor_tab_new_model_2()) && !any(is.na(tmp))) { # Workaround with glitch caused by removing fixed parameters, and checking no non-sensible inputs
-
+      
       # Record if last change was made on a reference value
       if(any(tmp$Reference != tor_tab_new_model_2()$Reference)) {
         last_change_ref_model_2(which(tmp$Reference != tor_tab_new_model_2()$Reference))
       } else {
         last_change_ref_model_2(0)
       }
-
+      
       # Record if last change was made on a upper/lower bound
       length_lower_change_model_2(length(which(tmp$Lower != tor_tab_new_model_2()$Lower)))
       length_upper_change_model_2(length(which(tmp$Upper != tor_tab_new_model_2()$Upper)))
-
+      
       # if(show_debugging_msg) {
       #   message("last_change_ref_model_2: ", last_change_ref_model_2())
       #   message("length_lower_change_model_2: ", length_lower_change_model_2())
       #   message("length_upper_change_model_2: ", length_upper_change_model_2())
       # }
-
+      
       tor_tab_new_model_2(tmp)
     }
   })
-
+  
   observeEvent(input$generate_batch_model_2, {
     shiny::req(tor_tab_new_model_2())
     batch_runs <- iterate_batch_runs(
@@ -5891,17 +6016,18 @@ server <- function(input, output, session) {
       divide_by          = time_value(),
       debug              = show_debugging_msg,
       show_progress      = TRUE,
+      gradient           = input$tor_do_gradient_model_2,
       parallel_sim       = FALSE, #input$para_checkbox,
       parallel_n         = 100 # input$para_n,
     )
-
+    
     batch_runs_model_2(batch_runs)
-
+    
     if(show_debugging_msg) {
       glimpse(batch_runs_model_2())
     }
   })
-
+  
   tor_summary_model_2 <- reactive({
     tor_summary <- NULL
     if (!is.null(batch_runs_model_2())) {
@@ -5910,26 +6036,26 @@ server <- function(input, output, session) {
                                        output_conc           = input$tor_var_model_2,
                                        start_time            = numeric_tor_min_model_2(),
                                        end_time              = numeric_tor_max_model_2(),
-                                       carry_out             = c(".desc", ".cat", ".paramname")
+                                       carry_out             = c(".desc", ".cat", ".paramname", ".ratio")
         ) %>% mutate(.varname = input$tor_var_model_2)
       }
     }
-
+    
     return(tor_summary)
   }, label = "batch runs summary data model 1")
-
+  
   ## tor_page_plot_model_2() ----
   tor_page_plot_model_2 <- reactive({
     shiny::req(tor_summary_model_2())
-
+    
     tmp <- tor_summary_model_2()
     reference_value <- (tmp %>% dplyr::filter(.cat == "Reference"))[[input$select_tor_metric_model_2]]
-
+    
     tmp2 <- tmp %>%
-      dplyr::filter(.cat != "Reference") %>%
+      dplyr::filter(.cat == "Lower" | .cat == "Upper") %>%
       dplyr::select(.paramname, .cat, !!dplyr::sym(input$select_tor_metric_model_2)) %>%
       tidyr::pivot_wider(., names_from = .cat, values_from = !!dplyr::sym(input$select_tor_metric_model_2), id_cols = .paramname)
-
+    
     tor_plot <- tornado_plot(
       df              = tmp2,
       reference_value = reference_value,
@@ -5941,10 +6067,10 @@ server <- function(input, output, session) {
       xlabname        = input$xlab_tor_model_2,
       bioeq_lines     = input$show_bioeq_model_2
     )
-
+    
     return(tor_plot)
   }, label = 'tor_page_plot_model_2')
-
+  
   ## UI: output$tor_plot_output ----
   output$tor_plot_output_model_2 <- renderUI({
     shiny::conditionalPanel(
@@ -5958,9 +6084,9 @@ server <- function(input, output, session) {
       )
     )
   })
-
+  
   output$tor_ggplot_model_2 <- renderPlot(tor_page_plot_model_2() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
-
+  
   output$tor_plotly_model_2 <- plotly::renderPlotly(convert_to_plotly_watermark(tor_page_plot_model_2(),
                                                                                 format           = input$plotlytor_format_model_2,
                                                                                 filename         = input$plotlytor_filename_model_2,
@@ -5969,20 +6095,22 @@ server <- function(input, output, session) {
                                                                                 plotly_watermark = insert_watermark,
                                                                                 debug            = show_debugging_msg)
   )
-
+  
   #### Tornado Plot download section
   observeEvent(input$do_tor_plotly_model_2, {
     if (input$do_tor_plotly_model_2) {
       shinyjs::disable("download_tor_plot_model_2")
+      shinyjs::disable("download_spi_plot_model_2")
       updateSelectInput(session, "plotlytor_format_model_2", label = plotly_format_label,
                         choices = c("png", "jpeg", "svg", "webp"))
     } else {
       shinyjs::enable("download_tor_plot_model_2")
+      shinyjs::enable("download_spi_plot_model_2")
       updateSelectInput(session, "plotlytor_format_model_2", label = plotly_format_label,
                         choices = c("png", "pdf", "jpeg", "svg"))
     }
   }, label = "update_download_tor_plot_model_2")
-
+  
   output$download_tor_plot_model_2 <- downloadHandler(
     filename = function() {
       paste0(input$plotlytor_filename_model_2, ".", input$plotlytor_format_model_2)
@@ -5997,9 +6125,85 @@ server <- function(input, output, session) {
       )
     }
   )
-
+  
+  ## Spider Plot Model 2
+  
+  ## spi_page_plot_model_2() ----
+  spi_page_plot_model_2 <- reactive({
+    shiny::req(tor_summary_model_2())
+    
+    tmp <- tor_summary_model_2()
+    reference_value <- (tmp %>% dplyr::filter(.cat == "Reference"))[[input$select_tor_metric_model_2]]
+    
+    tmp2 <- tmp %>%
+      dplyr::filter(.cat != "Reference") %>% 
+      dplyr::select(.paramname, .ratio, !!dplyr::sym(input$select_tor_metric_model_2))
+    
+    new_rows <- tmp2 %>% # Create dummy row for reference
+      dplyr::distinct(.paramname) %>%
+      dplyr::mutate(.ratio = 1, !!dplyr::sym(input$select_tor_metric_model_2) := reference_value)
+    
+    tmp3 <- dplyr::bind_rows(tmp2, new_rows) %>% dplyr::arrange(.paramname, .ratio)
+    
+    spi_plot <- spider_plot(
+      df               = tmp3,
+      reference_value  = reference_value,
+      metric_name      = input$select_tor_metric_model_2,
+      plot_title       = input$plot_title_tor_model_2,
+      display_as       = input$tor_display_as_model_2,
+      filter_rows      = input$trim_tor_model_2,
+      ylabname         = input$xlab_tor_model_2,
+      bioeq_lines      = input$show_bioeq_model_2,
+      normalize_x_axis = input$spi_normalize_model_2
+    )
+    
+    return(spi_plot)
+  }, label = 'spi_page_plot_model_2')
+  
+  ## UI: output$spi_plot_output ----
+  output$spi_plot_output_model_2 <- renderUI({
+    shiny::conditionalPanel(
+      condition = "true",
+      div(style = "height:600px",
+          if(input$do_tor_plotly_model_2) {
+            plotly::plotlyOutput("spi_plotly_model_2", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          } else {
+            plotOutput("spi_ggplot_model_2", height = '600px') %>% shinycssloaders::withSpinner(type = 8, hide.ui = FALSE, color = bi_darkgreen)
+          }
+      )
+    )
+  })
+  
+  output$spi_ggplot_model_2 <- renderPlot(spi_page_plot_model_2() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
+  
+  output$spi_plotly_model_2 <- plotly::renderPlotly(convert_to_plotly_watermark(spi_page_plot_model_2(),
+                                                                                format           = input$plotlytor_format_model_2,
+                                                                                filename         = input$plotlytor_filename_model_2,
+                                                                                width            = input$plotlytor_width_model_2,
+                                                                                height           = input$plotlytor_height_model_2,
+                                                                                plotly_watermark = insert_watermark,
+                                                                                debug            = show_debugging_msg)
+  )
+  
+  #### Spider Plot download section
+  
+  output$download_spi_plot_model_2 <- downloadHandler(
+    filename = function() {
+      paste0(input$plotlytor_filename_model_2, ".", input$plotlytor_format_model_2)
+    },
+    content = function(file) {
+      ggplot2::ggsave(file,
+                      plot = spi_page_plot_model_2() + add_watermark(watermark_toggle = insert_watermark),
+                      device = input$plotlytor_format_model_2,
+                      units = "px",
+                      width = input$plotlytor_width_model_2,
+                      height = input$plotlytor_height_model_2
+      )
+    }
+  )
+  
   ## Download section for Batch Runs Model 2
-
+  
   output$download_tor_table_model_2 <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_batch_run_table_model_2.csv")
@@ -6010,7 +6214,7 @@ server <- function(input, output, session) {
     },
     contentType = "text/csv"
   )
-
+  
   output$download_tor_summary_model_2 <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_batch_run_summary_model_2_", input$tor_var_model_2, ".csv")
@@ -6019,7 +6223,7 @@ server <- function(input, output, session) {
       data.table::fwrite(tor_summary_model_2(), file, quote = FALSE, row.names = FALSE)
     }
   )
-
+  
   output$download_tor_results_model_2 <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_batch_run_results_model_2.csv")
@@ -6028,7 +6232,7 @@ server <- function(input, output, session) {
       data.table::fwrite(batch_runs_model_2(), file, quote = FALSE, row.names = FALSE)
     }
   )
-
+  
   ## Page 4 -- Download Mid Metrics table ----
   output$psa_data_mid_model_1 <- DT::renderDT({
     DT::datatable(react_metrics_mid_model_1() %>% dplyr::mutate(dplyr::across(where(is.numeric), ~ signif(., 5))),
@@ -6041,7 +6245,7 @@ server <- function(input, output, session) {
                       "}")
                   ))
   })
-
+  
   output$psa_data_mid_model_2 <- DT::renderDT({
     DT::datatable(react_metrics_mid_model_2() %>% dplyr::mutate(dplyr::across(where(is.numeric), ~ signif(., 5))),
                   caption = paste0('Table results from the middle parameter value are displayed. NCA ranged metrics are derived based on the "Select Time Interval for Deriving Metrics" (Currently from time ', input$min_nca_obs_time_model_2, ' - ', input$max_nca_obs_time_model_2, ')'),
@@ -6053,7 +6257,7 @@ server <- function(input, output, session) {
                       "}")
                   ))
   })
-
+  
   output$download_psa_data_mid_model_1 <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_mid_metrics_model_1.csv")
@@ -6063,7 +6267,7 @@ server <- function(input, output, session) {
     },
     contentType = "text/csv"
   )
-
+  
   output$download_psa_data_mid_model_2 <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_mid_metrics_model_2.csv")
@@ -6073,34 +6277,34 @@ server <- function(input, output, session) {
     },
     contentType = "text/csv"
   )
-
+  
   # Page 5 IIV ----
   d_lower_quartile      <- debounce(reactive({ input$lower_quartile }), debounce_timer_fast)
   d_upper_quartile      <- debounce(reactive({ input$upper_quartile }), debounce_timer_fast)
   d_plot_title_iiv      <- debounce(reactive({ input$plot_title_iiv }), debounce_timer_slow)
   d_y_value_threshold   <- debounce(reactive({ input$y_value_threshold }), debounce_timer_fast)
-
+  
   d_n_subj_model_1      <- debounce(reactive({ input$n_subj_model_1 }), debounce_timer_fast)
   d_age_db_model_1      <- debounce(reactive({ input$age_db_model_1 }), debounce_timer_slow)
   d_wt_db_model_1       <- debounce(reactive({ input$wt_db_model_1 }), debounce_timer_slow)
   d_males_db_model_1    <- debounce(reactive({ input$males_db_model_1 }), debounce_timer_slow)
   d_seed_number_model_1 <- debounce(reactive({ input$seed_number_model_1 }), debounce_timer_slow)
-
+  
   d_n_subj_model_2      <- debounce(reactive({ input$n_subj_model_2 }), debounce_timer_fast)
   d_age_db_model_2      <- debounce(reactive({ input$age_db_model_2 }), debounce_timer_slow)
   d_wt_db_model_2       <- debounce(reactive({ input$wt_db_model_2 }), debounce_timer_slow)
   d_males_db_model_2    <- debounce(reactive({ input$males_db_model_2 }), debounce_timer_slow)
   d_seed_number_model_2 <- debounce(reactive({ input$seed_number_model_2 }), debounce_timer_slow)
-
+  
   d_exp_yaxis_label     <- debounce(reactive({ input$exp_yaxis_label }), debounce_timer_slow)
   d_exp_model_1_name    <- debounce(reactive({ input$exp_model_1_name }), debounce_timer_slow)
   d_exp_model_2_name    <- debounce(reactive({ input$exp_model_2_name }), debounce_timer_slow)
   d_plot_title_exp_model<- debounce(reactive({ input$plot_title_exp_model }), debounce_timer_slow)
-
+  
   ## MODEL 1 ----
   extracted_omega_model_1 <- reactiveVal()
   extracted_sigma_model_1 <- reactiveVal()
-
+  
   n_subj_model_1_clean <- reactive({
     if(sanitize_numeric_input(d_n_subj_model_1(), allow_zero = FALSE, as_integer = TRUE) > max_sim_n) {
       general_warning_modal(title = "Error", text_description = max_sim_n_error)
@@ -6110,19 +6314,19 @@ server <- function(input, output, session) {
       return(sanitize_numeric_input(d_n_subj_model_1(), allow_zero = FALSE, as_integer = TRUE))
     }
   })
-
+  
   # Create a reactive value to hold the dataframe
   rv_cov_1_model_1 <- reactiveValues(df = NULL)
   rv_cov_2_model_1 <- reactiveValues(df = NULL)
   rv_cov_3_model_1 <- reactiveValues(df = NULL)
-
+  
   # Initialize the dataframe
   observe({
     rv_cov_1_model_1$df <- dplyr::tibble(ID = seq_len(n_subj_model_1_clean()))
     rv_cov_2_model_1$df <- dplyr::tibble(ID = seq_len(n_subj_model_1_clean()))
     rv_cov_3_model_1$df <- dplyr::tibble(ID = seq_len(n_subj_model_1_clean()))
   })
-
+  
   observeEvent(input$db_model_1, {
     if (input$db_model_1 == "None") {
       shinyjs::disable("age_db_model_1")
@@ -6148,9 +6352,9 @@ server <- function(input, output, session) {
       updateSliderInput(session, "age_db_model_1", min = 0, max = 10,  value = c(2, 6), step = 0.25)
     }
   }, label = "update_db_slider_model_1")
-
+  
   ##### UI / Plotting elements for Covariate 1 Model 1
-
+  
   output$custom_cov_1_ui_model_1 <- renderUI({
     if (input$custom_cov_1_dist_model_1 == "Normal") {
       fluidRow(
@@ -6194,11 +6398,11 @@ server <- function(input, output, session) {
       )
     }
   }) # end of custom_cov_1_ui_model_1 renderUI
-
+  
   cleaned_cov_1_name_model_1 <- reactive({
     check_cov_name(orig_name = input$custom_cov_1_model_1, replaced_name = "COV1")
   }) %>% bindEvent(input$custom_cov_1_model_1)
-
+  
   observe({
     if(!is.null(cleaned_cov_1_name_model_1()) & cleaned_cov_1_name_model_1() != "") {
       if (input$custom_cov_1_dist_model_1 == "Normal") {
@@ -6236,18 +6440,18 @@ server <- function(input, output, session) {
           catvalue1 = input$custom_cov_1_catvalue1_model_1,
           catvalue2 = input$custom_cov_1_catvalue2_model_1) %>% round(digits = 2)
       }
-
+      
       cov_1_model_1_df <- dplyr::as_tibble(cov_1_model_1_df)
       names(cov_1_model_1_df) <- cleaned_cov_1_name_model_1()
-
+      
       # Update rv_cov_1_model_1$df
       rv_cov_1_model_1$df <- dplyr::bind_cols(cov_1_model_1_df, dplyr::tibble(ID = seq_len(n_subj_model_1_clean())))
-
+      
     } else {
       rv_cov_1_model_1$df <- dplyr::tibble(ID = seq_len(n_subj_model_1_clean()))
     }
   }) # end of big observe to update rv_cov_1_model_1
-
+  
   output$cov_1_plot_ui_model_1 <- renderUI({
     if(!is.null(rv_cov_1_model_1$df)) {
       if(ncol(rv_cov_1_model_1$df) > 1) {
@@ -6259,13 +6463,13 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
   output$cov_1_plot_model_1 <- renderPlot({
     print_cov_plot(rv_cov_1_model_1$df) # %>% convert_to_plotly_watermark(plotly_watermark = FALSE)
   })
-
+  
   ### Repeat for Covariate 2 Model 1
-
+  
   output$custom_cov_2_ui_model_1 <- renderUI({
     if (input$custom_cov_2_dist_model_1 == "Normal") {
       fluidRow(
@@ -6309,11 +6513,11 @@ server <- function(input, output, session) {
       )
     }
   }) # end of custom_cov_2_ui_model_1 renderUI
-
+  
   cleaned_cov_2_name_model_1 <- reactive({
     check_cov_name(orig_name = input$custom_cov_2_model_1, replaced_name = "COV2")
   }) %>% bindEvent(input$custom_cov_2_model_1)
-
+  
   observe({
     if(!is.null(cleaned_cov_2_name_model_1()) & cleaned_cov_2_name_model_1() != "") {
       if (input$custom_cov_2_dist_model_1 == "Normal") {
@@ -6351,18 +6555,18 @@ server <- function(input, output, session) {
           catvalue1 = input$custom_cov_2_catvalue1_model_1,
           catvalue2 = input$custom_cov_2_catvalue2_model_1) %>% round(digits = 2)
       }
-
+      
       cov_2_model_1_df <- dplyr::as_tibble(cov_2_model_1_df)
       names(cov_2_model_1_df) <- cleaned_cov_2_name_model_1()
-
+      
       # Update rv_cov_2_model_1$df
       rv_cov_2_model_1$df <- dplyr::bind_cols(cov_2_model_1_df, dplyr::tibble(ID = seq_len(n_subj_model_1_clean())))
-
+      
     } else {
       rv_cov_2_model_1$df <- dplyr::tibble(ID = seq_len(n_subj_model_1_clean()))
     }
   }) # end of big observe to update rv_cov_2_model_1
-
+  
   output$cov_2_plot_ui_model_1 <- renderUI({
     if(!is.null(rv_cov_2_model_1$df)) {
       if(ncol(rv_cov_2_model_1$df) > 1) {
@@ -6374,13 +6578,13 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
   output$cov_2_plot_model_1 <- renderPlot({
     print_cov_plot(rv_cov_2_model_1$df) # %>% convert_to_plotly_watermark(plotly_watermark = FALSE)
   })
-
+  
   ### Repeat for Covariate 3 Model 1
-
+  
   output$custom_cov_3_ui_model_1 <- renderUI({
     if (input$custom_cov_3_dist_model_1 == "Normal") {
       fluidRow(
@@ -6424,11 +6628,11 @@ server <- function(input, output, session) {
       )
     }
   }) # end of custom_cov_3_ui_model_1 renderUI
-
+  
   cleaned_cov_3_name_model_1 <- reactive({
     check_cov_name(orig_name = input$custom_cov_3_model_1, replaced_name = "COV3")
   }) %>% bindEvent(input$custom_cov_3_model_1)
-
+  
   observe({
     if(!is.null(cleaned_cov_3_name_model_1()) & cleaned_cov_3_name_model_1() != "") {
       if (input$custom_cov_3_dist_model_1 == "Normal") {
@@ -6466,18 +6670,18 @@ server <- function(input, output, session) {
           catvalue1 = input$custom_cov_3_catvalue1_model_1,
           catvalue2 = input$custom_cov_3_catvalue2_model_1) %>% round(digits = 2)
       }
-
+      
       cov_3_model_1_df <- dplyr::as_tibble(cov_3_model_1_df)
       names(cov_3_model_1_df) <- cleaned_cov_3_name_model_1()
-
+      
       # Update rv_cov_3_model_1$df
       rv_cov_3_model_1$df <- dplyr::bind_cols(cov_3_model_1_df, dplyr::tibble(ID = seq_len(n_subj_model_1_clean())))
-
+      
     } else {
       rv_cov_3_model_1$df <- dplyr::tibble(ID = seq_len(n_subj_model_1_clean()))
     }
   }) # end of big observe to update rv_cov_3_model_1
-
+  
   output$cov_3_plot_ui_model_1 <- renderUI({
     if(!is.null(rv_cov_3_model_1$df)) {
       if(ncol(rv_cov_3_model_1$df) > 1) {
@@ -6489,11 +6693,11 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
   output$cov_3_plot_model_1 <- renderPlot({
     print_cov_plot(rv_cov_3_model_1$df) # %>% convert_to_plotly_watermark(plotly_watermark = FALSE)
   })
-
+  
   database_model_1 <- reactive({
     dbm1 <- sample_age_wt(df_name     = input$db_model_1,
                           nsubj       = n_subj_model_1_clean(),
@@ -6504,12 +6708,12 @@ server <- function(input, output, session) {
                           prop.male   = d_males_db_model_1()/100, # convert % into proportion (0 - 1)
                           seed.number = d_seed_number_model_1()
     )
-
+    
     # Get the column names of all dataframes, excluding the common column ("ID")
     column_names_model_1 <- c(setdiff(names(rv_cov_1_model_1$df), "ID"),
                               setdiff(names(rv_cov_2_model_1$df), "ID"),
                               setdiff(names(rv_cov_3_model_1$df), "ID"))
-
+    
     # Check if all column names are unique
     if (length(unique(column_names_model_1)) == length(column_names_model_1)) {
       dbm1_cov <- dbm1 %>%
@@ -6520,29 +6724,29 @@ server <- function(input, output, session) {
       shiny::showNotification("ERROR: All custom covariate names must be different from each other. Please rename them first.", type = "error", duration = 10)
       dbm1_cov <- dbm1
     }
-
+    
     return(dbm1_cov) # using bindEvent to prevent sampling pre-maturely based on outdated age ranges and throws an error
   }) #%>% bindEvent(input$db_model_1, n_subj_model_1_clean(), input$age_db_model_1, input$wt_db_model_1, input$males_db_model_1,
   #              input$seed_number_model_1, rv_cov_1_model_1$df, rv_cov_2_model_1$df, rv_cov_3_model_1$df)
-
+  
   output$demog_info_model_1 <- renderUI({
     if(input$db_model_1 == "None" & all(c(input$custom_cov_1_model_1, input$custom_cov_2_model_1, input$custom_cov_3_model_1) == "")) {
       htmltools::HTML(paste("<br><strong style='color: red;'><p>", "Summary statistics is not available when no database or custom covariates are selected.","</strong></p>"))
     } else {
       db_summ_model_1 <- database_model_1() %>%
         calc_summary_stats(replace_non_numeric_to_NA = FALSE)
-
+      
       if("SEX" %in% names(database_model_1())) {
         db_summ_model_1_male <- database_model_1() %>% dplyr::filter(SEX == 0) %>%
           calc_summary_stats(replace_non_numeric_to_NA = FALSE)
-
+        
         db_summ_model_1_female <- database_model_1() %>% dplyr::filter(SEX == 1) %>%
           calc_summary_stats(replace_non_numeric_to_NA = FALSE)
       } else {
         db_summ_model_1_male   <- db_summ_model_1
         db_summ_model_1_female <- db_summ_model_1
       }
-
+      
       if(input$db_model_1 != "None") {
         db_summ_model_1 <- db_summ_model_1 %>%
           dplyr::rename(
@@ -6575,7 +6779,7 @@ server <- function(input, output, session) {
         flextable::autofit() %>%
         flextable::theme_zebra() %>%
         flextable::htmltools_value()
-
+      
       if("SEX" %in% names(database_model_1())) {
         db_summ_model_1_male <- db_summ_model_1_male %>%
           flextable::flextable() %>%
@@ -6586,7 +6790,7 @@ server <- function(input, output, session) {
           flextable::autofit() %>%
           flextable::theme_zebra() %>%
           flextable::htmltools_value()
-
+        
         db_summ_model_1_female <- db_summ_model_1_female %>%
           flextable::flextable() %>%
           flextable::font(font = "Arial") %>%
@@ -6600,9 +6804,9 @@ server <- function(input, output, session) {
         db_summ_model_1_male   <- db_summ_model_1
         db_summ_model_1_female <- db_summ_model_1
       }
-
+      
       message("Created db_summ_model_1 flextables")
-
+      
       if(input$males_db_model_1 == 0 | input$males_db_model_1 == 100 | input$db_model_1 == "None") {
         fluidRow(db_summ_model_1)
       } else {
@@ -6610,11 +6814,11 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
   demog_plot_model_1 <- reactive({
     print_demog_plots(database_model_1())
   })
-
+  
   output$demog_plots_model_1 <- renderUI({
     if(input$db_model_1 == "None") {
       htmltools::HTML(paste("<br><strong style='color: red;'><p>", "Plots of weight and sex are not available when no database is selected.","</strong></p>"))
@@ -6622,7 +6826,7 @@ server <- function(input, output, session) {
       renderPlot(demog_plot_model_1())
     }
   })
-
+  
   #### Demog download section
   output$download_demog_data_model_1 <- downloadHandler(
     filename = function() {
@@ -6634,7 +6838,7 @@ server <- function(input, output, session) {
     },
     contentType = "text/csv"
   )
-
+  
   output$download_demog_plot_model_1 <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_demographics_plot_model_1.pdf")
@@ -6643,21 +6847,21 @@ server <- function(input, output, session) {
       ggplot2::ggsave(file, plot = demog_plot_model_1(), device = "pdf", width = 16, height = 8)
     }
   )
-
+  
   observeEvent(changed_reacted_param_model_1(), {
     if (!shinyAce::is.empty(mrgsolve::as.matrix(mrgsolve::omat(changed_reacted_param_model_1())))) {
       tmp <- extract_matrix(changed_reacted_param_model_1(), name_of_matrix = "omega", debug = show_debugging_msg)
       extracted_omega_model_1(tmp)
       iiv_checkpoint_model_1$extract_model_omega <- TRUE
     }
-
+    
     if (!shinyAce::is.empty(mrgsolve::as.matrix(mrgsolve::smat(changed_reacted_param_model_1())))) {
       tmp1 <- extract_matrix(changed_reacted_param_model_1(), name_of_matrix = "sigma", debug = show_debugging_msg)
       extracted_sigma_model_1(tmp1)
       iiv_checkpoint_model_1$extract_model_sigma <- TRUE
     }
   })
-
+  
   omega_matrix_model_1 <- eventReactive(extracted_omega_model_1(), {
     rhandsontable::rhandsontable(extracted_omega_model_1(), colTypes = rep("text", ncol(extracted_omega_model_1())), contextMenu = FALSE) %>%
       rhandsontable::hot_cols(renderer = "
@@ -6669,11 +6873,11 @@ server <- function(input, output, session) {
                }
              }")
   })
-
+  
   output$omega_model_1 <- rhandsontable::renderRHandsontable({
     omega_matrix_model_1()
   })
-
+  
   sigma_matrix_model_1 <- eventReactive(extracted_sigma_model_1(), {
     rhandsontable::rhandsontable(extracted_sigma_model_1(), colTypes = rep("text", ncol(extracted_sigma_model_1())), contextMenu = FALSE) %>%
       rhandsontable::hot_cols(renderer = "
@@ -6685,11 +6889,11 @@ server <- function(input, output, session) {
              }
            }")
   })
-
+  
   output$sigma_model_1 <- rhandsontable::renderRHandsontable({
     sigma_matrix_model_1()
   })
-
+  
   observeEvent(input$iiv_action_model_1, {
     if (iiv_checkpoint_model_1$extract_model_omega && !shinyAce::is.empty(input$omega_model_1)) {
       if(show_debugging_msg) {
@@ -6699,7 +6903,7 @@ server <- function(input, output, session) {
       extracted_omega_model_1(tmp1)
       iiv_checkpoint_model_1$updated_matrix_omega <- TRUE
     }
-
+    
     if (iiv_checkpoint_model_1$extract_model_sigma && !shinyAce::is.empty(input$sigma_model_1)) {
       if(show_debugging_msg) {
         message('sigma input fulfilled')
@@ -6712,12 +6916,12 @@ server <- function(input, output, session) {
       message('matrix applied')
     }
   })
-
+  
   changed_matrix_model_1 <- reactiveVal()
-
+  
   observe({
     variability_object_model_1 <- changed_reacted_param_model_1()
-
+    
     if (iiv_checkpoint_model_1$updated_matrix_omega) {
       if(show_debugging_msg) {
         message('updating matrix omega')
@@ -6735,7 +6939,7 @@ server <- function(input, output, session) {
         message('updated complete matrix omega')
       }
     }
-
+    
     if (iiv_checkpoint_model_1$updated_matrix_sigma) {
       if(show_debugging_msg) {
         message('updating matrix sigma')
@@ -6755,7 +6959,7 @@ server <- function(input, output, session) {
     }
     changed_matrix_model_1(variability_object_model_1)
   })
-
+  
   output$console_output_iiv_model_1 <- renderPrint({
     shiny::req(changed_matrix_model_1())
     if(mrgsolve::is.mrgmod(changed_matrix_model_1())) {
@@ -6764,7 +6968,7 @@ server <- function(input, output, session) {
       print(mrgsolve::revar(changed_matrix_model_1()))
     }
   })
-
+  
   ## IIV simulation 1 ----
   simulation_IIV_output_model_1 <- reactive({
     if (iiv_checkpoint_model_1$reconstructed_iiv) {
@@ -6786,16 +6990,16 @@ server <- function(input, output, session) {
           parallel_sim       = FALSE, #input$para_checkbox,
           parallel_n         = 100 # input$para_n,
         )
-
+      
       if(!is.null(iiv_sim_output_model_1)) {
         iiv_sim_output_model_1 <- quantile_output(iiv_sim_output_model_1,
                                                   yvar = input$yaxis_name,
                                                   lower_quartile = sanitize_numeric_input(d_lower_quartile(), legal_minimum = 0, display_error = TRUE)/100,
                                                   upper_quartile = sanitize_numeric_input(d_upper_quartile(), legal_maximum = 100, display_error = TRUE)/100
         )
-
+        
         iiv_sim_output_model_1$yvar <- iiv_sim_output_model_1[[input$yaxis_name]]
-
+        
         if(is.data.frame(iiv_sim_output_model_1)) {
           iiv_checkpoint_model_1$iiv_simulation <- TRUE
           if (show_debugging_msg) {
@@ -6808,8 +7012,8 @@ server <- function(input, output, session) {
       }
     }
   }, label = 'iiv_output_model_1()')
-
-
+  
+  
   combine_iiv_download_data <- reactive({
     downloadable_df <- check_and_combine_df(model_1_is_valid = iiv_checkpoint_model_1$iiv_simulation,
                                             model_2_is_valid = iiv_checkpoint_model_2$iiv_simulation,
@@ -6817,8 +7021,8 @@ server <- function(input, output, session) {
                                             input_df_2 = simulation_IIV_output_model_2())
     return(downloadable_df)
   })
-
-
+  
+  
   ## Download variability MODEL 1 table ----
   output$download_variability_table <- downloadHandler(
     filename = function() {
@@ -6829,20 +7033,20 @@ server <- function(input, output, session) {
       data.table::fwrite(combine_iiv_download_data(), file, quote = FALSE, row.names = FALSE)
     }
   )
-
+  
   simtime_text_model_1 <- reactive({
     tmp <- x1
     return(tmp)
   })
-
+  
   output$simtime_model_1 <- renderUI({
     htmltools::HTML(paste("<b>", simtime_text_model_1()))
   })
-
+  
   ## MODEL 2 ----
   extracted_omega_model_2 <- reactiveVal()
   extracted_sigma_model_2 <- reactiveVal()
-
+  
   n_subj_model_2_clean <- reactive({
     if(sanitize_numeric_input(d_n_subj_model_2(), allow_zero = FALSE, as_integer = TRUE) > 5000) {
       general_warning_modal(title = "Error", text_description = "Maximum number of subjects cannot exceed 5000. Reverting to using 20.")
@@ -6852,19 +7056,19 @@ server <- function(input, output, session) {
       return(sanitize_numeric_input(d_n_subj_model_2(), allow_zero = FALSE, as_integer = TRUE))
     }
   })
-
+  
   # Create a reactive value to hold the dataframe
   rv_cov_1_model_2 <- reactiveValues(df = NULL)
   rv_cov_2_model_2 <- reactiveValues(df = NULL)
   rv_cov_3_model_2 <- reactiveValues(df = NULL)
-
+  
   # Initialize the dataframe
   observe({
     rv_cov_1_model_2$df <- dplyr::tibble(ID = seq_len(n_subj_model_2_clean()))
     rv_cov_2_model_2$df <- dplyr::tibble(ID = seq_len(n_subj_model_2_clean()))
     rv_cov_3_model_2$df <- dplyr::tibble(ID = seq_len(n_subj_model_2_clean()))
   })
-
+  
   observeEvent(input$db_model_2, {
     if (input$db_model_2 == "None") {
       shinyjs::disable("age_db_model_2")
@@ -6890,9 +7094,9 @@ server <- function(input, output, session) {
       updateSliderInput(session, "age_db_model_2", min = 0, max = 10,  value = c(2, 6), step = 0.25)
     }
   }, label = "update_db_slider_model_2")
-
+  
   ##### UI / Plotting elements for Covariate 1 Model 2
-
+  
   output$custom_cov_1_ui_model_2 <- renderUI({
     if (input$custom_cov_1_dist_model_2 == "Normal") {
       fluidRow(
@@ -6936,11 +7140,11 @@ server <- function(input, output, session) {
       )
     }
   }) # end of custom_cov_1_ui_model_2 renderUI
-
+  
   cleaned_cov_1_name_model_2 <- reactive({
     check_cov_name(orig_name = input$custom_cov_1_model_2, replaced_name = "COV1")
   }) %>% bindEvent(input$custom_cov_1_model_2)
-
+  
   observe({
     if(!is.null(cleaned_cov_1_name_model_2()) & cleaned_cov_1_name_model_2() != "") {
       if (input$custom_cov_1_dist_model_2 == "Normal") {
@@ -6978,18 +7182,18 @@ server <- function(input, output, session) {
           catvalue1 = input$custom_cov_1_catvalue1_model_2,
           catvalue2 = input$custom_cov_1_catvalue2_model_2) %>% round(digits = 2)
       }
-
+      
       cov_1_model_2_df <- dplyr::as_tibble(cov_1_model_2_df)
       names(cov_1_model_2_df) <- cleaned_cov_1_name_model_2()
-
+      
       # Update rv_cov_1_model_2$df
       rv_cov_1_model_2$df <- dplyr::bind_cols(cov_1_model_2_df, dplyr::tibble(ID = seq_len(n_subj_model_2_clean())))
-
+      
     } else {
       rv_cov_1_model_2$df <- dplyr::tibble(ID = seq_len(n_subj_model_2_clean()))
     }
   }) # end of big observe to update rv_cov_1_model_2
-
+  
   output$cov_1_plot_ui_model_2 <- renderUI({
     if(!is.null(rv_cov_1_model_2$df)) {
       if(ncol(rv_cov_1_model_2$df) > 1) {
@@ -7001,13 +7205,13 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
   output$cov_1_plot_model_2 <- renderPlot({
     print_cov_plot(rv_cov_1_model_2$df) # %>% convert_to_plotly_watermark(plotly_watermark = FALSE)
   })
-
+  
   ### Repeat for Covariate 2 Model 2
-
+  
   output$custom_cov_2_ui_model_2 <- renderUI({
     if (input$custom_cov_2_dist_model_2 == "Normal") {
       fluidRow(
@@ -7051,11 +7255,11 @@ server <- function(input, output, session) {
       )
     }
   }) # end of custom_cov_2_ui_model_2 renderUI
-
+  
   cleaned_cov_2_name_model_2 <- reactive({
     check_cov_name(orig_name = input$custom_cov_2_model_2, replaced_name = "COV2")
   }) %>% bindEvent(input$custom_cov_2_model_2)
-
+  
   observe({
     if(!is.null(cleaned_cov_2_name_model_2()) & cleaned_cov_2_name_model_2() != "") {
       if (input$custom_cov_2_dist_model_2 == "Normal") {
@@ -7093,18 +7297,18 @@ server <- function(input, output, session) {
           catvalue1 = input$custom_cov_2_catvalue1_model_2,
           catvalue2 = input$custom_cov_2_catvalue2_model_2) %>% round(digits = 2)
       }
-
+      
       cov_2_model_2_df <- dplyr::as_tibble(cov_2_model_2_df)
       names(cov_2_model_2_df) <- cleaned_cov_2_name_model_2()
-
+      
       # Update rv_cov_2_model_2$df
       rv_cov_2_model_2$df <- dplyr::bind_cols(cov_2_model_2_df, dplyr::tibble(ID = seq_len(n_subj_model_2_clean())))
-
+      
     } else {
       rv_cov_2_model_2$df <- dplyr::tibble(ID = seq_len(n_subj_model_2_clean()))
     }
   }) # end of big observe to update rv_cov_2_model_2
-
+  
   output$cov_2_plot_ui_model_2 <- renderUI({
     if(!is.null(rv_cov_2_model_2$df)) {
       if(ncol(rv_cov_2_model_2$df) > 1) {
@@ -7116,13 +7320,13 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
   output$cov_2_plot_model_2 <- renderPlot({
     print_cov_plot(rv_cov_2_model_2$df) # %>% convert_to_plotly_watermark(plotly_watermark = FALSE)
   })
-
+  
   ### Repeat for Covariate 3 Model 2
-
+  
   output$custom_cov_3_ui_model_2 <- renderUI({
     if (input$custom_cov_3_dist_model_2 == "Normal") {
       fluidRow(
@@ -7166,11 +7370,11 @@ server <- function(input, output, session) {
       )
     }
   }) # end of custom_cov_3_ui_model_2 renderUI
-
+  
   cleaned_cov_3_name_model_2 <- reactive({
     check_cov_name(orig_name = input$custom_cov_3_model_2, replaced_name = "COV3")
   }) %>% bindEvent(input$custom_cov_3_model_2)
-
+  
   observe({
     if(!is.null(cleaned_cov_3_name_model_2()) & cleaned_cov_3_name_model_2() != "") {
       if (input$custom_cov_3_dist_model_2 == "Normal") {
@@ -7208,18 +7412,18 @@ server <- function(input, output, session) {
           catvalue1 = input$custom_cov_3_catvalue1_model_2,
           catvalue2 = input$custom_cov_3_catvalue2_model_2) %>% round(digits = 2)
       }
-
+      
       cov_3_model_2_df <- dplyr::as_tibble(cov_3_model_2_df)
       names(cov_3_model_2_df) <- cleaned_cov_3_name_model_2()
-
+      
       # Update rv_cov_3_model_2$df
       rv_cov_3_model_2$df <- dplyr::bind_cols(cov_3_model_2_df, dplyr::tibble(ID = seq_len(n_subj_model_2_clean())))
-
+      
     } else {
       rv_cov_3_model_2$df <- dplyr::tibble(ID = seq_len(n_subj_model_2_clean()))
     }
   }) # end of big observe to update rv_cov_3_model_2
-
+  
   output$cov_3_plot_ui_model_2 <- renderUI({
     if(!is.null(rv_cov_3_model_2$df)) {
       if(ncol(rv_cov_3_model_2$df) > 1) {
@@ -7231,11 +7435,11 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
   output$cov_3_plot_model_2 <- renderPlot({
     print_cov_plot(rv_cov_3_model_2$df) # %>% convert_to_plotly_watermark(plotly_watermark = FALSE)
   })
-
+  
   database_model_2 <- reactive({
     dbm2 <- sample_age_wt(df_name     = input$db_model_2,
                           nsubj       = n_subj_model_2_clean(),
@@ -7246,12 +7450,12 @@ server <- function(input, output, session) {
                           prop.male   = d_males_db_model_2()/100, # convert % into proportion (0 - 1)
                           seed.number = d_seed_number_model_2()
     )
-
+    
     # Get the column names of all dataframes, excluding the common column ("ID")
     column_names_model_2 <- c(setdiff(names(rv_cov_1_model_2$df), "ID"),
                               setdiff(names(rv_cov_2_model_2$df), "ID"),
                               setdiff(names(rv_cov_3_model_2$df), "ID"))
-
+    
     # Check if all column names are unique
     if (length(unique(column_names_model_2)) == length(column_names_model_2)) {
       dbm2_cov <- dbm2 %>%
@@ -7262,28 +7466,28 @@ server <- function(input, output, session) {
       shiny::showNotification("ERROR: All custom covariate names must be different from each other. Please rename them first.", type = "error", duration = 10)
       dbm2_cov <- dbm2
     }
-
+    
     return(dbm2_cov)
   })
-
+  
   output$demog_info_model_2 <- renderUI({
     if(input$db_model_2 == "None" & all(c(input$custom_cov_1_model_2, input$custom_cov_2_model_2, input$custom_cov_3_model_2) == "")) {
       htmltools::HTML(paste("<br><strong style='color: red;'><p>", "Summary statistics is not available when no database or custom covariates are selected.","</strong></p>"))
     } else {
       db_summ_model_2 <- database_model_2() %>%
         calc_summary_stats(replace_non_numeric_to_NA = FALSE)
-
+      
       if("SEX" %in% names(database_model_2())) {
         db_summ_model_2_male <- database_model_2() %>% dplyr::filter(SEX == 0) %>%
           calc_summary_stats(replace_non_numeric_to_NA = FALSE)
-
+        
         db_summ_model_2_female <- database_model_2() %>% dplyr::filter(SEX == 1) %>%
           calc_summary_stats(replace_non_numeric_to_NA = FALSE)
       } else {
         db_summ_model_2_male   <- db_summ_model_2
         db_summ_model_2_female <- db_summ_model_2
       }
-
+      
       if(input$db_model_2 != "None") {
         db_summ_model_2 <- db_summ_model_2 %>%
           dplyr::rename(
@@ -7316,7 +7520,7 @@ server <- function(input, output, session) {
         flextable::autofit() %>%
         flextable::theme_zebra() %>%
         flextable::htmltools_value()
-
+      
       if("SEX" %in% names(database_model_2())) {
         db_summ_model_2_male <- db_summ_model_2_male %>%
           flextable::flextable() %>%
@@ -7327,7 +7531,7 @@ server <- function(input, output, session) {
           flextable::autofit() %>%
           flextable::theme_zebra() %>%
           flextable::htmltools_value()
-
+        
         db_summ_model_2_female <- db_summ_model_2_female %>%
           flextable::flextable() %>%
           flextable::font(font = "Arial") %>%
@@ -7341,7 +7545,7 @@ server <- function(input, output, session) {
         db_summ_model_2_female <- db_summ_model_2
         db_summ_model_2_male   <- db_summ_model_2
       }
-
+      
       if(input$males_db_model_2 == 0 | input$males_db_model_2 == 100 | input$db_model_2 == "None") { # Do not show tables by sex if proportion is 0% or 100%
         fluidRow(db_summ_model_2)
       } else {
@@ -7349,11 +7553,11 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
   demog_plot_model_2 <- reactive({
     print_demog_plots(database_model_2())
   })
-
+  
   output$demog_plots_model_2 <- renderUI({
     if(input$db_model_2 == "None") {
       htmltools::HTML(paste("<br><strong style='color: red;'><p>", "Plots of weight and sex are not available when no database is selected.","</strong></p>"))
@@ -7361,7 +7565,7 @@ server <- function(input, output, session) {
       renderPlot(demog_plot_model_2())
     }
   })
-
+  
   #### Demog download section
   output$download_demog_data_model_2 <- downloadHandler(
     filename = function() {
@@ -7373,7 +7577,7 @@ server <- function(input, output, session) {
     },
     contentType = "text/csv"
   )
-
+  
   output$download_demog_plot_model_2 <- downloadHandler(
     filename = function() {
       paste0(today_numeric(), "_demographics_plot_model_2.pdf")
@@ -7382,22 +7586,22 @@ server <- function(input, output, session) {
       ggplot2::ggsave(file, plot = demog_plot_model_2(), device = "pdf", width = 16, height = 8)
     }
   )
-
+  
   observeEvent(changed_reacted_param_model_2(), {
     if (!shinyAce::is.empty(mrgsolve::as.matrix(mrgsolve::omat(changed_reacted_param_model_2())))) {
       tmp <- extract_matrix(changed_reacted_param_model_2(), name_of_matrix = "omega", debug = show_debugging_msg)
       extracted_omega_model_2(tmp)
       iiv_checkpoint_model_2$extract_model_omega <- TRUE
     }
-
+    
     if (!shinyAce::is.empty(mrgsolve::as.matrix(mrgsolve::smat(changed_reacted_param_model_2())))) {
       tmp1 <- extract_matrix(changed_reacted_param_model_2(), name_of_matrix = "sigma", debug = show_debugging_msg)
       extracted_sigma_model_2(tmp1)
       iiv_checkpoint_model_2$extract_model_sigma <- TRUE
     }
-
+    
   })
-
+  
   omega_matrix_model_2 <- eventReactive(extracted_omega_model_2(), {
     rhandsontable::rhandsontable(extracted_omega_model_2(), colTypes = rep("text", ncol(extracted_omega_model_2())), contextMenu = FALSE) %>%
       rhandsontable::hot_cols(renderer = "
@@ -7409,11 +7613,11 @@ server <- function(input, output, session) {
                }
              }")
   })
-
+  
   output$omega_model_2 <- rhandsontable::renderRHandsontable({
     omega_matrix_model_2()
   })
-
+  
   sigma_matrix_model_2 <- eventReactive(extracted_sigma_model_2(), {
     rhandsontable::rhandsontable(extracted_sigma_model_2(), colTypes = rep("text", ncol(extracted_sigma_model_2())), contextMenu = FALSE) %>%
       rhandsontable::hot_cols(renderer = "
@@ -7424,13 +7628,13 @@ server <- function(input, output, session) {
                cellProperties.readOnly = true;  // Make cell read-only
              }
            }")
-
+    
   })
-
+  
   output$sigma_model_2 <- rhandsontable::renderRHandsontable({
     sigma_matrix_model_2()
   })
-
+  
   observeEvent(input$iiv_action_model_2, {
     #message('sanity check')
     if (iiv_checkpoint_model_2$extract_model_omega && !shinyAce::is.empty(input$omega_model_2)) {
@@ -7441,7 +7645,7 @@ server <- function(input, output, session) {
       extracted_omega_model_2(tmp1)
       iiv_checkpoint_model_2$updated_matrix_omega <- TRUE
     }
-
+    
     if (iiv_checkpoint_model_2$extract_model_sigma && !shinyAce::is.empty(input$sigma_model_2)) {
       if(show_debugging_msg) {
         message('sigma input fulfilled')
@@ -7454,12 +7658,12 @@ server <- function(input, output, session) {
       message('matrix applied')
     }
   })
-
+  
   changed_matrix_model_2 <- reactiveVal()
-
+  
   observe({
     variability_object_model_2 <- changed_reacted_param_model_2()
-
+    
     if (iiv_checkpoint_model_2$updated_matrix_omega) {
       if(show_debugging_msg) {
         message('updating matrix omega')
@@ -7477,7 +7681,7 @@ server <- function(input, output, session) {
         message('updated complete matrix omega')
       }
     }
-
+    
     if (iiv_checkpoint_model_2$updated_matrix_sigma) {
       if(show_debugging_msg) {
         message('updating matrix sigma')
@@ -7497,7 +7701,7 @@ server <- function(input, output, session) {
     }
     changed_matrix_model_2(variability_object_model_2)
   })
-
+  
   output$console_output_iiv_model_2 <- renderPrint({
     shiny::req(changed_matrix_model_2())
     if(mrgsolve::is.mrgmod(changed_matrix_model_2())) {
@@ -7506,7 +7710,7 @@ server <- function(input, output, session) {
       print(mrgsolve::revar(changed_matrix_model_2()))
     }
   })
-
+  
   ## IIV simulation 2 ----
   simulation_IIV_output_model_2 <- reactive({
     if (iiv_checkpoint_model_2$reconstructed_iiv) {
@@ -7529,16 +7733,16 @@ server <- function(input, output, session) {
           parallel_sim       = FALSE, #input$para_checkbox,
           parallel_n         = 100 # input$para_n
         )
-
+      
       if(!is.null(iiv_sim_output_model_2)) {
         iiv_sim_output_model_2 <- quantile_output(iiv_sim_output_model_2,
                                                   yvar = input$yaxis_name_2,
                                                   lower_quartile = sanitize_numeric_input(d_lower_quartile(), legal_minimum = 0, display_error = TRUE)/100,
                                                   upper_quartile = sanitize_numeric_input(d_upper_quartile(), legal_maximum = 100, display_error = TRUE)/100
         )
-
+        
         iiv_sim_output_model_2$yvar <- iiv_sim_output_model_2[[input$yaxis_name_2]]
-
+        
         if(is.data.frame(iiv_sim_output_model_2)) {
           iiv_checkpoint_model_2$iiv_simulation <- TRUE
           if (show_debugging_msg) {
@@ -7551,12 +7755,12 @@ server <- function(input, output, session) {
       }
     }
   }, label = 'iiv_output_model_2()')
-
-
+  
+  
   ### Plot ---
   sim_1_dataset_iiv_arg <- reactive({
     tmp <- NULL
-
+    
     if (input$yaxis_name %in% colnames(simulation_IIV_output_model_1()) && iiv_checkpoint_model_1$iiv_simulation) {
       if (input$show_iiv_model_1) {
         tmp <- simulation_IIV_output_model_1()
@@ -7564,10 +7768,10 @@ server <- function(input, output, session) {
     }
     return(tmp)
   }, label = 'sim_1_iiv_dataset_arg')
-
+  
   sim_2_dataset_iiv_arg <- reactive({
     tmp2 <- NULL
-
+    
     if (input$yaxis_name_2 %in% colnames(simulation_IIV_output_model_2()) && iiv_checkpoint_model_2$iiv_simulation) {
       if (input$show_iiv_model_2) {
         if(show_debugging_msg) {
@@ -7578,22 +7782,22 @@ server <- function(input, output, session) {
     }
     return(tmp2)
   }, label = 'sim_2_iiv_dataset_arg')
-
+  
   iiv_page_plot <- reactive({
     nonmem_dataset <- if (input$combine_nmdata_iiv && final_output_executed()) {
       nmdata_cmt_filtered()
     } else {
       NULL
     }
-
+    
     title <- if (input$combine_nmdata_iiv && is.null(nonmem_dataset)) {
       unsupported_dataset
     } else {
       NULL
     }
-
+    
     if (!is.null(sim_1_dataset_iiv_arg()) || !is.null(sim_2_dataset_iiv_arg())) {
-
+      
       sim_plot <- plot_iiv_data_with_nm(input_dataset1 = sim_1_dataset_iiv_arg(),
                                         input_dataset2 = sim_2_dataset_iiv_arg(),
                                         nonmem_dataset = nonmem_dataset,
@@ -7622,18 +7826,18 @@ server <- function(input, output, session) {
                                         show_y_intercept = input$show_y_intercept_threshold,
                                         y_intercept_value = d_y_value_threshold()
       )
-
-
+      
+      
       if (!is.null(title)) {
         sim_plot <- sim_plot + ggplot2::theme(plot.title = ggplot2::element_text(color = model_1_color))
       }
-
+      
       return(sim_plot)
     }
   }, label = 'iiv_page_plot')
-
+  
   ### UI: output$simulation_plot_output ----
-
+  
   output$iiv_plot_output <- renderUI({
     shiny::conditionalPanel(
       condition = "true",
@@ -7648,9 +7852,9 @@ server <- function(input, output, session) {
       )
     )
   })
-
+  
   output$iiv_ggplot <- renderPlot(iiv_page_plot() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
-
+  
   output$iiv_plotly <- plotly::renderPlotly(convert_to_plotly_watermark(iiv_page_plot(),
                                                                         format = input$plotly_iiv_format,
                                                                         filename = input$plotly_iiv_filename,
@@ -7658,7 +7862,7 @@ server <- function(input, output, session) {
                                                                         height = input$plotly_iiv_height,
                                                                         plotly_watermark = insert_watermark)
   )
-
+  
   #### IIV Plot download section
   observeEvent(input$do_iiv_plotly, {
     if (input$do_iiv_plotly) {
@@ -7671,7 +7875,7 @@ server <- function(input, output, session) {
                         choices = c("png", "pdf", "jpeg", "svg"))
     }
   }, label = "update_download_iiv_plot")
-
+  
   output$download_iiv_plot <- downloadHandler(
     filename = function() {
       paste0(input$plotly_iiv_filename, ".", input$plotly_iiv_format)
@@ -7686,7 +7890,7 @@ server <- function(input, output, session) {
       )
     }
   )
-
+  
   ### UI: output$proportion_above_threshold ----
   observeEvent(sampling_options(), {
     shinyWidgets::updatePickerInput(session,
@@ -7696,7 +7900,7 @@ server <- function(input, output, session) {
                                     select = dplyr::last(unique(sampling_options()))
     )
   }, label = 'update x value selection proportion')
-
+  
   pct_above_y_at_x_model_1 <- reactive({
     pct_above_y_at_x(model_is_valid = iiv_checkpoint_model_1$iiv_simulation,
                      input_df       = simulation_IIV_output_model_1(),
@@ -7705,7 +7909,7 @@ server <- function(input, output, session) {
                      x_name         = "TIME",
                      x_value        = input$x_value_threshold)
   })
-
+  
   pct_above_y_at_x_model_1_n <- reactive({
     pct_above_y_at_x(model_is_valid = iiv_checkpoint_model_1$iiv_simulation,
                      input_df       = simulation_IIV_output_model_1(),
@@ -7715,7 +7919,7 @@ server <- function(input, output, session) {
                      x_value        = input$x_value_threshold,
                      return_number_ids = TRUE)
   })
-
+  
   pct_above_y_at_x_model_2 <- reactive({
     pct_above_y_at_x(model_is_valid = iiv_checkpoint_model_2$iiv_simulation,
                      input_df       = simulation_IIV_output_model_2(),
@@ -7724,7 +7928,7 @@ server <- function(input, output, session) {
                      x_name         = "TIME",
                      x_value        = input$x_value_threshold)
   })
-
+  
   pct_above_y_at_x_model_2_n <- reactive({
     pct_above_y_at_x(model_is_valid = iiv_checkpoint_model_2$iiv_simulation,
                      input_df       = simulation_IIV_output_model_2(),
@@ -7734,23 +7938,23 @@ server <- function(input, output, session) {
                      x_value        = input$x_value_threshold,
                      return_number_ids = TRUE)
   })
-
+  
   model_1_proportion_text <- reactive({
     paste0("Model 1: ", pct_above_y_at_x_model_1(), "% Above (n=", pct_above_y_at_x_model_1_n(), "/", n_subj_model_1_clean(),")")
   })
-
+  
   model_2_proportion_text <- reactive({
     paste0("Model 2: ", pct_above_y_at_x_model_2(), "% Above (n=", pct_above_y_at_x_model_2_n(), "/", n_subj_model_2_clean(),")")
   })
-
+  
   output$proportion_above_threshold_model_1 <- renderUI({
     htmltools::HTML(paste("<b>", model_1_proportion_text()))
   })
-
+  
   output$proportion_above_threshold_model_2 <- renderUI({
     htmltools::HTML(paste("<b>", model_2_proportion_text()))
   })
-
+  
   ### Update input$exp_time_range ----
   observe({
     (shiny::req(simulation_output_model_1()))
@@ -7760,7 +7964,7 @@ server <- function(input, output, session) {
                                     choices = sort(unique(simulation_output_model_1()$TIME)),
                                     select = min(unique(simulation_output_model_1()$TIME))
     )
-
+    
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_exp_obs_time_model',
                                     label = NULL,
@@ -7768,7 +7972,7 @@ server <- function(input, output, session) {
                                     select = max(unique(simulation_output_model_1()$TIME))
     )
   }, label = 'update exp time selection')
-
+  
   observeEvent(input$min_exp_obs_time_model, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_exp_obs_time_model',
@@ -7777,7 +7981,7 @@ server <- function(input, output, session) {
                                     selected = input$max_exp_obs_time_model
     )
   }, label = 'update exp time selection (Max)')
-
+  
   observeEvent(input$max_exp_obs_time_model, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'min_exp_obs_time_model',
@@ -7786,7 +7990,7 @@ server <- function(input, output, session) {
                                     selected = input$min_exp_obs_time_model
     )
   }, label = 'update exp time selection (Min)')
-
+  
   # Model 2
   observe({
     (shiny::req(simulation_output_model_2()))
@@ -7796,7 +8000,7 @@ server <- function(input, output, session) {
                                     choices = sort(unique(simulation_output_model_2()$TIME)),
                                     select = min(unique(simulation_output_model_2()$TIME))
     )
-
+    
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_exp_obs_time_model',
                                     label = NULL,
@@ -7804,7 +8008,7 @@ server <- function(input, output, session) {
                                     select = max(unique(simulation_output_model_2()$TIME))
     )
   }, label = 'update exp time selection model 2')
-
+  
   observeEvent(input$min_exp_obs_time_model, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'max_exp_obs_time_model',
@@ -7813,7 +8017,7 @@ server <- function(input, output, session) {
                                     selected = input$max_exp_obs_time_model
     )
   }, label = 'update exp time selection (Max) model 2')
-
+  
   observeEvent(input$max_exp_obs_time_model, {
     shinyWidgets::updatePickerInput(session,
                                     inputId = 'min_exp_obs_time_model',
@@ -7822,12 +8026,12 @@ server <- function(input, output, session) {
                                     selected = input$min_exp_obs_time_model
     )
   }, label = 'update exp time selection (Min) model 2')
-
+  
   # exposure_data
   exposure_data <- reactive({
     both_model_exp <- NULL
     if (!is.null(sim_1_dataset_iiv_arg()) || !is.null(sim_2_dataset_iiv_arg())) {
-
+      
       if(!is.null(sim_1_dataset_iiv_arg())) {
         model_1_exp <- exposures_table(input_simulated_table = sim_1_dataset_iiv_arg(),
                                        output_conc = 'yvar',
@@ -7835,7 +8039,7 @@ server <- function(input, output, session) {
                                        end_time   = as.numeric(input$max_exp_obs_time_model)
         ) %>% mutate(MODEL = "Model 1")
       }
-
+      
       if(!is.null(sim_2_dataset_iiv_arg())) {
         model_2_exp <- exposures_table(input_simulated_table = sim_2_dataset_iiv_arg(),
                                        output_conc = 'yvar',
@@ -7843,7 +8047,7 @@ server <- function(input, output, session) {
                                        end_time   = as.numeric(input$max_exp_obs_time_model)
         ) %>% mutate(MODEL = "Model 2")
       }
-
+      
       if(!is.null(sim_1_dataset_iiv_arg()) && !is.null(sim_2_dataset_iiv_arg())) {
         both_model_exp <- dplyr::bind_rows(model_1_exp, model_2_exp)
       } else {
@@ -7855,10 +8059,10 @@ server <- function(input, output, session) {
         }
       }
     }
-
+    
     return(both_model_exp)
   }, label = "exposure_data")
-
+  
   ## Download variability exposures table ----
   output$download_exposures_table <- downloadHandler(
     filename = function() {
@@ -7868,27 +8072,27 @@ server <- function(input, output, session) {
       data.table::fwrite(exposure_data(), file, quote = FALSE, row.names = FALSE)
     }
   )
-
+  
   # iiv_exp_plot
   iiv_exp_plot <- reactive({
-
+    
     if (!is.null(exposure_data())) {
-
+      
       # Handling filtering of dataset outside the function as for some unknown reason plotly has
       # resizing glitches when this code is inside the function?
-
+      
       both_model_exp <- exposure_data()
-
+      
       if(!input$exp_show_model_1) {
         both_model_exp <- both_model_exp %>% filter(MODEL != "Model 1")
       }
-
+      
       if(!input$exp_show_model_2) {
         both_model_exp <- both_model_exp %>% filter(MODEL != "Model 2")
       }
-
+      
       if(nrow(both_model_exp) > 0) { # At least some rows are present to do a ggplot
-
+        
         exp_plot <- plot_iiv_exp_data(input_dataset = both_model_exp,
                                       yvar          = input$select_exp,
                                       ylab          = d_exp_yaxis_label(),
@@ -7904,7 +8108,7 @@ server <- function(input, output, session) {
       return(exp_plot)
     }
   }, label = 'iiv_exp_plot')
-
+  
   output$iiv_exp_output <- renderUI({
     shiny::conditionalPanel(
       condition = "true",
@@ -7919,9 +8123,9 @@ server <- function(input, output, session) {
       )
     )
   })
-
+  
   output$iiv_exp_ggplot <- renderPlot(iiv_exp_plot() + add_watermark(watermark_toggle = insert_watermark) + ggplot2::theme(text = ggplot2::element_text(size = 16)))
-
+  
   output$iiv_exp_plotly <- plotly::renderPlotly(convert_to_plotly_watermark(iiv_exp_plot(),
                                                                             format = input$plotly_exp_format,
                                                                             filename = input$plotly_exp_filename,
@@ -7929,7 +8133,7 @@ server <- function(input, output, session) {
                                                                             height = input$plotly_exp_height,
                                                                             plotly_watermark = insert_watermark)
   )
-
+  
   #### IIV Exposures Plot download section
   observeEvent(input$do_exp_plotly, {
     if (input$do_exp_plotly) {
@@ -7942,7 +8146,7 @@ server <- function(input, output, session) {
                         choices = c("png", "pdf", "jpeg", "svg"))
     }
   }, label = "update_download_exp_plot")
-
+  
   output$download_exp_plot <- downloadHandler(
     filename = function() {
       paste0(input$plotly_exp_filename, ".", input$plotly_exp_format)

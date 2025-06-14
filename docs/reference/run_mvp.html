@@ -17,7 +17,7 @@ to it's state prior to calling run_mvp."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">MVPapp</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,12 +61,12 @@ to it's state prior to calling <code>run_mvp</code>.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">run_mvp</span><span class="op">(</span></span>
 <span>  appDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"shiny"</span>, package <span class="op">=</span> <span class="st">"MVPapp"</span><span class="op">)</span>,</span>
-<span>  show_debugging_msg <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  authentication_code <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  insert_watermark <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  authentication_code <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
 <span>  internal_version <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  use_bi_styling <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  pw_models_path <span class="op">=</span> <span class="cn">NA_character_</span>,</span>
+<span>  show_debugging_msg <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -79,16 +79,12 @@ to it's state prior to calling <code>run_mvp</code>.</p>
 <dd><p>the directory of the application to run.</p></dd>
 
 
-<dt id="arg-show-debugging-msg">show_debugging_msg<a class="anchor" aria-label="anchor" href="#arg-show-debugging-msg"></a></dt>
-<dd><p>Logical. Default FALSE. Set to TRUE to output verbose working messages in the console, useful for debugging.</p></dd>
+<dt id="arg-insert-watermark">insert_watermark<a class="anchor" aria-label="anchor" href="#arg-insert-watermark"></a></dt>
+<dd><p>Logical. Default TRUE. Set to FALSE to remove "For Internal Use Only" text in simulated plots.</p></dd>
 
 
 <dt id="arg-authentication-code">authentication_code<a class="anchor" aria-label="anchor" href="#arg-authentication-code"></a></dt>
 <dd><p>Character. Default NA_character_. Provide a string (e.g., password) to password-lock the entire app.</p></dd>
-
-
-<dt id="arg-insert-watermark">insert_watermark<a class="anchor" aria-label="anchor" href="#arg-insert-watermark"></a></dt>
-<dd><p>Logical. Default TRUE. Set to FALSE to remove "For Internal Use Only" text in simulated plots.</p></dd>
 
 
 <dt id="arg-internal-version">internal_version<a class="anchor" aria-label="anchor" href="#arg-internal-version"></a></dt>
@@ -103,28 +99,40 @@ to it's state prior to calling <code>run_mvp</code>.</p>
 <dd><p>Character. Default NA_character_. Provide a path to source password-gated models.</p></dd>
 
 
+<dt id="arg-show-debugging-msg">show_debugging_msg<a class="anchor" aria-label="anchor" href="#arg-show-debugging-msg"></a></dt>
+<dd><p>Logical. Default FALSE. Set to TRUE to output verbose working messages in the console, useful for debugging.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p><code><a href="https://rdrr.io/pkg/shiny/man/runApp.html" class="external-link">shiny::runApp()</a></code> parameters, <code><a href="https://rdrr.io/pkg/shiny/man/shinyApp.html" class="external-link">shiny::shinyApp()</a></code> parameters,
 or parameters to pass to the Shiny app.</p></dd>
 
 </dl></div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>If the user wishes to run the App outside of the function (e.g. preparing for
+deployment on Posit Connect), this can be done by accessing inst/shiny/app.R,
+which is located inside the folder of where the package was installed, and modify
+debug_mode = TRUE (and setting these options there as required).</p>
+    </div>
+    <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
     <p>Adapted from https://github.com/jbryer/ShinyDemo/blob/master/R/run_shiny_app.R</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="../articles/supply-passwords.html">vignette("supply-passwords", package = "MVPapp")</a></code></p></div>
+    <div class="dont-index"><p><a href="https://boehringer-ingelheim.github.io/MVPapp/articles/supply-passwords.html">https://boehringer-ingelheim.github.io/MVPapp/articles/supply-passwords.html</a></p></div>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
 <span class="r-in"><span><span class="fu">run_mvp</span><span class="op">(</span>insert_watermark <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="co"># remove watermarks</span></span></span>
+<span class="r-in"><span><span class="fu">run_mvp</span><span class="op">(</span>launch.browser <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="co"># launch app in browser (argument passed to shinyApp)</span></span></span>
 <span class="r-in"><span><span class="fu">run_mvp</span><span class="op">(</span>authentication_code <span class="op">=</span> <span class="st">"some_password"</span><span class="op">)</span> <span class="co"># Password-lock the site,</span></span></span>
 <span class="r-in"><span><span class="co"># could be useful in deployment</span></span></span>
 <span class="r-in"><span><span class="fu">run_mvp</span><span class="op">(</span>pw_models_path <span class="op">=</span> <span class="st">"path/to/your/private/models.R"</span><span class="op">)</span> <span class="co"># see</span></span></span>
-<span class="r-in"><span><span class="co"># "passworded_models_example.R" on how to set one up</span></span></span>
+<span class="r-in"><span><span class="co"># "inst/shiny/passworded_models_example.R" on how to set one up</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
