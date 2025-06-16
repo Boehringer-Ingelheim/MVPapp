@@ -3239,7 +3239,7 @@ convert_to_plotly_watermark <- function(ggplot_object,
 
 quantize <- function (x, levels, ...) {
   stopifnot(!anyNA(levels), is.numeric(levels), is.numeric(x))
-  midpoints <- (util::head(levels, -1) + utils::tail(levels, -1))/2
+  midpoints <- (head(levels, -1) + tail(levels, -1))/2
   breaks <- c(-Inf, midpoints, Inf)
   idx <- cut(x, breaks, labels = FALSE, ...)
   levels[idx]
