@@ -10,7 +10,9 @@ sample_age_wt(
   lower.agemo = 18 * 12,
   upper.agemo = 65 * 12,
   lower.wt = 0,
-  upper.wt = 100,
+  upper.wt = 200,
+  lower.bmi = 0,
+  upper.bmi = 70,
   prop.male = 0.5,
   seed.number = 1234
 )
@@ -27,6 +29,10 @@ sample_age_wt(
 \item{lower.wt}{Min WT (kg)      \emph{not applicable for "None"}}
 
 \item{upper.wt}{Max WT (kg)      \emph{not applicable for "None"}}
+
+\item{lower.bmi}{Min BMI          \emph{not applicable for "None"}}
+
+\item{upper.bmi}{Max BMI          \emph{not applicable for "None"}}
 
 \item{prop.male}{Proportion of males (e.g. 0.5)  \emph{not applicable for "None"}}
 

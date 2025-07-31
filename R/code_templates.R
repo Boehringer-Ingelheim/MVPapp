@@ -4,9 +4,9 @@
 #-------------------------------------------------------------------------------
 
 #' @export
-code_preamble  <- "## Notes: mrgsolve [v1.5.2] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n\nmodel_code <- "
+code_preamble  <- "## Notes: mrgsolve [>= 1.5.2] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n\nmodel_code <- "
 #' @export
-cpp_preamble   <- "## Notes: mrgsolve [v1.5.2] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n##      :\n##      : ESCAPE (\\) OR REMOVE ALL SINGLE / DOUBLE QUOTATION MARKS IN .CPP FILE!!\n\nmodel_code <- "
+cpp_preamble   <- "## Notes: mrgsolve [>= 1.5.2] (https://mrgsolve.org/user-guide/) syntax is required.\n##      : All parameters inside $PARAM will be dynamically generated.\n##      : Changes to values above will not be reflected back in the code editor.\n##      : All sources of variability will be ignored (see Variability tab).\n##      : Model code must be enclosed in quotation marks and assigned to the 'model_code' object.\n##      :\n##      : ESCAPE (\\) OR REMOVE ALL SINGLE / DOUBLE QUOTATION MARKS IN .CPP FILE!!\n\nmodel_code <- "
 #' @export
 code_postamble <- "\n## IMPORTANT: Model 1 and Model 2 must have different 'model_object' names!\n"
 
@@ -1063,25 +1063,25 @@ modlib_examples <-
 ##      : Changes to values above will not be reflected back in the code editor.
 ##      : All sources of variability will be ignored (see Variability tab).
                           
-# model_object <- mread("pk1cmt",  modlib())
-# model_object <- mread("pk2cmt",  modlib()) 
-# model_object <- mread("pk3cmt",  modlib()) 
-# model_object <- mread("pk1",     modlib()) # one compartment pk model in closed-form
-# model_object <- mread("pk2",     modlib()) # two compartment pk model in closed-form
-# model_object <- mread("popex",   modlib()) # a simple population pk model
-# model_object <- mread("irm1",    modlib()) # inhibition of response production
-# model_object <- mread("irm2",    modlib()) # inhibition of response loss
-# model_object <- mread("irm3",    modlib()) # stimulation of response production
-# model_object <- mread("irm4",    modlib()) # stimulation of response loss
-# model_object <- mread("emax",    modlib()) # sigmoid emax model
-# model_object <- mread("effect",  modlib()) # effect compartment model
-# model_object <- mread("tmdd",    modlib()) # target-mediated drug disp.
-# model_object <- mread("viral1",  modlib()) 
-# model_object <- mread("viral2",  modlib()) 
-# model_object <- mread("pred1",   modlib()) # $PRED syntax
-# model_object <- mread("pbpk",    modlib())
-# model_object <- mread("1005",    modlib()) # embedded NONMEM result
-# model_object <- mread("nm-like", modlib()) # model with nonmem-like syntax
+# model_object <- mrgsolve::mread("pk1cmt",  modlib())
+# model_object <- mrgsolve::mread("pk2cmt",  modlib()) 
+# model_object <- mrgsolve::mread("pk3cmt",  modlib()) 
+# model_object <- mrgsolve::mread("pk1",     modlib()) # one compartment pk model in closed-form
+# model_object <- mrgsolve::mread("pk2",     modlib()) # two compartment pk model in closed-form
+# model_object <- mrgsolve::mread("popex",   modlib()) # a simple population pk model
+# model_object <- mrgsolve::mread("irm1",    modlib()) # inhibition of response production
+# model_object <- mrgsolve::mread("irm2",    modlib()) # inhibition of response loss
+# model_object <- mrgsolve::mread("irm3",    modlib()) # stimulation of response production
+# model_object <- mrgsolve::mread("irm4",    modlib()) # stimulation of response loss
+# model_object <- mrgsolve::mread("emax",    modlib()) # sigmoid emax model
+# model_object <- mrgsolve::mread("effect",  modlib()) # effect compartment model
+# model_object <- mrgsolve::mread("tmdd",    modlib()) # target-mediated drug disp.
+# model_object <- mrgsolve::mread("viral1",  modlib()) 
+# model_object <- mrgsolve::mread("viral2",  modlib()) 
+# model_object <- mrgsolve::mread("pred1",   modlib()) # $PRED syntax
+# model_object <- mrgsolve::mread("pbpk",    modlib())
+# model_object <- mrgsolve::mread("1005",    modlib()) # embedded NONMEM result
+# model_object <- mrgsolve::mread("nm-like", modlib()) # model with nonmem-like syntax
 
 
 ### IMPORTANT: Do not have same model for both Model 1 / Model 2 as internal model names cannot be identical!                    

@@ -1319,6 +1319,8 @@ run_single_sim <- function(input_model_object,
 #' @param upper.agemo    Max Age (months) *not applicable for "None"*
 #' @param lower.wt       Min WT (kg)      *not applicable for "None"*
 #' @param upper.wt       Max WT (kg)      *not applicable for "None"*
+#' @param lower.bmi      Min BMI          *not applicable for "None"*
+#' @param upper.bmi      Max BMI          *not applicable for "None"*
 #' @param prop.male      Proportion of males (e.g. 0.5)  *not applicable for "None"*
 #' @param seed.number    seed number
 #' @returns a dataframe with nsubj number of rows
@@ -1331,7 +1333,9 @@ sample_age_wt <- function(df_name     = "None",
                           lower.agemo = 18 * 12,
                           upper.agemo = 65 * 12,
                           lower.wt    = 0,
-                          upper.wt    = 100,
+                          upper.wt    = 200,
+                          lower.bmi   = 0,
+                          upper.bmi   = 70,
                           prop.male   = 0.5,
                           seed.number = 1234) {
 
@@ -1355,7 +1359,7 @@ sample_age_wt <- function(df_name     = "None",
   if(lower.agemo < min(df$AGEMO)) {
     stop("Requested lower bound of age exceeds what's available in the database.")
   }
-
+  
   if(lower.agemo == upper.agemo) { # Allows singular age
     df.sexes <- df %>%
       dplyr::filter(AGEMO == lower.agemo)
@@ -1368,6 +1372,11 @@ sample_age_wt <- function(df_name     = "None",
     df.sexes <- df %>%
       dplyr::filter(AGEMO >= lower.agemo, AGEMO < upper.agemo)
   }
+  
+  df.sexes <- df.sexes %>%
+    dplyr::mutate(BMI = round(WT / (HT/100)^2,2)) # Check for non-sensible values
+  
+  message(names(df.sexes))
 
   if(lower.wt == upper.wt) { # Allows singular weight
     df.sexes <- df.sexes %>%
@@ -1375,6 +1384,14 @@ sample_age_wt <- function(df_name     = "None",
   } else {
     df.sexes <- df.sexes %>%
       dplyr::filter(WT >= lower.wt, WT < upper.wt)
+  }
+  
+  if(lower.bmi == upper.bmi) { # Allows singular BMI
+    df.sexes <- df.sexes %>%
+      dplyr::filter(BMI == lower.bmi)
+  } else {
+    df.sexes <- df.sexes %>%
+      dplyr::filter(BMI >= lower.bmi, BMI < upper.bmi)
   }
 
   df.boys <- df.sexes %>%
@@ -1389,8 +1406,8 @@ sample_age_wt <- function(df_name     = "None",
     dplyr::slice_sample(n = nsubj, replace = FALSE) %>%
     dplyr::arrange(AGEMO) %>%
     dplyr::rename(AGE = AGEYR) %>%
-    dplyr::mutate(BMI = round(WT / (HT/100)^2,2)) %>% # Check for non-sensible values
-    dplyr::mutate(BSA = round(0.20247 * WT^0.425 * (HT/100)^0.725,2)) # Du Bois formula for BSA, height in m
+    dplyr::mutate(BSA = round(0.20247 * WT^0.425 * (HT/100)^0.725,2)) %>% # Du Bois formula for BSA, height in m
+    dplyr::select(SEX, AGEMO, AGE, WT, HT, BMI, BSA)
 
   return(cbind(dplyr::tibble(ID = 1:nsubj), df.combined))
 }
@@ -1465,7 +1482,7 @@ calc_summary_stats <- function(orig_data,
       "3rd Qu."   = function(x) quantile(x, probs = 0.75, na.rm = TRUE),
       "95%"       = function(x) quantile(x, probs = 0.95, na.rm = TRUE),
       "Max"       = function(x) max(x, na.rm = TRUE),
-      "CV%"       = function(x) sd(x, na.rm = TRUE)/mean(x, na.rm = TRUE) * 100,
+      "CV%"       = function(x) abs(sd(x, na.rm = TRUE)/mean(x, na.rm = TRUE) * 100), # CV% cannot be negative
       "gMean"     = function(x) gm_mean(x),
       "gMean CV%" = function(x) gm_mean_cv(x)
     )
@@ -3509,35 +3526,40 @@ pct_above_y_at_x <- function(model_is_valid = FALSE,
 
 create_alert <- function(ppm_name = "Firstname Lastname",
                          ppm_email = "dummy.email@company.com") {
-
-  email_html <- paste0("<a href='mailto:",
-                       ppm_email,
-                       "?subject=Model%20Visualization%20Platform%20(MVP)%20Usage'>",
-                       ppm_name,
-                       "</a>")
-
-  warning_text <- paste0("The unlocked model is provided for exploratory purposes only.<br>Please consult with your Project Pharmacometrician (PPM), ",
-                         email_html,
-                         ", for more information.<br><br>",
-                         "<b><font color='red'>Usage of any output produced in this App without the PPM's prior knowledge and approval is strictly prohibited.</font></b>")
-
-  password_alert <- shinyalert::shinyalert(
-    title = "Disclaimer",
-    text = warning_text,
-    size = "m",
-    closeOnEsc = TRUE,
-    closeOnClickOutside = FALSE,
-    html = TRUE,
-    type = "warning",
-    showConfirmButton = TRUE,
-    showCancelButton = FALSE,
-    confirmButtonText = "OK",
-    confirmButtonCol = "#AEDEF4",
-    timer = 0,
-    imageUrl = "",
-    animation = TRUE
-  )
-
+  
+  if(requireNamespace("shinyalert", quietly = TRUE)) {
+    
+    email_html <- paste0("<a href='mailto:",
+                         ppm_email,
+                         "?subject=Model%20Visualization%20Platform%20(MVP)%20Usage'>",
+                         ppm_name,
+                         "</a>")
+    
+    warning_text <- paste0("The unlocked model is provided for exploratory purposes only.<br>Please consult with your Project Pharmacometrician (PPM), ",
+                           email_html,
+                           ", for more information.<br><br>",
+                           "<b><font color='red'>Usage of any output produced in this App without the PPM's prior knowledge and approval is strictly prohibited.</font></b>")
+    
+    password_alert <- shinyalert::shinyalert(
+      title = "Disclaimer",
+      text = warning_text,
+      size = "m",
+      closeOnEsc = TRUE,
+      closeOnClickOutside = FALSE,
+      html = TRUE,
+      type = "warning",
+      showConfirmButton = TRUE,
+      showCancelButton = FALSE,
+      confirmButtonText = "OK",
+      confirmButtonCol = "#AEDEF4",
+      timer = 0,
+      imageUrl = "",
+      animation = TRUE
+    )
+  } else {
+    password_alert <- shiny::showNotification(paste0("Model unlocked (contact person: ", ppm_name,")."), type = "message", duration = 10)
+  }
+  
   return(password_alert)
 }
 
@@ -4494,7 +4516,6 @@ exposures_table <- function(input_simulated_table,
 #' @importFrom dplyr select mutate all_of summarise
 #' @importFrom ggplot2 theme_bw geom_boxplot scale_fill_manual geom_text
 #' @importFrom forcats fct_inorder
-#' @importFrom ggrepel geom_text_repel
 #' @export
 #-------------------------------------------------------------------------------
 

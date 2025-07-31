@@ -53,10 +53,19 @@ if(standalone_mode) {
 }
 #######################
 
+## The following parameter settings are needed if the user is directly downloading and launching MVPapp, i.e.:
+## shiny::runGitHub("MVPapp", username = "Boehringer-Ingelheim", subdir = "inst/shiny")
+
+if(!exists("insert_watermark"))    {insert_watermark    <- TRUE}
+if(!exists("authentication_code")) {authentication_code <- NA_character_}
+if(!exists("internal_version"))    {internal_version    <- TRUE}
+if(!exists("pw_models_path"))      {pw_models_path      <- NA_character_}
+if(!exists("bi_styling"))          {bi_styling          <- TRUE}
+if(!exists("show_debugging_msg"))  {show_debugging_msg  <- TRUE}
+
 if(!is.na(pw_models_path)) {
   source(pw_models_path)
 }
-
 
 # UI ----
 ui <- shiny::navbarPage(
@@ -94,7 +103,7 @@ ui <- shiny::navbarPage(
                                                 checkboxInput('create_time_col', 'Create TIME column if not found (from "TAFD", "TSFD", "ATFD", or "ATSD")', width = '100%', TRUE),
                                                 checkboxInput('BLQ_filter', 'Remove BLQ observations (exclude BLQ >= 1)', width = '100%', TRUE),
                                                 checkboxInput('EVID_filter', 'Remove dosing rows (exclude EVID >= 1)', width = '100%', FALSE),
-                                                checkboxInput('distinct_by_ID', 'Keep unique subjects only (distinct by "ID")', width = '100%', FALSE),
+                                                checkboxInput('distinct_by_ID', 'Keep unique subjects only (distinct by "ID") [applied after editor]', width = '100%', FALSE),
                                                 checkboxInput('turn_all_numeric', 'Coerce Dataset to Numeric (all characters becomes "NA")', width = '100%', FALSE)
                                                 
                             ),
@@ -140,12 +149,12 @@ ui <- shiny::navbarPage(
                          tabPanel('Filtered Data',
                                   fluidRow(
                                     column(width = 12,
-                                           DT::dataTableOutput('dataset_page_table')),
+                                           div(DT::dataTableOutput('dataset_page_table'), style = "font-size:80%;white-space: nowrap;width:100%;")),
                                     downloadButton("download_nmdataset_for_plot", "Download Data (.csv)")
                                   )       # end of fluidRow
                          ),              # end of tabPanel
                          tabPanel('Summary Statistics',
-                                  DT::dataTableOutput('data_info'),
+                                  div(DT::dataTableOutput('data_info'), style = "font-size:80%;white-space: nowrap;width:100%;"),
                                   checkboxInput('transpose_data_info', transpose_checkbox),
                                   shinyBS::bsPopover('transpose_data_info', transpose_checkbox, content = bspop_transpose, placement = 'left'),
                                   downloadButton("download_data_info", "Download Summary Statistics")
@@ -1798,14 +1807,17 @@ ui <- shiny::navbarPage(
                                                                              numericInput('seed_number_model_1', label = 'Seed', value = today_numeric(), min = 1),
                                                                              shinyBS::bsPopover('seed_number_model_1',  'Seed', content = bspop_seed, placement = 'right', trigger = 'focus')
                                                                       ),
-                                                                      column(width = 12,
+                                                                      column(width = 6,
                                                                              sliderInput('age_db_model_1', label = age_range_label, min = 0, max = 100, value = c(18,65), step = 1)
                                                                       ),
                                                                       column(width = 6,
-                                                                             sliderInput('wt_db_model_1', label = weight_range_label, min = 0, max = 150, value = c(0,150), step = 1)
+                                                                             sliderInput('wt_db_model_1', label = weight_range_label, min = 0, max = 200, value = c(0,200), step = 1)
                                                                       ),
                                                                       column(width = 6,
-                                                                             sliderInput('males_db_model_1', label = male_range_label, min = 0, max = 100, value = 50, step = 5)
+                                                                             sliderInput('males_db_model_1', label = male_range_label, min = 0, max = 100, value = 50, step = 1)
+                                                                      ),
+                                                                      column(width = 6,
+                                                                             sliderInput('bmi_db_model_1', label = bmi_range_label, min = 0, max = 70, value = c(0,70), step = 0.5)
                                                                       )
                                                              ), # end of Patient Databases tabPanel
                                                              tabPanel(id = "db_custom_cov_model_1",
@@ -1923,14 +1935,17 @@ ui <- shiny::navbarPage(
                                                                       numericInput('seed_number_model_2', label = 'Seed', value = today_numeric(), min = 1),
                                                                       shinyBS::bsPopover('seed_number_model_2',  'Seed', content = bspop_seed, placement = 'right', trigger = 'focus')
                                                                ),
-                                                               column(width = 12,
+                                                               column(width = 6,
                                                                       sliderInput('age_db_model_2', label = age_range_label, min = 0, max = 100, value = c(18,65), step = 1)
                                                                ),
                                                                column(width = 6,
-                                                                      sliderInput('wt_db_model_2', label = weight_range_label, min = 0, max = 150, value = c(0,150), step = 1)
+                                                                      sliderInput('wt_db_model_2', label = weight_range_label, min = 0, max = 200, value = c(0,200), step = 1)
                                                                ),
                                                                column(width = 6,
-                                                                      sliderInput('males_db_model_2', label = male_range_label, min = 0, max = 100, value = 50, step = 5)
+                                                                      sliderInput('males_db_model_2', label = male_range_label, min = 0, max = 100, value = 50, step = 1)
+                                                               ),
+                                                               column(width = 6,
+                                                                      sliderInput('bmi_db_model_2', label = bmi_range_label, min = 0, max = 70, value = c(0,70), step = 0.5)
                                                                )
                                                              ), # end of Patient Databases tabPanel
                                                              tabPanel(id = "db_custom_cov_model_2",
@@ -2269,6 +2284,7 @@ ui <- shiny::navbarPage(
                                title = 'Changelog', status = 'primary', solidHeader = TRUE, collapsible = TRUE, collapsed = TRUE,
                                p('Please visit the ', a(href = "https://github.com/Boehringer-Ingelheim/MVPapp/releases", "Github release page", target = "_blank"), ' for more information.'),
                                htmltools::br(),
+                               p('v0.3.3 (2025-07-31) - NHANES updated to include 2021-2023. BMI filter for external databases. Minor bug fixes.'),
                                p('v0.3.2 (2025-06-13) - Added spider plots sub-tab for batch runs.'),
                                p('v0.3.1 (2025-06-11) - Weight-based dosing now apply for batch runs and variability plots.'),
                                p('v0.3.0 (2025-06-10) - Parameter Sensitivity Analysis - Batch Runs (i.e. Tornado Plots). Fix slowness of plots when switching models with differing sample times. General improvements.'),
@@ -2396,6 +2412,12 @@ server <- function(input, output, session) {
     })
   } # end authentication
   
+  # Check if required NCA packages are installed
+  nca_packages_available <- all(
+    requireNamespace("ncar", quietly = TRUE),
+    requireNamespace("NonCompart", quietly = TRUE)
+  )
+  
   # Page 1 Data Input ----
   # Using debounce to wait for inactivity on textInput
   d_plot_title_data      <- debounce(reactive({ input$plot_title_data }), debounce_timer_slow)
@@ -2476,13 +2498,6 @@ server <- function(input, output, session) {
     
     if (input$create_time_col) {
       tmp <- search_time_col(tmp, names_of_time_cols = c("TAFD", "TSFD", "ATFD", "ATSD"))
-    }
-    
-    if(input$distinct_by_ID) {
-      if('ID' %in% names(tmp)) {
-        tmp <- tmp %>% dplyr::distinct(ID, .keep_all = TRUE)
-        shiny::showNotification(paste0("Dataset has been filtered to retain one row per ID only (n=", nrow(tmp), ")"), type = "message", duration = 10)
-      }
     }
     
     if (input$turn_all_numeric) {
@@ -2603,6 +2618,14 @@ server <- function(input, output, session) {
     
     if (nmdata_code_is_valid()) {
       nonmem_dataset <- safely_nmdata_code()$result
+      
+      if(input$distinct_by_ID) {
+        if('ID' %in% names(nonmem_dataset)) {
+          nonmem_dataset <- nonmem_dataset %>% dplyr::distinct(ID, .keep_all = TRUE)
+          shiny::showNotification(paste0("Dataset has been filtered to retain one row per ID only (N=", nrow(nonmem_dataset), ")"), type = "message", duration = 10)
+        }
+      }
+      
       if (show_debugging_msg) {
         message('Returning uploaded dataset as final_output()')
       }
@@ -2678,12 +2701,9 @@ server <- function(input, output, session) {
       
       final_output_executed(FALSE)
       shiny::showNotification("ERROR: Not all required columns (ID, TIME, DV) are present. Data overlay options are disabled.", type = "error", duration = 12)
-      #updateCheckboxInput(session, "turn_all_numeric", value = FALSE)
-      #shiny::showNotification("WARNING: Dataset appears to not be NONMEM-formatted. Re-filtering to retain characters...", type = "warning", duration = 12)
     }
     
     if (show_debugging_msg) {
-      #dplyr::glimpse(nonmem_dataset)
       message(paste0("final_output_executed() status: ", final_output_executed()))
     }
     
@@ -2897,10 +2917,12 @@ server <- function(input, output, session) {
                       "$(this.api().table().header()).css({'background-color': '#08312A', 'color': '#00E47C'});",
                       "}"),
                     pageLength = 10,
-                    lengthMenu = c(5, 10, 20, 25, 50, 100)
+                    lengthMenu = c(5, 10, 20, 25, 50, 100),
+                    autoWidth = TRUE,
+                    scrollX=FALSE
                   ),
-                  filter = 'top',
-    )
+                  filter = 'top'
+    ) 
   })
   
   ## UI: output$data_info ----
@@ -2936,49 +2958,54 @@ server <- function(input, output, session) {
   ## UI: output$descriptive_stats ----
   stat_table <- reactive({
     shiny::req(nmdataset_for_plot())
-    nmdataset_for_nca <- nmdataset_for_plot()
-    
-    if("EVID" %in% names(nmdataset_for_nca)) {
-      nmdataset_for_nca <- nmdataset_for_nca %>% filter(EVID == 0)
-      shiny::showNotification("Only retaining observations (EVID == 0) for NCA.", type = "message", duration = 10)
+    if (nca_packages_available) {
+      nmdataset_for_nca <- nmdataset_for_plot()
+      
+      if("EVID" %in% names(nmdataset_for_nca)) {
+        nmdataset_for_nca <- nmdataset_for_nca %>% filter(EVID == 0)
+        shiny::showNotification("Only retaining observations (EVID == 0) for NCA.", type = "message", duration = 10)
+      }
+      
+      if(input$mw_value == 0) {
+        shiny::showNotification("WARNING: Set Molecular Weight to a non-zero value to get Clearance and Volume estimates.", type = "warning", duration = 10)
+      }
+      
+      if(length(unique(nmdataset_for_nca$CMT)) > 1) {
+        most_frequent_cmt <- nmdataset_for_nca %>%
+          count(CMT) %>%                # Count occurrences of each unique CMT
+          filter(n == max(n)) %>%       # Find the row(s) with the maximum frequency
+          pull(CMT)                     # Extract the CMT value(s)
+        nmdataset_for_nca <- nmdataset_for_nca %>% filter(CMT %in% most_frequent_cmt[1]) # Use %in% in case of ties
+        shiny::showNotification(paste0("WARNING: Multiple CMTs found. Retaining most frequent CMT (", most_frequent_cmt, ") for NCA."), type = "warning", duration = 10)
+      }
+      
+      nmdataset_for_nca <- nmdataset_for_nca %>% # sort by ID and TIME to prevent "Check if the x is sorted in order!" error. Also by additional keys and dose col
+        arrange(!!dplyr::sym(input$additional_keys), !!dplyr::sym(input$dose_colname), !!dplyr::sym(input$subject_colname), !!dplyr::sym(input$time_colname))
+      
+      doses_by_id <- nmdataset_for_nca %>%
+        dplyr::select(!!dplyr::sym(input$subject_colname), !!dplyr::sym(input$additional_keys), !!dplyr::sym(input$dose_colname)) %>%
+        dplyr::distinct() %>%
+        .[[input$dose_colname]]
+      
+      tblNCA_progress(nmdataset_for_nca, ## originally was NonCompart::tblNCA, modified to support progress bars
+                      key = c(input$subject_colname, input$additional_keys),
+                      colTime = input$time_colname,
+                      colConc = input$conc_colname,
+                      dose = doses_by_id,
+                      adm = input$adm_route,
+                      dur = input$dur_inf,
+                      doseUnit = input$desc_dose_unit,
+                      timeUnit = input$desc_time_unit,
+                      concUnit = input$desc_conc_unit,
+                      down = input$down_method,
+                      #SS = input$SS_value,
+                      #R2ADJ = input$R2ADJ_value,
+                      MW = input$mw_value) %>%
+        dplyr::select(where(~any(!is.na(.)))) ## Remove columns with NA's if inputs are non-sensible
+    } else {
+      shiny::showNotification(paste0("ERROR: Required packages 'ncar' and 'NonCompart' not available. NCA not performed."), type = "error", duration = 10)
+      return(NULL)
     }
-    
-    if(input$mw_value == 0) {
-      shiny::showNotification("WARNING: Set Molecular Weight to a non-zero value to get Clearance and Volume estimates.", type = "warning", duration = 10)
-    }
-    
-    if(length(unique(nmdataset_for_nca$CMT)) > 1) {
-      most_frequent_cmt <- nmdataset_for_nca %>%
-        count(CMT) %>%                # Count occurrences of each unique CMT
-        filter(n == max(n)) %>%       # Find the row(s) with the maximum frequency
-        pull(CMT)                     # Extract the CMT value(s)
-      nmdataset_for_nca <- nmdataset_for_nca %>% filter(CMT %in% most_frequent_cmt[1]) # Use %in% in case of ties
-      shiny::showNotification(paste0("WARNING: Multiple CMTs found. Retaining most frequent CMT (", most_frequent_cmt, ") for NCA."), type = "warning", duration = 10)
-    }
-    
-    nmdataset_for_nca <- nmdataset_for_nca %>% # sort by ID and TIME to prevent "Check if the x is sorted in order!" error. Also by additional keys and dose col
-      arrange(!!dplyr::sym(input$additional_keys), !!dplyr::sym(input$dose_colname), !!dplyr::sym(input$subject_colname), !!dplyr::sym(input$time_colname))
-    
-    doses_by_id <- nmdataset_for_nca %>%
-      dplyr::select(!!dplyr::sym(input$subject_colname), !!dplyr::sym(input$additional_keys), !!dplyr::sym(input$dose_colname)) %>%
-      dplyr::distinct() %>%
-      .[[input$dose_colname]]
-    
-    tblNCA_progress(nmdataset_for_nca, ## originally was NonCompart::tblNCA, modified to support progress bars
-                    key = c(input$subject_colname, input$additional_keys),
-                    colTime = input$time_colname,
-                    colConc = input$conc_colname,
-                    dose = doses_by_id,
-                    adm = input$adm_route,
-                    dur = input$dur_inf,
-                    doseUnit = input$desc_dose_unit,
-                    timeUnit = input$desc_time_unit,
-                    concUnit = input$desc_conc_unit,
-                    down = input$down_method,
-                    #SS = input$SS_value,
-                    #R2ADJ = input$R2ADJ_value,
-                    MW = input$mw_value) %>%
-      dplyr::select(where(~any(!is.na(.)))) ## Remove columns with NA's if inputs are non-sensible
     
   }) %>%
     bindEvent(input$calc_nca)
@@ -3099,6 +3126,7 @@ server <- function(input, output, session) {
       paste0(today_numeric(), "_nca_report.pdf")
     },
     content = function(file) {
+      shiny::req(nca_packages_available)
       nmdataset_for_nca2 <- nmdataset_for_plot()
       
       if("EVID" %in% names(nmdataset_for_nca2)) {
@@ -3507,8 +3535,8 @@ server <- function(input, output, session) {
   d_delta          <- debounce(reactive({ input$delta }), debounce_timer_fast)
   d_custom_sampling_time_text <- debounce(reactive({ input$custom_sampling_time_text }), debounce_timer_slow)
   
-  mcode_model_1  <- paste0("\nmodel_object <- mcode('Model-1-", runif(min = 1, max = 9999999, n = 1) %>% round(), "', model_code, recover = TRUE)") # Insert random number as part of name to avoid global object namespace clash
-  mcode_model_2  <- paste0("\nmodel_object <- mcode('Model-2-", runif(min = 1, max = 9999999, n = 1) %>% round(), "', model_code, recover = TRUE)")
+  mcode_model_1  <- paste0("\nmodel_object <- mrgsolve::mcode('Model-1-", runif(min = 1, max = 9999999, n = 1) %>% round(), "', model_code, recover = TRUE)") # Insert random number as part of name to avoid global object namespace clash
+  mcode_model_2  <- paste0("\nmodel_object <- mrgsolve::mcode('Model-2-", runif(min = 1, max = 9999999, n = 1) %>% round(), "', model_code, recover = TRUE)")
   
   ## Outline ----
   ### Update model selectizeInput ----
@@ -5654,12 +5682,6 @@ server <- function(input, output, session) {
   observeEvent(input$generate_batch_model_1, {
     shiny::req(tor_tab_new_model_1())
     
-    # batch_run_df_test <<- tor_tab_new_model_1()
-    # input_model_test  <<- changed_reacted_param_model_1()
-    # sampling_times_test <<- sampling_options()
-    # ev_df_test <<- dosing_regimen_model_1()
-    # save(batch_run_df_test, input_model_test, sampling_times_test, ev_df_test, file = "spider_test.RData")
-    
     batch_runs <- iterate_batch_runs(
       batch_run_df       = tor_tab_new_model_1(),
       input_model_object = changed_reacted_param_model_1(),
@@ -6288,12 +6310,14 @@ server <- function(input, output, session) {
   d_age_db_model_1      <- debounce(reactive({ input$age_db_model_1 }), debounce_timer_slow)
   d_wt_db_model_1       <- debounce(reactive({ input$wt_db_model_1 }), debounce_timer_slow)
   d_males_db_model_1    <- debounce(reactive({ input$males_db_model_1 }), debounce_timer_slow)
+  d_bmi_db_model_1      <- debounce(reactive({ input$bmi_db_model_1 }), debounce_timer_slow)
   d_seed_number_model_1 <- debounce(reactive({ input$seed_number_model_1 }), debounce_timer_slow)
   
   d_n_subj_model_2      <- debounce(reactive({ input$n_subj_model_2 }), debounce_timer_fast)
   d_age_db_model_2      <- debounce(reactive({ input$age_db_model_2 }), debounce_timer_slow)
   d_wt_db_model_2       <- debounce(reactive({ input$wt_db_model_2 }), debounce_timer_slow)
   d_males_db_model_2    <- debounce(reactive({ input$males_db_model_2 }), debounce_timer_slow)
+  d_bmi_db_model_2      <- debounce(reactive({ input$bmi_db_model_2 }), debounce_timer_slow)
   d_seed_number_model_2 <- debounce(reactive({ input$seed_number_model_2 }), debounce_timer_slow)
   
   d_exp_yaxis_label     <- debounce(reactive({ input$exp_yaxis_label }), debounce_timer_slow)
@@ -6332,23 +6356,20 @@ server <- function(input, output, session) {
       shinyjs::disable("age_db_model_1")
       shinyjs::disable("wt_db_model_1")
       shinyjs::disable("males_db_model_1")
+      shinyjs::disable("bmi_db_model_1")
+    } else {
+      shinyjs::enable("age_db_model_1")
+      shinyjs::enable("wt_db_model_1")
+      shinyjs::enable("males_db_model_1") 
+      shinyjs::enable("bmi_db_model_1")
     }
     if (input$db_model_1 == "NHANES") {
-      shinyjs::enable("age_db_model_1")
-      shinyjs::enable("wt_db_model_1")
-      shinyjs::enable("males_db_model_1")
-      updateSliderInput(session, "age_db_model_1", min = 0, max = 100, value = c(18, 65))
+      updateSliderInput(session, "age_db_model_1", min = 0, max = 100, value = c(18, 65), step = 1)
     }
     if (input$db_model_1 == "CDC") {
-      shinyjs::enable("age_db_model_1")
-      shinyjs::enable("wt_db_model_1")
-      shinyjs::enable("males_db_model_1")
       updateSliderInput(session, "age_db_model_1", min = 0, max = 20,  value = c(6, 18), step = 0.5)
     }
     if (input$db_model_1 == "WHO") {
-      shinyjs::enable("age_db_model_1")
-      shinyjs::enable("wt_db_model_1")
-      shinyjs::enable("males_db_model_1")
       updateSliderInput(session, "age_db_model_1", min = 0, max = 10,  value = c(2, 6), step = 0.25)
     }
   }, label = "update_db_slider_model_1")
@@ -6701,10 +6722,12 @@ server <- function(input, output, session) {
   database_model_1 <- reactive({
     dbm1 <- sample_age_wt(df_name     = input$db_model_1,
                           nsubj       = n_subj_model_1_clean(),
-                          lower.agemo = d_age_db_model_1()[1] * 12,  #input$age_db_model_1[1] * 12,
-                          upper.agemo = d_age_db_model_1()[2] * 12,  #input$age_db_model_1[2] * 12,
+                          lower.agemo = d_age_db_model_1()[1] * 12,
+                          upper.agemo = d_age_db_model_1()[2] * 12,
                           lower.wt    = d_wt_db_model_1()[1],
                           upper.wt    = d_wt_db_model_1()[2],
+                          lower.bmi   = d_bmi_db_model_1()[1],
+                          upper.bmi   = d_bmi_db_model_1()[2],
                           prop.male   = d_males_db_model_1()/100, # convert % into proportion (0 - 1)
                           seed.number = d_seed_number_model_1()
     )
@@ -7074,23 +7097,20 @@ server <- function(input, output, session) {
       shinyjs::disable("age_db_model_2")
       shinyjs::disable("wt_db_model_2")
       shinyjs::disable("males_db_model_2")
+      shinyjs::disable("bmi_db_model_2")
+    } else {
+      shinyjs::enable("age_db_model_2")
+      shinyjs::enable("wt_db_model_2")
+      shinyjs::enable("males_db_model_2")
+      shinyjs::enable("bmi_db_model_2")      
     }
     if (input$db_model_2 == "NHANES") {
-      shinyjs::enable("age_db_model_2")
-      shinyjs::enable("wt_db_model_2")
-      shinyjs::enable("males_db_model_2")
-      updateSliderInput(session, "age_db_model_2", min = 0, max = 100, value = c(18, 65))
+      updateSliderInput(session, "age_db_model_2", min = 0, max = 100, value = c(18, 65), step = 1)
     }
     if (input$db_model_2 == "CDC") {
-      shinyjs::enable("age_db_model_2")
-      shinyjs::enable("wt_db_model_2")
-      shinyjs::enable("males_db_model_2")
       updateSliderInput(session, "age_db_model_2", min = 0, max = 20,  value = c(6, 18), step = 0.5)
     }
     if (input$db_model_2 == "WHO") {
-      shinyjs::enable("age_db_model_2")
-      shinyjs::enable("wt_db_model_2")
-      shinyjs::enable("males_db_model_2")
       updateSliderInput(session, "age_db_model_2", min = 0, max = 10,  value = c(2, 6), step = 0.25)
     }
   }, label = "update_db_slider_model_2")
@@ -7447,6 +7467,8 @@ server <- function(input, output, session) {
                           upper.agemo = d_age_db_model_2()[2] * 12,
                           lower.wt    = d_wt_db_model_2()[1],
                           upper.wt    = d_wt_db_model_2()[2],
+                          lower.bmi   = d_bmi_db_model_2()[1],
+                          upper.bmi   = d_bmi_db_model_2()[2],
                           prop.male   = d_males_db_model_2()/100, # convert % into proportion (0 - 1)
                           seed.number = d_seed_number_model_2()
     )

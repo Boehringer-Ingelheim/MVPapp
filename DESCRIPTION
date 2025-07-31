@@ -1,6 +1,6 @@
 Package: MVPapp
 Title: Model Visualization Platform
-Version: 0.3.2
+Version: 0.3.3
 Authors@R: c(
     person("Steve", "Choy", email = "steve.choy@outlook.com", role = c("aut", "cre")),
     person("Jin Gyu", "Kim", role = "aut"))
@@ -22,14 +22,11 @@ Imports: bslib (>= 0.5.1),
          forcats,
          GGally,
          ggplot2 (>= 3.4.4),
-         ggrepel,
          grid,
          gridExtra,
          htmltools (>= 0.5.5),
          magrittr,
          mrgsolve (>= 1.5.0),
-         ncar,
-         NonCompart (>= 0.7.0),
          plotly (>= 4.10.1),
          purrr,
          rhandsontable (>= 0.3.8),
@@ -37,7 +34,6 @@ Imports: bslib (>= 0.5.1),
          scales,
          shiny (>= 1.7.4.1),
          shinyAce,
-         shinyalert,
          shinyBS (>= 0.61.1),
          shinycssloaders,
          shinydashboard (>= 0.7.2),
@@ -47,10 +43,14 @@ Imports: bslib (>= 0.5.1),
          stringr,
          tibble,
          tidyr
-Suggests: readr,
-          foreign,
+Suggests: foreign,
+          ggrepel,
           knitr,
-          rmarkdown
+          ncar,
+          NonCompart,
+          readr,
+          rmarkdown,
+          shinyalert
 Depends: R (>= 3.5.0)
 LazyData: true
 Collate: "utils-pipe.R"

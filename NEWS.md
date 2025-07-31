@@ -1,3 +1,18 @@
+# MVPapp 0.3.3 (2025-07-31)
+
+## Features
+
+* NHANES database updated to include 2021-2023, which brings it to approx. 100k real subjects available for sampling (#1)
+* Supports running app directly without installation (moved a few uncommon dependencies to suggests instead)
+
+## Bugfixes
+
+* Correct typos for tooltips
+* Corrected CV% for summary statistics to always report as absolute values
+* Applying the distinct by ID built-in filter last for uploaded datasets (#47)
+* Corrected behavior of range filters for filtered data display when a scroll bar is used (#48)
+
+
 # MVPapp 0.3.2 (2025-06-13)
 
 ## Features

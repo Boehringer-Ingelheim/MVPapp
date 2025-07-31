@@ -47,12 +47,18 @@ Once installed, launch MVP using the following commands:
 
 ``` r
 library(MVPapp)
-
 run_mvp()
 
 ## Alternatively, launch the app without watermarks
 ## see ?run_mvp for more options
 # run_mvp(insert_watermarks = FALSE)
+```
+
+Alternatively, you may also run `MVPapp` directly *without installation* (may need to first install required packages):
+
+``` r
+library(shiny)
+runGitHub("MVPapp", username = "Boehringer-Ingelheim", subdir = "inst/shiny")
 ```
 
 ## Getting Started

@@ -417,7 +417,7 @@ bspop_generate_batch  <- 'Press to generate batch runs according to the Batch Ru
 #' @export
 bspop_batch_runs      <- 'Perform sensitivity analysis for all parameters to visualize the impact on exposure metrics, ordered by relative importance (Tornado Plots and Spider Plots). Parameters are pre-configured with a upper/lower bound (default: \u00B150%).<br><br>Press the "Batch Run" button after any further adjustments to the table below.' #<br><br>Note: could be time consuming for larger models and/or frequent sampling.'
 #' @export
-bspop_bounds          <- 'Pre-configures batch runs by multiplying the reference value of all parameter by this number as the upper/lower bound.<br><br>The Table can also be further fine-tuned (i.e. directly edit) for all values, including the reference value.'
+bspop_bounds          <- 'Pre-configures batch runs by multiplying the reference value of all parameters by this number as the upper/lower bound.<br><br>The Table can also be further fine-tuned (i.e. directly edit) for all values, including the reference value.'
 
 
 #### Page 5 Variability
@@ -440,7 +440,7 @@ max_sim_n_error       <- paste0("Maximum number of subjects cannot exceed ", max
 #' @export
 label_db              <- "Select Population (Covariate) Database:"
 #' @export
-bspop_db              <- 'The choice of database is specific to project needs, where:<br><br>"None" - only number of subjects and seed are relevant, other settings are disabled (apart from custom covariates, if defined).<br><br><a href="https://wwwn.cdc.gov/nchs/nhanes/Default.aspx" target="_blank">NHANES - All ages</a> (general population [1999 - 2020 pre-pandemic], usually suitable for adults (>18))<br><br><a href="https://www.cdc.gov/growthcharts/percentile_data_files.htm" target="_blank">CDC - Age 0 - 20 yo</a> (general ped use between 2 - <18 yo)<br><br><a href="https://www.who.int/childgrowth/standards/weight_for_age/en/" target="_blank">WHO - Age 0 to 10 yo</a> (better granularity for neonates to toddlers)<br><br>Note: The covariates will replace whatever it is defined in $PARAM'
+bspop_db              <- 'The choice of database is specific to project needs, where:<br><br>"None" - only number of subjects and seed are relevant, other settings are disabled (apart from custom covariates, if defined).<br><br><a href="https://wwwn.cdc.gov/nchs/nhanes/Default.aspx" target="_blank">NHANES - All ages</a> (general population [1999 - 2023], usually suitable for adults (>18))<br><br><a href="https://www.cdc.gov/growthcharts/percentile_data_files.htm" target="_blank">CDC - Age 0 - 20 yo</a> (general ped use between 2 - <18 yo)<br><br><a href="https://www.who.int/childgrowth/standards/weight_for_age/en/" target="_blank">WHO - Age 0 to 10 yo</a> (better granularity for neonates to toddlers)<br><br>Note: The covariates will replace whatever it is defined in $PARAM'
 #' @export
 bspop_seed            <- 'Seed number is applicable to both the sampling of databases (including covariates) AND simulations (uses current date as default value).'
 #' @export
@@ -449,6 +449,8 @@ bspop_select_y_value_threshold <- 'The percentage (%) of subjects above the sele
 age_range_label       <- "Age Range ('AGE', y) [Post-Natal]"
 #' @export
 weight_range_label    <- "Weight Range ('WT', kg) [Total Body Mass]"
+#' @export
+bmi_range_label       <- "Body Mass Index Range ('BMI', kg/m²)"
 #' @export
 male_range_label      <- "Male Percentage ('SEX = 0', %) [Biological]"
 #' @export
@@ -510,7 +512,28 @@ navbar_bg_color <-   htmltools::tags$head(
              overflow-y: auto !important; /* Add a scrollbar if the content exceeds the max-height */
           }'
     )
-  )
+  ),
+  ## Scroll bar focus workaround from https://stackoverflow.com/questions/60110678/in-shiny-dt-the-focus-is-lost-when-there-is-lot-of-columns-with-scrollx-true
+  ## Method 1 CSS - most are commented out
+  # htmltools::tags$style(type = "text/css", htmltools::HTML(paste0(".datatables                       {position: relative; } "))),
+  # htmltools::tags$style(type = "text/css", htmltools::HTML(paste0(".datatables  [class^='col-']      {position: inherit;} "))),
+  htmltools::tags$style(type = "text/css", htmltools::HTML(paste0("
+                                                   .datatables .dataTables_wrapper   {
+                                                         overflow-x: auto;
+                                                         overflow-y: hidden;
+                                                         padding-top: 35px;
+                                                         padding-bottom: 35px;
+                                                   }"))),
+  # htmltools::tags$style(type = "text/css", htmltools::HTML(paste0(".datatables .dataTables_length    {position: absolute; margin-top: -35px; left:  0px;}"))),
+  # htmltools::tags$style(type = "text/css", htmltools::HTML(paste0(".datatables .dataTables_filter    {position: absolute; margin-top: -35px; right: 0px;}"))),
+  # htmltools::tags$style(type = "text/css", htmltools::HTML(paste0(".datatables .dataTables_info      {position: absolute; left:  0px;}"))),
+  # htmltools::tags$style(type = "text/css", htmltools::HTML(paste0(".datatables .dataTables_paginate  {position: absolute; right: 0px;}"))),
+  # htmltools::tags$style(type = "text/css", htmltools::HTML(paste0("
+  #                                                  .datatables .dataTables_wrapper .dt-buttons  {
+  #                                                        left: 150px;
+  #                                                        position: absolute;
+  #                                                        top: 0;
+  #                                                  }")))#,
 )
 
 #' @export

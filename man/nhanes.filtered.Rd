@@ -3,14 +3,14 @@
 \docType{data}
 \name{nhanes.filtered}
 \alias{nhanes.filtered}
-\title{NHANES 1999-2020 (pre-pandemic, until March 2020, pre-pandemic
+\title{NHANES 1999-2023
 (https://wwwn.cdc.gov/nchs/nhanes/Default.aspx)
 ID, WT, SEX, AGEYR are retained by default.
 Insert citation notes here in the future}
 \format{
 \subsection{\code{nhanes.filtered}}{
 
-'data.frame':	92901 obs. of  5 variables:
+'data.frame':	101400 obs. of  5 variables:
 SEX  : num  1 0 1 0 1 1 0 1 0 0 ...
 AGEMO: num  24 924 120 588 228 708 156 132 516 180 ...
 AGEYR: num  2 77 10 49 19 59 13 11 43 15 ...
@@ -25,7 +25,7 @@ HT   : num  91.6 174 136.6 178.3 162 ...
 nhanes.filtered
 }
 \description{
-NHANES 1999-2020 (pre-pandemic, until March 2020, pre-pandemic
+NHANES 1999-2023
 (https://wwwn.cdc.gov/nchs/nhanes/Default.aspx)
 ID, WT, SEX, AGEYR are retained by default.
 Insert citation notes here in the future
