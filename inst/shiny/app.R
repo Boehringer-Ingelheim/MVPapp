@@ -65,6 +65,8 @@ if(!exists("bi_logo")) { # Check whether one of the objects in the app exists
   
   r_files <- list.files("../../R", full.names = TRUE, pattern = "\\.R$")
   sapply(r_files, source)
+  rda_files <- list.files("../../data", full.names = TRUE, pattern = "\\.rda$")
+  for (file in rda_files) {load(file, envir = .GlobalEnv)}
 }
 
 if(!is.na(pw_models_path)) {
