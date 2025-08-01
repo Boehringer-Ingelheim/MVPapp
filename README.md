@@ -59,8 +59,8 @@ run_mvp()
 # run_mvp(insert_watermarks = FALSE)
 ```
 
-Alternatively, you may also run `MVPapp` directly *without installation*
-(may need to first install required packages):
+Alternatively, you may also run `MVPapp` directly *without* installation
+(may require additional packages):
 
 ``` r
 library(shiny)

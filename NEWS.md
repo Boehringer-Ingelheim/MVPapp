@@ -3,6 +3,7 @@
 ## Features
 
 * NHANES database updated to include 2021-2023, which brings it to approx. 100k real subjects available for sampling (#1)
+* BMI filtering support for external databases
 * Supports running app directly without installation (moved a few uncommon dependencies to suggests instead)
 
 ## Bugfixes

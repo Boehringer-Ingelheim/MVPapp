@@ -60,7 +60,7 @@ if(!exists("insert_watermark"))    {insert_watermark    <- TRUE}
 if(!exists("authentication_code")) {authentication_code <- NA_character_}
 if(!exists("internal_version"))    {internal_version    <- TRUE}
 if(!exists("pw_models_path"))      {pw_models_path      <- NA_character_}
-if(!exists("bi_styling"))          {bi_styling          <- TRUE}
+if(!exists("use_bi_styling"))      {use_bi_styling      <- TRUE}
 if(!exists("show_debugging_msg"))  {show_debugging_msg  <- TRUE}
 
 if(!is.na(pw_models_path)) {
