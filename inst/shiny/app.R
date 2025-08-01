@@ -60,8 +60,16 @@ if(!exists("insert_watermark"))    {insert_watermark    <- TRUE}
 if(!exists("authentication_code")) {authentication_code <- NA_character_}
 if(!exists("internal_version"))    {internal_version    <- TRUE}
 if(!exists("pw_models_path"))      {pw_models_path      <- NA_character_}
-if(!exists("use_bi_styling"))      {use_bi_styling      <- FALSE}
+if(!exists("use_bi_styling"))      {use_bi_styling      <- TRUE}
 if(!exists("show_debugging_msg"))  {show_debugging_msg  <- TRUE}
+
+if(!exists("bi_logo")) { 
+  library(shinyBS) # 0.61.1 # this needs to be reloaded to make popovers work
+  library(dplyr) # 1.1.3 # required for data code editor
+  library(mrgsolve) # 1.5.2 # required for sim code editor
+  r_files <- list.files("../../R", full.names = TRUE, pattern = "\\.R$")
+  sapply(r_files, source)
+}
 
 if(!is.na(pw_models_path)) {
   source(pw_models_path)
@@ -74,7 +82,7 @@ ui <- shiny::navbarPage(
   } else {
     title = htmltools::div(page_title)
   },
-  if(use_bi_styling) {tags$head(tags$link(rel = "icon", type = "image/png", href = "BI_favicon-16x16.png"))},
+  if(use_bi_styling) {htmltools::tags$head(htmltools::tags$link(rel = "icon", type = "image/png", href = "BI_favicon-16x16.png"))},
   selected = 'Simulation',
   theme = shinythemes::shinytheme('flatly'),
   shinyjs::useShinyjs(),
@@ -149,12 +157,12 @@ ui <- shiny::navbarPage(
                          tabPanel('Filtered Data',
                                   fluidRow(
                                     column(width = 12,
-                                           div(DT::dataTableOutput('dataset_page_table'), style = "font-size:80%;white-space: nowrap;width:100%;")),
+                                           htmltools::div(DT::dataTableOutput('dataset_page_table'), style = "font-size:80%;white-space: nowrap;width:100%;")),
                                     downloadButton("download_nmdataset_for_plot", "Download Data (.csv)")
                                   )       # end of fluidRow
                          ),              # end of tabPanel
                          tabPanel('Summary Statistics',
-                                  div(DT::dataTableOutput('data_info'), style = "font-size:80%;white-space: nowrap;width:100%;"),
+                                  htmltools::div(DT::dataTableOutput('data_info'), style = "font-size:80%;white-space: nowrap;width:100%;"),
                                   checkboxInput('transpose_data_info', transpose_checkbox),
                                   shinyBS::bsPopover('transpose_data_info', transpose_checkbox, content = bspop_transpose, placement = 'left'),
                                   downloadButton("download_data_info", "Download Summary Statistics")
