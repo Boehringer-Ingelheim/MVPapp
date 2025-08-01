@@ -57,6 +57,9 @@ if(!exists("use_bi_styling"))      {use_bi_styling      <- TRUE}
 if(!exists("show_debugging_msg"))  {show_debugging_msg  <- TRUE}
 
 if(!exists("bi_logo")) { # Check whether one of the objects in the app exists
+  
+  source("packages.R") # Check required packages
+  
   # Loads some required packages when manually launching app with runGithub
   library(ggplot2)
   library(shinyBS) # 0.61.1 # this needs to be reloaded to make popovers work
@@ -65,6 +68,7 @@ if(!exists("bi_logo")) { # Check whether one of the objects in the app exists
   
   r_files <- list.files("../../R", full.names = TRUE, pattern = "\\.R$")
   sapply(r_files, source)
+
   rda_files <- list.files("../../data", full.names = TRUE, pattern = "\\.rda$")
   for (file in rda_files) {load(file, envir = .GlobalEnv)}
 }
