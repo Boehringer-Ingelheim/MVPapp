@@ -3013,7 +3013,7 @@ server <- function(input, output, session) {
                       MW = input$mw_value) %>%
         dplyr::select(where(~any(!is.na(.)))) ## Remove columns with NA's if inputs are non-sensible
     } else {
-      shiny::showNotification(paste0("ERROR: Required packages 'ncar' and 'NonCompart' not available. NCA not performed."), type = "error", duration = 10)
+      shiny::showNotification(paste0("ERROR: Please install 'ncar' and 'NonCompart' R packages to use ths feature."), type = "error", duration = 10)
       return(NULL)
     }
     
