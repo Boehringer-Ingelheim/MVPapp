@@ -55,8 +55,7 @@ if (length(packages_to_update) > 0) {
   update_choice <- readline(prompt = "Would you like to install/update them? [yes/no]: ")
   
   if (tolower(update_choice) != "yes") {
-    cat("Update process canceled by user. App not started.\n")
-    quit(save = "no")
+    stop("Update process canceled by user. App not started")
   }
   
   install.packages(packages_to_update, dependencies = TRUE)
