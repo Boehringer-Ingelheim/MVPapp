@@ -49,21 +49,19 @@ if(standalone_mode) {
 ## The following parameter settings are needed if the user is directly downloading and launching MVPapp, i.e.:
 ## shiny::runGitHub("MVPapp", username = "Boehringer-Ingelheim", subdir = "inst/shiny", launch.browser = TRUE)
 
+if(!exists("insert_watermark"))    {insert_watermark    <- TRUE}
+if(!exists("authentication_code")) {authentication_code <- NA_character_}
+if(!exists("internal_version"))    {internal_version    <- TRUE}
+if(!exists("pw_models_path"))      {pw_models_path      <- NA_character_}
+if(!exists("use_bi_styling"))      {use_bi_styling      <- TRUE}
+if(!exists("show_debugging_msg"))  {show_debugging_msg  <- TRUE}
+
 if(!exists("bi_logo")) { # Check whether one of the objects in the app exists
-  
   # Loads some required packages when manually launching app with runGithub
   library(ggplot2)
   library(shinyBS) # 0.61.1 # this needs to be reloaded to make popovers work
   library(dplyr) # 1.1.3 # required for data code editor
   library(mrgsolve) # 1.5.2 # required for sim code editor
-  
-  # Configure define settings since these were not defined
-  insert_watermark    <- TRUE
-  authentication_code <- NA_character_
-  internal_version    <- TRUE
-  pw_models_path      <- NA_character_
-  use_bi_styling      <- TRUE
-  show_debugging_msg  <- TRUE
   
   r_files <- list.files("../../R", full.names = TRUE, pattern = "\\.R$")
   sapply(r_files, source)
