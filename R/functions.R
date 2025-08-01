@@ -3850,7 +3850,7 @@ tblNCA_progress <- function (concData, key = "Subject", colTime = "Time", colCon
       strCond = paste0(strCond, ",]")
       tData = eval(parse(text = strCond))
       if (nrow(tData) > 0) {
-        tRes = sNCA(tData[, colTime], tData[, colConc], dose = dose[i],
+        tRes = NonCompart::sNCA(tData[, colTime], tData[, colConc], dose = dose[i],
                     adm = adm, dur = dur, doseUnit = doseUnit, timeUnit = timeUnit,
                     concUnit = concUnit, R2ADJ = R2ADJ, down = down,
                     MW = MW, SS = SS, iAUC = iAUC, Keystring = strHeader,
