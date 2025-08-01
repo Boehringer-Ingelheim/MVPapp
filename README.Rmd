@@ -58,7 +58,7 @@ Alternatively, you may also run `MVPapp` directly *without* installation (may re
 
 ``` r
 library(shiny)
-runGitHub("MVPapp", username = "Boehringer-Ingelheim", subdir = "inst/shiny")
+runGitHub("MVPapp", username = "Boehringer-Ingelheim", subdir = "inst/shiny", launch.browser = TRUE)
 ```
 
 ## Getting Started

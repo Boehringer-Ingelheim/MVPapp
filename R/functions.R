@@ -432,7 +432,7 @@ do_data_page_plot <- function(nmd,
 
       if(label_size > 0) {
         a <- a +
-          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 0.5, size = label_size)
+          ggplot2::geom_text(data = df_count, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 0.5, size = label_size)
       }
 
     } else {
@@ -441,10 +441,10 @@ do_data_page_plot <- function(nmd,
       if(label_size > 0) {
         if(can_quantize) { # For quantized plots, we are plotting all observations, not unique IDs
           a <- a +
-            ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("Nobs=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+            ggplot2::geom_text(data = df_count, ggplot2::aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("Nobs=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
         } else {
           a <- a +
-            ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+            ggplot2::geom_text(data = df_count, ggplot2::aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
         }
       }
     }
@@ -489,7 +489,7 @@ do_data_page_plot <- function(nmd,
 
     a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), method = "lm", formula = y ~ x, se = FALSE, colour = "grey", show.legend = FALSE)
     if(label_size > 0) {
-      a <- a + ggplot2::geom_text(data = df_stats, aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
+      a <- a + ggplot2::geom_text(data = df_stats, ggplot2::aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
                                   hjust = 0.5, vjust = 1, show.legend = FALSE, size = label_size)
     }
   }
@@ -869,7 +869,7 @@ do_data_page_ind_plot <- function(nmd,
 
       if(label_size > 0) {
         a <- a +
-          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 2, size = label_size)
+          ggplot2::geom_text(data = df_count, ggplot2::aes(x = .data[[x_axis]], y = .data[[y_axis]], label = paste0(n), size = n, group = NULL), color = "black", vjust = 2, size = label_size)
       }
 
     } else {
@@ -877,7 +877,7 @@ do_data_page_ind_plot <- function(nmd,
         ggplot2::geom_boxplot(varwidth = TRUE)
       if(label_size > 0) {
         a <- a +
-          ggplot2::geom_text(data = df_count, aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
+          ggplot2::geom_text(data = df_count, ggplot2::aes(x = .data[[x_axis]], y = max(nmd[[y_axis]], na.rm = TRUE) * 1.02, label = paste0("N=", n),  group = NULL), color = "black", vjust = 2, size = label_size)
       }
     }
 
@@ -905,8 +905,8 @@ do_data_page_ind_plot <- function(nmd,
         linecolour <- "#ED5C42A0"
 
         a <- a +
-          ggplot2::geom_vline(data = id_dose_expand, aes(xintercept = DOSETIME), alpha = 0.1) +
-          ggplot2::geom_rect(data   = id_dose_expand, aes(
+          ggplot2::geom_vline(data = id_dose_expand, ggplot2::aes(xintercept = DOSETIME), alpha = 0.1) +
+          ggplot2::geom_rect(data   = id_dose_expand, ggplot2::aes(
             y = NULL,
             xmin = DOSETIME,
             xmax = INFDUR,
@@ -920,11 +920,11 @@ do_data_page_ind_plot <- function(nmd,
 
         ## Dosing text
         # if(require(ggrepel)) {
-        #   a <- a + ggrepel::geom_text_repel(data = id_dose_unique, aes(x = .data[[x_axis]], y = SAMT, label = dosename, color = NULL),
+        #   a <- a + ggrepel::geom_text_repel(data = id_dose_unique, ggplot2::aes(x = .data[[x_axis]], y = SAMT, label = dosename, color = NULL),
         #                                     alpha = 0.8,
         #                                     size = label_size)
         # } else {
-          a <- a + ggplot2::geom_text(data = id_dose_unique, aes(x = .data[[x_axis]], y = SAMT, label = dosename, group = NULL, color = NULL),
+          a <- a + ggplot2::geom_text(data = id_dose_unique, ggplot2::aes(x = .data[[x_axis]], y = SAMT, label = dosename, group = NULL, color = NULL),
                                       hjust = 1, vjust = 1, show.legend = FALSE, size = label_size, alpha = 0.8)
         #}
       } # End of DOSETIME column check
@@ -973,7 +973,7 @@ do_data_page_ind_plot <- function(nmd,
 
     a <- a + ggplot2::stat_smooth(ggplot2::aes(group = NULL), method = "lm", formula = y ~ x, se = FALSE, colour = "grey", show.legend = FALSE)
     if(label_size > 0) {
-      a <- a + ggplot2::geom_text(data = df_stats, aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
+      a <- a + ggplot2::geom_text(data = df_stats, ggplot2::aes(label = label, x = med_x, y = max_y, group = NULL, color = NULL),
                                   hjust = 0.5, vjust = 1, show.legend = FALSE, size = label_size)
     }
   }
@@ -2905,7 +2905,7 @@ plot_three_data_with_nm <- function(
   if(log_x_axis) {
     p1<- p1 +
       ggplot2::scale_x_log10(breaks=log_x_ticks, labels=log_x_labels) +
-      annotation_logticks(sides = "b")
+      ggplot2::annotation_logticks(sides = "b")
   } else {
     p1 <- smart_x_axis(p1, xlabel = xlabel)
   }
@@ -2913,13 +2913,13 @@ plot_three_data_with_nm <- function(
   if(log_y_axis) {
     p1<- p1 +
       ggplot2::scale_y_log10(breaks=log_y_ticks, labels=log_y_labels) +
-      annotation_logticks(sides = "l")
+      ggplot2::annotation_logticks(sides = "l")
   }
 
   # Align legends to be right hand side since plotly always shows right hand side only
   p1 <- p1 +
     #ggplot2::theme(legend.justification = c(1, 1), legend.position = c(1, 1), legend.box.just = "right")
-    theme(legend.position = "right")
+    ggplot2::theme(legend.position = "right")
 
   return(p1)
 }
@@ -4548,7 +4548,7 @@ plot_iiv_exp_data <- function(input_dataset,
     model_colors[model_2_name] <- model_2_color
   }
 
-  p <- ggplot2::ggplot(data = input_dataset, aes(x = MODEL, y = .data[[yvar]], group = MODEL, fill = MODEL)) +
+  p <- ggplot2::ggplot(data = input_dataset, ggplot2::aes(x = MODEL, y = .data[[yvar]], group = MODEL, fill = MODEL)) +
     ggplot2::theme_bw() +
     ggplot2::geom_boxplot(alpha = 0.5) +
     ggplot2::scale_fill_manual(values = model_colors)
@@ -4568,20 +4568,20 @@ plot_iiv_exp_data <- function(input_dataset,
       dplyr::ungroup()
 
     p <- p +
-      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = maximum, label = paste("Max:", maximum)), vjust = -1) +
-      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = upper95, label = paste("95%:", upper95)), vjust = -1) +
-      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = mean,    label = paste("Mean:", mean)), vjust = -1) +
-      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = median,  label = paste("Median:", median)), vjust = -1) +
-      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = lower05, label = paste("5%:", lower05)), vjust = -1) +
-      ggplot2::geom_text(data = stats_df, aes(x = MODEL, y = minimum, label = paste("Min:", minimum)), vjust = 1)
+      ggplot2::geom_text(data = stats_df, ggplot2::aes(x = MODEL, y = maximum, label = paste("Max:", maximum)), vjust = -1) +
+      ggplot2::geom_text(data = stats_df, ggplot2::aes(x = MODEL, y = upper95, label = paste("95%:", upper95)), vjust = -1) +
+      ggplot2::geom_text(data = stats_df, ggplot2::aes(x = MODEL, y = mean,    label = paste("Mean:", mean)), vjust = -1) +
+      ggplot2::geom_text(data = stats_df, ggplot2::aes(x = MODEL, y = median,  label = paste("Median:", median)), vjust = -1) +
+      ggplot2::geom_text(data = stats_df, ggplot2::aes(x = MODEL, y = lower05, label = paste("5%:", lower05)), vjust = -1) +
+      ggplot2::geom_text(data = stats_df, ggplot2::aes(x = MODEL, y = minimum, label = paste("Min:", minimum)), vjust = 1)
 
     # p <- p +
-    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = maximum, label = paste("Max:", maximum))) +
-    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = upper95, label = paste("95%:", upper95))) +
-    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = mean,    label = paste("Mean:", mean))) +
-    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = median,  label = paste("Median:", median))) +
-    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = lower05, label = paste("5%:", lower05))) +
-    #   ggrepel::geom_text_repel(data = stats_df, aes(x = MODEL, y = minimum, label = paste("Min:", minimum)))
+    #   ggrepel::geom_text_repel(data = stats_df, ggplot2::aes(x = MODEL, y = maximum, label = paste("Max:", maximum))) +
+    #   ggrepel::geom_text_repel(data = stats_df, ggplot2::aes(x = MODEL, y = upper95, label = paste("95%:", upper95))) +
+    #   ggrepel::geom_text_repel(data = stats_df, ggplot2::aes(x = MODEL, y = mean,    label = paste("Mean:", mean))) +
+    #   ggrepel::geom_text_repel(data = stats_df, ggplot2::aes(x = MODEL, y = median,  label = paste("Median:", median))) +
+    #   ggrepel::geom_text_repel(data = stats_df, ggplot2::aes(x = MODEL, y = lower05, label = paste("5%:", lower05))) +
+    #   ggrepel::geom_text_repel(data = stats_df, ggplot2::aes(x = MODEL, y = minimum, label = paste("Min:", minimum)))
 
   }
 

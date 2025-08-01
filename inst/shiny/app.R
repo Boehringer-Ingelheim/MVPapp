@@ -15,8 +15,7 @@ standalone_mode <- FALSE
 #######################
 if(standalone_mode) {
 
-  #source("packages.R") # Loading packages here to side-step JS compatibility issues
-
+  library(ggplot2)
   library(shiny) # 1.7.5.1
   library(shinyBS) # 0.61.1 # this needs to be reloaded to make popovers work
   library(dplyr) # 1.1.3 # required for data code editor
@@ -37,12 +36,6 @@ if(standalone_mode) {
   source(system.file("R/code_templates.R", package = "MVPapp"))    # List of example mrgsolve models
   source(system.file("R/functions.R", package = "MVPapp"))         # List of helper functions required for the app
 
-  # Previous method of duplicating files from R/ folder to inst/shiny (does not require MVPapp to be installed)
-  # source("databases.R")
-  # source("ui_settings.R")       # List of UI settings e.g. labels and descriptions
-  # source("code_templates.R")    # List of example mrgsolve models
-  # source("functions.R")         # List of helper functions required for the app
-
   ## Start-up options for the App when not running through run_mvp()
   insert_watermark    = TRUE
   authentication_code = NA_character_
@@ -54,19 +47,24 @@ if(standalone_mode) {
 #######################
 
 ## The following parameter settings are needed if the user is directly downloading and launching MVPapp, i.e.:
-## shiny::runGitHub("MVPapp", username = "Boehringer-Ingelheim", subdir = "inst/shiny")
+## shiny::runGitHub("MVPapp", username = "Boehringer-Ingelheim", subdir = "inst/shiny", launch.browser = TRUE)
 
-if(!exists("insert_watermark"))    {insert_watermark    <- TRUE}
-if(!exists("authentication_code")) {authentication_code <- NA_character_}
-if(!exists("internal_version"))    {internal_version    <- TRUE}
-if(!exists("pw_models_path"))      {pw_models_path      <- NA_character_}
-if(!exists("use_bi_styling"))      {use_bi_styling      <- TRUE}
-if(!exists("show_debugging_msg"))  {show_debugging_msg  <- TRUE}
-
-if(!exists("bi_logo")) { 
+if(!exists("bi_logo")) { # Check whether one of the objects in the app exists
+  
+  # Loads some required packages when manually launching app with runGithub
+  library(ggplot2)
   library(shinyBS) # 0.61.1 # this needs to be reloaded to make popovers work
   library(dplyr) # 1.1.3 # required for data code editor
   library(mrgsolve) # 1.5.2 # required for sim code editor
+  
+  # Configure define settings since these were not defined
+  insert_watermark    <- TRUE
+  authentication_code <- NA_character_
+  internal_version    <- TRUE
+  pw_models_path      <- NA_character_
+  use_bi_styling      <- TRUE
+  show_debugging_msg  <- TRUE
+  
   r_files <- list.files("../../R", full.names = TRUE, pattern = "\\.R$")
   sapply(r_files, source)
 }
