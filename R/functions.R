@@ -3520,7 +3520,6 @@ pct_above_y_at_x <- function(model_is_valid = FALSE,
 #' @param ppm_email      Email of Project Pharmacometrician
 #'
 #' @returns a shinyalert() popup
-#' @importFrom shinyalert shinyalert
 #' @export
 #-------------------------------------------------------------------------------
 
@@ -3811,7 +3810,6 @@ drawDetails.watermark <- function(x, ...) {
 #'
 #' @inheritParams NonCompart::tblNCA
 #' @param show_progress display progress messages
-#' @importFrom NonCompart sNCA tblNCA
 #' @export
 #-------------------------------------------------------------------------------
 
@@ -3878,8 +3876,6 @@ tblNCA_progress <- function (concData, key = "Subject", colTime = "Time", colCon
 #' @param debug_msg show debug messages
 #' @param show_progress display progress messages
 #' @inheritParams ncar::pdfNCA
-#' @importFrom ncar pdfNCA
-#' @importFrom NonCompart sNCA tblNCA
 #' @importFrom graphics axis close.screen lines par points screen split.screen
 #' @export
 #-------------------------------------------------------------------------------

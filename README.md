@@ -59,8 +59,8 @@ run_mvp()
 # run_mvp(insert_watermarks = FALSE)
 ```
 
-Alternatively, you may try running `MVPapp` directly *without*
-installation (may require additional packages):
+Alternatively, you may run `MVPapp` directly *without* installation
+(requires additional packages):
 
 ``` r
 shiny::runGitHub("MVPapp", username = "Boehringer-Ingelheim", subdir = "inst/shiny", launch.browser = TRUE)
