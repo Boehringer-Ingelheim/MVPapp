@@ -58,7 +58,7 @@ if(!exists("show_debugging_msg"))  {show_debugging_msg  <- TRUE}
 
 if(!exists("bi_logo")) { # Check whether one of the objects in the app exists
   
-  source("packages.R") # Check required packages
+  source("packages.R") # Check required packages and update if required
   
   # Loads some required packages when manually launching app with runGithub
   library(ggplot2)

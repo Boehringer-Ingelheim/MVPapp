@@ -21,7 +21,7 @@
 #' required_packages <- list(
 #'   shiny = "1.7.4.1",
 #'   ggplot2 = "3.4.4",
-#'   dplyr = "0.0.0"
+#'   dplyr = NULL
 #' )
 #' 
 #' check_and_install_packages(required_packages)
@@ -35,13 +35,15 @@ check_and_install_packages <- function(required_packages) {
     if (!requireNamespace(pkg, quietly = TRUE)) {
       return(pkg)  # Package is missing
     } else {
-      installed_version <- packageVersion(pkg)
       required_version <- required_packages[[pkg]]
-      if (installed_version < required_version) {
-        return(pkg)  # Package is outdated
+      if (!is.null(required_version)) {
+        installed_version <- packageVersion(pkg)
+        if (installed_version < required_version) {
+          return(pkg)  # Package is outdated
+        }
       }
     }
-    return(NULL)  # Package is up-to-date
+    return(NULL)  # Package is up-to-date or has no version requirement
   })
   
   # Filter out NULL values (packages that are up-to-date)
@@ -63,35 +65,35 @@ check_and_install_packages <- function(required_packages) {
 
 required_packages <- list(
   bslib = "0.5.1",
-  cowplot = "0.0.0", 
+  cowplot = NULL, 
   data.table = "1.14.2", 
-  dplyr = "0.0.0",
-  DT = "0.0.0", 
+  dplyr = NULL,
+  DT = NULL, 
   flextable = "0.6.10",
-  forcats = "0.0.0",
-  GGally = "0.0.0",
+  forcats = NULL,
+  GGally = NULL,
   ggplot2 = "3.4.4",
-  grid = "0.0.0", 
-  gridExtra = "0.0.0", 
+  grid = NULL, 
+  gridExtra = NULL, 
   htmltools = "0.5.5",
-  magrittr = "0.0.0",
+  magrittr = NULL,
   mrgsolve = "1.5.0",
   plotly = "4.10.1", 
-  purrr = "0.0.0",
+  purrr = NULL,
   rhandsontable = "0.3.8",
-  rlang = "0.0.0", 
-  scales = "0.0.0",
+  rlang = NULL, 
+  scales = NULL,
   shiny = "1.7.4.1",
-  shinyAce = "0.0.0", 
+  shinyAce = NULL, 
   shinyBS = "0.61.1", 
-  shinycssloaders = "0.0.0",
+  shinycssloaders = NULL,
   shinydashboard = "0.7.2",
   shinyjs = "1.0", 
-  shinythemes = "0.0.0",
+  shinythemes = NULL,
   shinyWidgets = "0.8.0",
-  stringr = "0.0.0", 
-  tibble = "0.0.0",
-  tidyr = "0.0.0"
+  stringr = NULL, 
+  tibble = NULL,
+  tidyr = NULL
 )
 
 check_and_install_packages(required_packages)
