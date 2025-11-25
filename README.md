@@ -3,7 +3,12 @@
 
 # Model Visualization Platform
 
+<span style="color:red;"><strong>Note: From 2025-11-25, development of
+MVP will be <a href="https://github.com/stevechoy/MVPapp">continued
+here.</a></strong></span>
+
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 `MVPapp` is an R package that bundles the
