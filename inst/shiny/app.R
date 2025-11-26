@@ -26,15 +26,19 @@ if(standalone_mode) {
   options(DT.options = list(pageLength = 20, language = list(search = 'Filter:'), scrollX = T)) # dataTable options
   options(shiny.maxRequestSize = 100*1024^2) # Maximum file upload size
 
-  # Pre-loads external patient databases ('cdc.expand', 'who.expand', 'nhanes.filtered')
+  # Download and load locally the external patient databases ('cdc.expand', 'who.expand', 'nhanes.filtered')
   # The raw data used to create .rda is available on Github inside 'data-raw' folder
-  load(system.file("data/nhanes.filtered.rda", package = "MVPapp"))
-  load(system.file("data/who.expand.rda", package = "MVPapp"))
-  load(system.file("data/cdc.expand.rda", package = "MVPapp"))
+  download.file("https://github.com/Boehringer-Ingelheim/MVPapp/raw/refs/heads/master/data/nhanes.filtered.rda", destfile = file.path(tempdir(), "nhanes.filtered.rda"))
+  download.file("https://github.com/Boehringer-Ingelheim/MVPapp/raw/refs/heads/master/data/who.expand.rda", destfile = file.path(tempdir(), "who.expand.rda"))
+  download.file("https://github.com/Boehringer-Ingelheim/MVPapp/raw/refs/heads/master/data/cdc.expand.rda", destfile = file.path(tempdir(), "cdc.expand.rda"))
+  
+  load(file.path(tempdir(), "nhanes.filtered.rda"))
+  load(file.path(tempdir(), "who.expand.rda"))
+  load(file.path(tempdir(), "cdc.expand.rda"))
 
-  source(system.file("R/ui_settings.R", package = "MVPapp"))       # List of UI settings e.g. labels and descriptions
-  source(system.file("R/code_templates.R", package = "MVPapp"))    # List of example mrgsolve models
-  source(system.file("R/functions.R", package = "MVPapp"))         # List of helper functions required for the app
+  source("https://github.com/Boehringer-Ingelheim/MVPapp/raw/refs/heads/master/R/ui_settings.R")    # List of UI settings e.g. labels and descriptions
+  source("https://github.com/Boehringer-Ingelheim/MVPapp/raw/refs/heads/master/R/code_templates.R") # List of example mrgsolve models
+  source("https://github.com/Boehringer-Ingelheim/MVPapp/raw/refs/heads/master/R/functions.R")      # List of helper functions required for the app
 
   ## Start-up options for the App when not running through run_mvp()
   insert_watermark    = TRUE
